@@ -1,8 +1,7 @@
-from NetUtils import NetworkItem, NetworkPlayer
+from NetUtils import NetworkItem
 from .Data import moon_list, id_to_name, goals
 
 class SMOPlayer:
-    player : NetworkPlayer
     moons = {}
     MAX_MOONS = {
         "Cascade Story Moon": 1,
