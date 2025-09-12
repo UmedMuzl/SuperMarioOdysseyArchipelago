@@ -2804,6 +2804,6 @@ def get_item_type(item : int) -> int:
         elif item in inverse_filler_items:
             return -3
         else:
-            return 0
+            return -4
 
 
