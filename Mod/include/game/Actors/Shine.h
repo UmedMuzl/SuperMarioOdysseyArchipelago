@@ -53,7 +53,7 @@ class Shine : public al::LiveActor , public IUseDimension {
         void *unkPtr1; // 0x280
         ActorDimensionKeeper *mDimensionKeeper; // 0x288
         int mShineIdx;                            // 0x290
-        bool mIsMainShine;
+        bool mIsMainShine; // 0x294
         void *qword298;
         void *qword2A0;
         void *qword2A8;
@@ -65,8 +65,8 @@ class Shine : public al::LiveActor , public IUseDimension {
         int dword2D0;
         bool mIsAddHeight;
         int dword2D8;
-        al::LiveActor *mModelEmpty;
-        al::LiveActor *mModelShine;
+        al::LiveActor *mModelEmpty; // 0x2E0
+        al::LiveActor *mModelShine; // 0x2E8
         int dword2F0;
         u16 word2F4;
         int dword2F8;
