@@ -1495,6 +1495,7 @@ void Client::updateShines() {
                         stageShine->makeActorAlive();
                     }
                     
+                    
                     //stageShine->getDirect();
                     //stageShine->onSwitchGet();
                 }
