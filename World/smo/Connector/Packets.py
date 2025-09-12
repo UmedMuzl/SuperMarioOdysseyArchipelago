@@ -145,8 +145,11 @@ class ChatMessagePacket:
     messages : list[str]
     SIZE : short = 0x4B * 3
 
-    def __init__(self, messages : list[str]):
-        self.messages = messages
+    def __init__(self, packet_bytes : bytearray = None, messages : list[str] = None):
+        if packet_bytes:
+            self.deserialize(packet_bytes)
+        else:
+            self.messages = messages
 
     def serialize(self) -> bytearray:
         data : bytearray = bytearray()
@@ -169,16 +172,27 @@ class ChatMessagePacket:
         if data is bytes:
             data = bytearray(data)
 
+        offset = 0
+        self.messages.append(data[offset:offset + self.MESSAGE_SIZE].decode("utf8"))
+        offset += self.MESSAGE_SIZE
+        self.messages.append(data[offset:offset + self.MESSAGE_SIZE].decode("utf8"))
+        offset += self.MESSAGE_SIZE
+        self.messages.append(data[offset:offset + self.MESSAGE_SIZE].decode("utf8"))
+
+
 class SlotDataPacket:
     clash : ushort
     raid : ushort
     regionals : bool
     SIZE : short = 5
 
-    def __init__(self, clash : int, raid : int, regionals : bool):
-        self.clash = short(clash)
-        self.raid = short(raid)
-        self.regionals = regionals
+    def __init__(self, packet_bytes : bytearray = None, clash : int = None, raid : int = None, regionals : bool = None):
+        if packet_bytes:
+            self.deserialize(packet_bytes)
+        else:
+            self.raid = short(raid)
+            self.regionals = regionals
+            self.clash = short(clash)
 
     def serialize(self) -> bytearray:
         data : bytearray = bytearray()
@@ -191,10 +205,15 @@ class SlotDataPacket:
             raise f"CountsPacket failed to serialize. bytearray exceeds maximum size {self.SIZE}."
         return data
 
-    # Shouldn't be necessary
     def deserialize(self, data : bytes | bytearray) -> None:
         if data is bytes:
             data = bytearray(data)
+        offset = 0
+        self.clash = ushort(int.from_bytes(data[offset:2], "little"))
+        offset += 2
+        self.raid = ushort(int.from_bytes(data[offset:offset + 2], "little"))
+        offset += 2
+        self.regionals = bool.from_bytes(data[offset:offset + 1], "little")
 
 
 
@@ -291,18 +310,30 @@ class DeathLinkPacket:
 #region Connection Packets
 
 class ConnectPacket:
+    SIZE : short = 4
     connection_type : ConnectionType
 
+    def __init__(self, packet_bytes : bytearray = None , connection_type : ConnectionType = ConnectionType.Connect):
+        if packet_bytes:
+            self.deserialize(packet_bytes)
+        else:
+            self.connection_type = connection_type
+
     def serialize(self) -> bytearray:
-        pass
+        data : bytearray = bytearray()
+        value = self.connection_type.value
+        data += value.to_bytes(4,"little")
+        return data
 
     def deserialize(self, data : bytes | bytearray) -> None:
         if data is bytes:
             data = bytearray(data)
 
+        self.connection_type = ConnectionType(int.from_bytes(data[0:4],"little"))
+
 class DisconnectPacket:
     # Empty Packet just to signal disconnect
-    size : short = 0
+    SIZE : short = 0
 
 class InitPacket:
     max_players : ushort = ushort(4)
@@ -371,6 +402,8 @@ class Packet:
         else:
             self.header = PacketHeader(guid=guid, packet_type=packet_type)
             match packet_type:
+                case PacketType.Connect:
+                    self.packet = ConnectPacket()
                 case PacketType.Init:
                     self.packet = InitPacket()
                 case PacketType.ChangeStage:
@@ -416,9 +449,9 @@ class Packet:
             case PacketType.RegionalCollect:
                 self.packet = RegionalCoinPacket()
             case PacketType.ArchipelagoChat:
-                raise "Server only packet received from client"
+                self.packet = ChatMessagePacket()
             case PacketType.SlotData:
-                raise "Server only packet received from client"
+                self.packet = SlotDataPacket(packet_bytes=data)
             case PacketType.Deathlink:
                 self.packet = DeathLinkPacket()
             case PacketType.Progress:
