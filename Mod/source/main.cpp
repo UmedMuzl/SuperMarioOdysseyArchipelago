@@ -40,6 +40,7 @@
 
 static int pInfSendTimer = 0;
 static int gameInfSendTimer = 0;
+static int checksSyncTimer = 0;
 
 void updatePlayerInfo(GameDataHolderAccessor holder, PlayerActorBase* playerBase, bool isYukimaru) {
     
@@ -134,8 +135,15 @@ void updatePlayerInfo(GameDataHolderAccessor holder, PlayerActorBase* playerBase
         gameInfSendTimer = 0;
     }
 
+    if (checksSyncTimer >= 600)
+    {
+        Client::sendShineChecksPacket();
+        checksSyncTimer = 0;
+    }
+
     pInfSendTimer++;
     gameInfSendTimer++;
+    checksSyncTimer++;
 }
 
 // ------------- Hooks -------------
@@ -360,38 +368,59 @@ void drawMainHook(HakoniwaSequence *curSequence, sead::Viewport *viewport, sead:
 
 }
 
+bool isGrabShine(GameDataHolderAccessor accessor, int shineIdx) {
+    GameDataFile::HintInfo* curHintInfo =
+        &accessor.mData->mGameDataFile->mShineHintList[shineIdx];
+    return Client::hasShine(curHintInfo->mUniqueID);
+}
+
 void sendShinePacket(GameDataHolderAccessor thisPtr, Shine* curShine) {
 
     GameDataFile::HintInfo* curHintInfo =
     &thisPtr.mData->mGameDataFile->mShineHintList[curShine->mShineIdx];
-    
+
     if (curHintInfo->mUniqueID == 0) {
-        if (strcmp(curShine->curShineInfo->stageName.cstr(), "CapWorldHomeStage") == 0)
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "CapWorldHomeStage") == 0) {
             Client::sendShineCollectPacket(1086);
-        if (strcmp(curShine->curShineInfo->stageName.cstr(), "SandWorldHomeStage") == 0)
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "SandWorldHomeStage") == 0) {
             Client::sendShineCollectPacket(1096);
-        if (strcmp(curShine->curShineInfo->stageName.cstr(), "LakeWorldHomeStage") == 0)
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "LakeWorldHomeStage") == 0) {
             Client::sendShineCollectPacket(1094);
-        if (strcmp(curShine->curShineInfo->stageName.cstr(), "ForestWorldHomeStage") == 0)
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "ForestWorldHomeStage") == 0) {
             Client::sendShineCollectPacket(1089);
-        if (strcmp(curShine->curShineInfo->stageName.cstr(), "CityWorldHomeStage") == 0)
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "CityWorldHomeStage") == 0) {
             Client::sendShineCollectPacket(1088);
-        if (strcmp(curShine->curShineInfo->stageName.cstr(), "SnowWorldHomeStage") == 0)
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "SnowWorldHomeStage") == 0) {
             Client::sendShineCollectPacket(1087);
-        if (strcmp(curShine->curShineInfo->stageName.cstr(), "SeaWorldHomeStage") == 0)
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "SeaWorldHomeStage") == 0) {
             Client::sendShineCollectPacket(1095);
-        if (strcmp(curShine->curShineInfo->stageName.cstr(), "LavaWorldHomeStage") == 0)
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "LavaWorldHomeStage") == 0) {
             Client::sendShineCollectPacket(1090);
-        if (strcmp(curShine->curShineInfo->stageName.cstr(), "SkyWorldHomeStage") == 0)
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "SkyWorldHomeStage") == 0) {
             Client::sendShineCollectPacket(1091);
-        if (strcmp(curShine->curShineInfo->stageName.cstr(), "MoonWorldHomeStage") == 0)
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "MoonWorldHomeStage") == 0) {
             Client::sendShineCollectPacket(1165);
-        if (strcmp(curShine->curShineInfo->stageName.cstr(), "PeachWorldHomeStage") == 0)
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "PeachWorldHomeStage") == 0) {
             Client::sendShineCollectPacket(1152);
-        if (strcmp(curShine->curShineInfo->stageName.cstr(), "Special1WorldHomeStage") == 0)
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "Special1WorldHomeStage") == 0) {
             Client::sendShineCollectPacket(1123);
-    } else
+        }
+    } else {
         Client::sendShineCollectPacket(curHintInfo->mUniqueID);
+    }
+    // Add some way to sync shinechecks grabbed before connecting, probably handle on connect or something
+    Client::addShine(curHintInfo->mUniqueID);
 
     switch (curHintInfo->mUniqueID) {
     //Cascade
@@ -499,15 +528,8 @@ void onGrandShineStageChange(GameDataHolderWriter holder, ChangeStageInfo const*
 
 void onStageChange(GameDataFile *file,const ChangeStageInfo* stageInfo, int param2)
 {
-    if (isPartOf(stageInfo->changeStageName.cstr(), "WorldHomeStage") &&
-        Client::getScenario(stageInfo->changeStageName.cstr()) != stageInfo->scenarioNo)
+    if (isPartOf(stageInfo->changeStageName.cstr(), "WorldHomeStage"))
     {
-        if (isPartOf(stageInfo->changeStageName.cstr(), "Sand")) {
-            Client::setScenario(GameDataFunction::getWorldIndexWaterfall(), 3);
-        }
-        if (isPartOf(stageInfo->changeStageName.cstr(), "Metro")) {
-            Client::setScenario(GameDataFunction::getWorldIndexClash(), 2);
-        }
         if (isPartOf(stageInfo->changeStageName.cstr(), "Clash"))
         {
             Client::sendShineCollectPacket(2501);
@@ -517,7 +539,22 @@ void onStageChange(GameDataFile *file,const ChangeStageInfo* stageInfo, int para
             Client::setScenario(GameDataFunction::getWorldIndexPeach(), 2);
             Client::sendShineCollectPacket(2500);
         }
-        Client::sendCorrectScenario(stageInfo);
+
+        if (Client::getScenario(stageInfo->changeStageName.cstr()) != stageInfo->scenarioNo)
+        {
+            if (isPartOf(stageInfo->changeStageName.cstr(), "Sand")) {
+                Client::setScenario(GameDataFunction::getWorldIndexHat(), 2);
+                Client::setScenario(GameDataFunction::getWorldIndexWaterfall(), 3);
+            }
+            if (isPartOf(stageInfo->changeStageName.cstr(), "City")) {
+                Client::setScenario(GameDataFunction::getWorldIndexClash(), 2);
+            }
+            Client::sendCorrectScenario(stageInfo);
+        }
+        else
+        {
+            file->changeNextStage(stageInfo, param2);
+        }
     } else {
         // Non world transitions
         file->changeNextStage(stageInfo, param2);
@@ -526,6 +563,7 @@ void onStageChange(GameDataFile *file,const ChangeStageInfo* stageInfo, int para
 }
 
 bool isBuyItems(ShopItem::ItemInfo* itemInfo) {
+    // Add a collected outfits, gifts, stickers based implementation similar to shinechecks
     return false;
 }
 
