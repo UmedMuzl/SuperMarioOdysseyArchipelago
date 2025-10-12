@@ -153,7 +153,15 @@ class Client {
 
         static void setScenario(int worldID, int scnenario);
         static int getScenario(const char* worldName);
+        static int getScenario(int worldID);
         static void sendCorrectScenario(const ChangeStageInfo* info);
+
+        static void addShine(int uid);
+        static bool hasShine(int uid);
+        static int getShineChecks(int index);
+        static void setShineChecks(int index, int checks);
+        static void sendShineChecksPacket();
+
         static void setMessage(int num, const char* msg);
 
         static Keyboard* getKeyboard();
@@ -262,6 +270,11 @@ class Client {
         sead::SafeArray<int, 17> worldScenarios;
         bool dying = false;
         bool apDeath = false;
+
+        // List of 23 ints to track which shine's have been grabbed
+        sead::SafeArray<int, 24> collectedShines;
+
+        // Do the same for outfits, stickers, and souvenirs 
 
         // Backups for our last player/game packets, used for example to re-send them for newly connected clients
         PlayerInf lastPlayerInfPacket = PlayerInf();
