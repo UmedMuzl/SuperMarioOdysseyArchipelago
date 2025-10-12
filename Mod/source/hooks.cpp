@@ -23,6 +23,7 @@
 #include "math/seadVector.h"
 #include "rs/util/InputUtil.h"
 #include "sead/prim/seadSafeString.h"
+#include "sead/container/seadSafeArray.h"
 #include "server/hns/HideAndSeekMode.hpp"
 
 bool comboBtnHook(int port) {
@@ -72,7 +73,67 @@ bool saveReadHook(int* padRumbleInt, al::ByamlIter const& saveByml, char const* 
 // GameDataFile::tryWriteByByaml
 // 
 // DameDataFile::tryReadByamlData line 198
+void saveFileWriteHook(al::ByamlWriter* saveByaml)
+{
 
+    for (int i = 0; i < 17; i++) {
+        sead::FixedSafeString<16> label;
+        label = "World";
+        if (i / 10 > 0) {
+            label.append(static_cast<char>(48 + i / 10));
+        }
+        label.append(static_cast<char>(48 + i % 10));
+        label.append("Scenario");
+        saveByaml->addInt(label.cstr(), Client::getScenario(i));
+    }
+
+    for (int i = 0; i < 25; i++)
+    {
+        sead::FixedSafeString<14> label;
+        label = "ShineChecks";
+        if (i / 10 > 0)
+        {
+            label.append(static_cast<char>(48 + i / 10));
+        }
+        label.append(static_cast<char>(48 + i % 10));
+        saveByaml->addInt(label.cstr(), Client::getShineChecks(i));
+    }
+
+    saveByaml->pop();
+   
+}
+
+bool saveFileReadHook(al::ByamlIter *saveByaml, bool* firstNetworkBool, char const* firstNetworkKey)
+{
+    int data = 0;
+
+    for (int i = 0; i < 17; i++) {
+        sead::FixedSafeString<16> label;
+        label = "World";
+        if (i / 10 > 0) {
+            label.append(static_cast<char>(48 + i / 10));
+        }
+        label.append(static_cast<char>(48 + i % 10));
+        label.append("Scenario");
+        if (saveByaml->tryGetIntByKey(&data, label.cstr())) {
+            Client::setScenario(i, data);
+        }
+    }
+
+    for (int i = 0; i < 25; i++) {
+        sead::FixedSafeString<14> label;
+        label = "ShineChecks";
+        if (i / 10 > 0) {
+            label.append(static_cast<char>(48 + i / 10));
+        }
+        label.append(static_cast<char>(48 + i % 10));
+        if (saveByaml->tryGetIntByKey(&data, label.cstr())) {
+            Client::setShineChecks(i, data);
+        }
+    }
+
+    return saveByaml->tryGetBoolByKey(firstNetworkBool, firstNetworkKey);
+}
 
 
 bool registerShineToList(Shine* shineActor) {
