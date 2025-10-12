@@ -61,6 +61,7 @@ Client::Client() {
     apChatLine3 = "";
     
     worldScenarios.fill(1);
+    collectedShines.fill(0);
 
     mUserID.print();
 
@@ -141,7 +142,13 @@ bool Client::startConnection() {
         SaveDataAccessFunction::startSaveDataWrite(mHolder.mData);
     }
 
-    mIsConnectionActive = mSocket->init(mServerIP.cstr(), mServerPort).isSuccess();
+    // This might need to be changed later
+    // Repeat connection attempts until successful
+    while (!mIsConnectionActive) {
+        mIsConnectionActive = mSocket->init(mServerIP.cstr(), mServerPort).isSuccess();
+        nn::os::YieldThread();
+        nn::os::SleepThread(nn::TimeSpan::FromNanoSeconds(2500000000));
+    }
 
     if (mIsConnectionActive) {
 
@@ -869,6 +876,46 @@ void Client::setApDeath(bool value)
     sInstance->apDeath = value;
 }
 
+void Client::sendShineChecksPacket() {
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+
+    sead::ScopedCurrentHeapSetter setter(sInstance->mHeap);
+
+    ShineChecks* packet = new ShineChecks();
+    packet->mUserID = sInstance->mUserID;
+
+    packet->checks1 = getShineChecks(1);
+    packet->checks2 = getShineChecks(2);
+    packet->checks3 = getShineChecks(3);
+    packet->checks4 = getShineChecks(4);
+    packet->checks5 = getShineChecks(5);
+    packet->checks6 = getShineChecks(6);
+    packet->checks7 = getShineChecks(7);
+    packet->checks8 = getShineChecks(8);
+    packet->checks9 = getShineChecks(9);
+    packet->checks10 = getShineChecks(10);
+    packet->checks11 = getShineChecks(11);
+    packet->checks12 = getShineChecks(12);
+    packet->checks13 = getShineChecks(13);
+    packet->checks14 = getShineChecks(14);
+    packet->checks15 = getShineChecks(15);
+    packet->checks16 = getShineChecks(16);
+    packet->checks17 = getShineChecks(17);
+    packet->checks18 = getShineChecks(18);
+    packet->checks19 = getShineChecks(19);
+    packet->checks20 = getShineChecks(20);
+    packet->checks21 = getShineChecks(21);
+    packet->checks22 = getShineChecks(22);
+    packet->checks23 = getShineChecks(23);
+    packet->checks24 = getShineChecks(24);
+    
+
+    sInstance->mSocket->queuePacket(packet);
+}
+
 /**
  * @brief 
  * 
@@ -1293,6 +1340,19 @@ int Client::getScenario(const char* worldName)
 
 }
 
+int Client::getScenario(int worldID)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return -1;
+    }
+
+    GameDataHolderAccessor accessor(sInstance->mCurStageScene);
+
+    return sInstance->worldScenarios[worldID];
+
+}
+
 void Client::sendCorrectScenario(const ChangeStageInfo* stageInfo)
 {
     if (!sInstance) {
@@ -1314,14 +1374,77 @@ void Client::sendCorrectScenario(const ChangeStageInfo* stageInfo)
         48 + accessor.mData->mWorldList->tryFindWorldIndexByStageName(stageInfo->changeStageName.cstr()));
     sInstance->apChatLine2 = str2;*/
 
-    
-
     ChangeStageInfo info(accessor.mData, stageInfo->changeStageId.cstr(),
                          stageInfo->changeStageName.cstr(),
                          false,
                          getScenario(stageInfo->changeStageName.cstr()),
                          static_cast<ChangeStageInfo::SubScenarioType>(0));
     GameDataFunction::tryChangeNextStage(accessor, &info);
+}
+
+void Client::addShine(int uid)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+
+    int shines = sInstance->collectedShines[uid / 32];
+
+    int index = (uid / 32) * 32;
+    int i = 1;
+    while (i < 0x80000000) {
+        if (index == uid) {
+            shines = shines | i;
+            break;
+        }
+        i = i << 1;
+        index += 1;
+    }
+
+
+    sInstance->collectedShines[uid / 32] = shines;
+}
+
+bool Client::hasShine(int uid)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return false;
+    }
+
+    int shines = sInstance->collectedShines[uid / 32];
+
+    int index = (uid / 32) * 32;
+    int i = 1;
+    while (i < 0x80000000) {
+        if (index == uid) {
+            shines = shines & i;
+            return (shines == i);
+        }
+        i = i << 1;
+        index += 1;
+    }
+}
+
+int Client::getShineChecks(int index)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return 0;
+    }
+
+    return sInstance->collectedShines[index];
+}
+
+void Client::setShineChecks(int index, int checks)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+
+    sInstance->collectedShines[index] = checks;
 }
 
 void Client::setMessage(int num, const char* msg)
