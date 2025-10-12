@@ -76,6 +76,10 @@ B59E28 B seadPrintHook // sead::system::print
 //1d2e98 B.eq 0x1D2D48+1A0
 1D2F08 BL onGrandShineStageChange
 
+// Shine::init
+1CD870 LDR X1, [X19, #0x290]
+1CD878 BL isGrabShine
+
 // GameDataHolder::changeNextStage()
 52F71C BL onStageChange
 
@@ -134,6 +138,12 @@ B59E28 B seadPrintHook // sead::system::print
     B saveWriteHook
 5168F8: GameConfigData::read+124
     BL saveReadHook
+
+// Individual Save file edits
+5279B8: GameDataFile::tryWriteByByaml+ED8
+    BL saveFileWriteHook
+51AB60: GameDataFile::tryReadByamlData+1C38
+    BL saveFileReadHook
 
 // WindowConfirm Edits
 99C758: // WindowConfirmWait:tryEnd+1C (Forces logic to ignore current nerve)
