@@ -1347,10 +1347,7 @@ int Client::getScenario(int worldID)
         return -1;
     }
 
-    GameDataHolderAccessor accessor(sInstance->mCurStageScene);
-
     return sInstance->worldScenarios[worldID];
-
 }
 
 void Client::sendCorrectScenario(const ChangeStageInfo* stageInfo)
