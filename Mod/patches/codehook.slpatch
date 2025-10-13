@@ -145,6 +145,9 @@ B59E28 B seadPrintHook // sead::system::print
 51AB60: GameDataFile::tryReadByamlData+1C38
     BL saveFileReadHook
 
+// Start New Game Edits
+50F344 BL onNewGameDemoStart
+
 // WindowConfirm Edits
 99C758: // WindowConfirmWait:tryEnd+1C (Forces logic to ignore current nerve)
     NOP
