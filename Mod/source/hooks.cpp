@@ -75,7 +75,6 @@ bool saveReadHook(int* padRumbleInt, al::ByamlIter const& saveByml, char const* 
 // DameDataFile::tryReadByamlData line 198
 void saveFileWriteHook(al::ByamlWriter* saveByaml)
 {
-
     for (int i = 0; i < 17; i++) {
         sead::FixedSafeString<16> label;
         label = "World";
