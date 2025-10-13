@@ -135,15 +135,8 @@ void updatePlayerInfo(GameDataHolderAccessor holder, PlayerActorBase* playerBase
         gameInfSendTimer = 0;
     }
 
-    if (checksSyncTimer >= 600)
-    {
-        Client::sendShineChecksPacket();
-        checksSyncTimer = 0;
-    }
-
     pInfSendTimer++;
     gameInfSendTimer++;
-    checksSyncTimer++;
 }
 
 // ------------- Hooks -------------
@@ -565,6 +558,20 @@ void onStageChange(GameDataFile *file,const ChangeStageInfo* stageInfo, int para
 bool isBuyItems(ShopItem::ItemInfo* itemInfo) {
     // Add a collected outfits, gifts, stickers based implementation similar to shinechecks
     return false;
+}
+
+// _ZN16HakoniwaSequence15exeBootLoadDataEv = 0x50F29C - 0x50F304
+void onNewGameDemoStart(GameDataHolder* thisPtr) {
+    for (int i = 0; i < 18; i++) {
+        Client::setScenario(i, 1);
+    }
+
+    for (int i = 0; i < 25; i++) {
+        Client::setShineChecks(i, 0);
+    }
+
+    thisPtr->setRequireSave();
+    return;
 }
 
 void stageInitHook(al::ActorInitInfo *info, StageScene *curScene, al::PlacementInfo const *placement, al::LayoutInitInfo const *lytInfo, al::ActorFactory const *factory, al::SceneMsgCtrl *sceneMsgCtrl, al::GameDataHolderBase *dataHolder) {
