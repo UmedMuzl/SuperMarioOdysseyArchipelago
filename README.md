@@ -30,11 +30,11 @@ WARNING: This mod only works on version 1.0.0 of Super Mario Odyssey.
 - Extract `SMO_Archipelago_Vx.x_Emu.zip` and Place `SMOAP` folder in the mods directory that opened.
 </details>
 
-Connecting to the Connector from Super Mario Odyssey.
+### Connecting to the Connector from Super Mario Odyssey.
 - When prompted, the `IP Address` you are connecting to is your computer's local ipv4 this is found by entering the `ipconfig` command into command prompt on Windows.
 - When prompted, the `Port` is `1027` by default which does not need to be changed.
 
-Using Options that Generate a Patch
+### Using Options that Generate a Patch
 - If a world is generated using options that require additional romFS patches (`shop_sanity`, `colors`, `counts`) then an `<seed><slot><slot_name>.apsmo` file will be generated.
 - To generate the patch files open the patch file with the `Open Patch` option in the Archipelago Launcher.
 - This requires you to have an extracted romfs for Super Mario Odyssey (methods for extracting romfs will not be covered here) which you will be prompted to select the directory of when opening a patch file for the first time.
@@ -55,6 +55,15 @@ Using Options that Generate a Patch
 - Right Click on Super Mario Odyssey in the game menu and select `Open Mod Data Location`.
 - Place `romfs` folder in the `SMOAP` folder that opened and select `Replace the files in the destination` if prompted.
 </details>
+
+### Joining an Archipelago
+- Open the `Super Mario Odyssey Client` from the Archipelago Launcher.
+- If you generated an atmosphere patch using the `.apsmo` file via the `Open Patch` option in the Launcher, then a Client should have also been opened for you automatically.
+- Enter the IP Address of the Archipelago Lobby in the top most text edit.
+- When connecting it should prompt you to enter your slot name in the Client console.
+- Super Mario Odyssey will automatically connect to the Client when opened which should print `SMO Connected` in the Client console.
+- To manually chack if SMO is connected to the client, use the `/smo` command in the client console.
+
 
 Credits
 - [Sanae](https://github.com/sanae6) Author of original server code
