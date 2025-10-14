@@ -59,7 +59,7 @@ void updatePlayerInfo(GameDataHolderAccessor holder, PlayerActorBase* playerBase
 
     if (gameInfSendTimer >= 60) {
         // Check and prevent crashed home softlock
-        if (GameDataFunction::isCrashHome(holder)) {
+        if (GameDataFunction::isBossAttackedHome(holder)) {
             if (strcmp(GameDataFunction::getCurrentStageName(holder), "BossRaidWorldHomeStage") ==
                 0) {
                 int ruinedCount = 0;
@@ -75,9 +75,11 @@ void updatePlayerInfo(GameDataHolderAccessor holder, PlayerActorBase* playerBase
                 }
                 if (ruinedCount < Client::getRaidCount()) {
                     GameDataFunction::repairHome(holder);
+                } else {
+                    GameDataFunction::repairHome(holder);
                 }
             } else {
-                GameDataFunction::repairHome(holder);
+                GameDataFunction::repairHome(holder); 
             }
         }
 
@@ -90,20 +92,21 @@ void updatePlayerInfo(GameDataHolderAccessor holder, PlayerActorBase* playerBase
             if (strcmp(GameDataFunction::getCurrentStageName(holder), "ClashWorldHomeStage") == 0) {
                 int lostCount = 0;
                 for (int i = 1; i < 25; i++) {
-                    if (GameDataFunction::isGotShine(holder, GameDataFunction::getWorldIndexClash(),
-                                                     i))
+                    if (GameDataFunction::isGotShine(holder, GameDataFunction::getWorldIndexClash(), i))
                         lostCount++;
                 }
                 if (lostCount < Client::getClashCount()) {
                     GameDataFunction::repairHome(holder);
                     GameDataFunction::unlockWorld(holder, GameDataFunction::getWorldIndexClash());
-                } else
+                } else {
                     GameDataFunction::crashHome(holder);
+                }
             } else {
                 GameDataFunction::repairHome(holder);
             }
         }
 
+        // Death Link handling
         if (isInGame && !PlayerFunction::isPlayerDeadStatus(playerBase) && Client::isApDeath())
         {
             GameDataFunction::killPlayer(holder);
@@ -131,7 +134,7 @@ void updatePlayerInfo(GameDataHolderAccessor holder, PlayerActorBase* playerBase
         } else {
             Client::sendGameInfPacket((PlayerActorHakoniwa*)playerBase, holder);
         }
-        
+
         gameInfSendTimer = 0;
     }
 
@@ -526,6 +529,7 @@ void onStageChange(GameDataFile *file,const ChangeStageInfo* stageInfo, int para
         if (isPartOf(stageInfo->changeStageName.cstr(), "Clash"))
         {
             Client::sendShineCollectPacket(2501);
+            Client::setScenario(GameDataFunction::getWorldIndexCloud(), 2);
         }
         if (isPartOf(stageInfo->changeStageName.cstr(), "Peach") && stageInfo->scenarioNo > 1)
         {
