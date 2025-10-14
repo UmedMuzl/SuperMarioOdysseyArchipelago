@@ -81,6 +81,7 @@ public:
     static s32 getWorldIndexSand(void);
     static s32 getWorldIndexForest(void);
     static s32 getWorldIndexLake(void);
+    static s32 getWorldIndexCloud(void);
     static s32 getWorldIndexClash(void);
     static s32 getWorldIndexCity(void);
     static s32 getWorldIndexSea(void);
