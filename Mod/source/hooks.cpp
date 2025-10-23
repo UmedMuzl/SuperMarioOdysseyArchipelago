@@ -72,11 +72,11 @@ bool saveReadHook(int* padRumbleInt, al::ByamlIter const& saveByml, char const* 
 
 // GameDataFile::tryWriteByByaml
 // 
-// DameDataFile::tryReadByamlData line 198
+// GameDataFile::tryReadByamlData line 198
 void saveFileWriteHook(al::ByamlWriter* saveByaml)
 {
-    for (int i = 0; i < 17; i++) {
-        sead::FixedSafeString<16> label;
+    for (int i = 0; i < 18; i++) {
+        sead::FixedSafeString<18> label;
         label = "World";
         if (i / 10 > 0) {
             label.append(static_cast<char>(48 + i / 10));
@@ -88,7 +88,7 @@ void saveFileWriteHook(al::ByamlWriter* saveByaml)
 
     for (int i = 0; i < 25; i++)
     {
-        sead::FixedSafeString<14> label;
+        sead::FixedSafeString<15> label;
         label = "ShineChecks";
         if (i / 10 > 0)
         {
@@ -96,6 +96,54 @@ void saveFileWriteHook(al::ByamlWriter* saveByaml)
         }
         label.append(static_cast<char>(48 + i % 10));
         saveByaml->addInt(label.cstr(), Client::getShineChecks(i));
+    }
+
+    for (int i = 0; i < 12; i++)
+    {
+        sead::FixedSafeString<16> label;
+        label = "OutfitChecks";
+        if (i / 10 > 0)
+        {
+            label.append(static_cast<char>(48 + i / 10));
+        }
+        label.append(static_cast<char>(48 + i % 10));
+        saveByaml->addInt(label.cstr(), Client::getOutfitChecks(i));
+    }
+
+    for (int i = 0; i < 4; i++)
+    {
+        sead::FixedSafeString<17> label;
+        label = "StickerChecks";
+        if (i / 10 > 0)
+        {
+            label.append(static_cast<char>(48 + i / 10));
+        }
+        label.append(static_cast<char>(48 + i % 10));
+        saveByaml->addInt(label.cstr(), Client::getStickerChecks(i));
+    }
+
+    for (int i = 0; i < 5; i++)
+    {
+        sead::FixedSafeString<18> label;
+        label = "SouvenirChecks";
+        if (i / 10 > 0)
+        {
+            label.append(static_cast<char>(48 + i / 10));
+        }
+        label.append(static_cast<char>(48 + i % 10));
+        saveByaml->addInt(label.cstr(), Client::getSouvenirChecks(i));
+    }
+
+    for (int i = 0; i < 8; i++)
+    {
+        sead::FixedSafeString<19> label;
+        label = "CaptureChecks";
+        if (i / 10 > 0)
+        {
+            label.append(static_cast<char>(48 + i / 10));
+        }
+        label.append(static_cast<char>(48 + i % 10));
+        saveByaml->addInt(label.cstr(), Client::getCaptureChecks(i));
     }
 
     saveByaml->pop();
@@ -106,8 +154,8 @@ bool saveFileReadHook(al::ByamlIter *saveByaml, bool* firstNetworkBool, char con
 {
     int data = 0;
 
-    for (int i = 0; i < 17; i++) {
-        sead::FixedSafeString<16> label;
+    for (int i = 0; i < 18; i++) {
+        sead::FixedSafeString<18> label;
         label = "World";
         if (i / 10 > 0) {
             label.append(static_cast<char>(48 + i / 10));
@@ -120,7 +168,7 @@ bool saveFileReadHook(al::ByamlIter *saveByaml, bool* firstNetworkBool, char con
     }
 
     for (int i = 0; i < 25; i++) {
-        sead::FixedSafeString<14> label;
+        sead::FixedSafeString<15> label;
         label = "ShineChecks";
         if (i / 10 > 0) {
             label.append(static_cast<char>(48 + i / 10));
@@ -128,6 +176,54 @@ bool saveFileReadHook(al::ByamlIter *saveByaml, bool* firstNetworkBool, char con
         label.append(static_cast<char>(48 + i % 10));
         if (saveByaml->tryGetIntByKey(&data, label.cstr())) {
             Client::setShineChecks(i, data);
+        }
+    }
+
+    for (int i = 0; i < 12; i++) {
+        sead::FixedSafeString<16> label;
+        label = "OutfitChecks";
+        if (i / 10 > 0) {
+            label.append(static_cast<char>(48 + i / 10));
+        }
+        label.append(static_cast<char>(48 + i % 10));
+        if (saveByaml->tryGetIntByKey(&data, label.cstr())) {
+            Client::setOutfitChecks(i, data);
+        }
+    }
+
+    for (int i = 0; i < 4; i++) {
+        sead::FixedSafeString<17> label;
+        label = "StickerChecks";
+        if (i / 10 > 0) {
+            label.append(static_cast<char>(48 + i / 10));
+        }
+        label.append(static_cast<char>(48 + i % 10));
+        if (saveByaml->tryGetIntByKey(&data, label.cstr())) {
+            Client::setStickerChecks(i, data);
+        }
+    }
+
+    for (int i = 0; i < 5; i++) {
+        sead::FixedSafeString<18> label;
+        label = "SouvenirChecks";
+        if (i / 10 > 0) {
+            label.append(static_cast<char>(48 + i / 10));
+        }
+        label.append(static_cast<char>(48 + i % 10));
+        if (saveByaml->tryGetIntByKey(&data, label.cstr())) {
+            Client::setSouvenirChecks(i, data);
+        }
+    }
+
+    for (int i = 0; i < 8; i++) {
+        sead::FixedSafeString<19> label;
+        label = "CaptureChecks";
+        if (i / 10 > 0) {
+            label.append(static_cast<char>(48 + i / 10));
+        }
+        label.append(static_cast<char>(48 + i % 10));
+        if (saveByaml->tryGetIntByKey(&data, label.cstr())) {
+            Client::setCaptureChecks(i, data);
         }
     }
 
