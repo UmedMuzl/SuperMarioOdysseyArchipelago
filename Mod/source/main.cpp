@@ -41,6 +41,8 @@
 static int pInfSendTimer = 0;
 static int gameInfSendTimer = 0;
 static int checksSyncTimer = 0;
+static bool isRecordCapture = false;
+static int updateCounterTimer = 0;
 
 void updatePlayerInfo(GameDataHolderAccessor holder, PlayerActorBase* playerBase, bool isYukimaru) {
     
@@ -53,16 +55,43 @@ void updatePlayerInfo(GameDataHolderAccessor holder, PlayerActorBase* playerBase
 
             Client::sendCaptureInfPacket((PlayerActorHakoniwa*)playerBase);
         }
+        
+        if (Client::getCapturesFlag()) {
+            al::LiveActor* curHack = playerBase->getPlayerHackKeeper()->currentHackActor;
+            const char* hackName = playerBase->getPlayerHackKeeper()->getCurrentHackName();
+            if (hackName != nullptr && !Client::hasCapture(hackName) && isRecordCapture) {
+                if (!al::isActionPlaying(curHack, "HackStartWithTurn") &&
+                    !al::isActionPlaying(curHack, "HackStartShort") &&
+                    !al::isActionPlaying(curHack, "Sleep")) {
+                    if (al::isEqualString(hackName, "TRex")) {
+                        playerBase->getPlayerHackKeeper()->tryEscapeHack();
 
+                    } else {
+                        playerBase->getPlayerHackKeeper()->tryEscapeHack();
+                    }
+                    //
+                    // Client::setMessage(1, al::getActionName(playerBase));
+                    // Client::setMessage(2, al::getActionName(curHack));
+                    // Client::setMessage(3,
+                    // playerBase->getPlayerHackKeeper()->getCurrentHackName());
+                }
+                isRecordCapture = false;
+            }
+        }
         pInfSendTimer = 0;
     }
 
     if (gameInfSendTimer >= 60) {
         // Check and prevent crashed home softlock
         if (GameDataFunction::isBossAttackedHome(holder)) {
+            Client::setMessage(1, GameDataFunction::getCurrentStageName(holder));
             if (strcmp(GameDataFunction::getCurrentStageName(holder), "BossRaidWorldHomeStage") ==
                 0) {
-                int ruinedCount = 0;
+
+                GameDataFunction::repairHomeByCrashedBoss(holder);
+                GameDataFunction::crashHome(holder);
+                // isGotShine crashes game here for some reason
+                /*int ruinedCount = 0;
                 if (GameDataFunction::isGotShine(holder, GameDataFunction::getWorldIndexBoss(),
                                                  0)) {
                     ruinedCount += 3;
@@ -70,22 +99,23 @@ void updatePlayerInfo(GameDataHolderAccessor holder, PlayerActorBase* playerBase
 
                 for (int i = 1; i < 9; i++) {
                     if (GameDataFunction::isGotShine(holder, GameDataFunction::getWorldIndexBoss(),
-                                                     i))
+                                                     i)) {
                         ruinedCount++;
+                    }
                 }
                 if (ruinedCount < Client::getRaidCount()) {
                     GameDataFunction::repairHome(holder);
                 } else {
-                    GameDataFunction::repairHome(holder);
-                }
+                    GameDataFunction::bossAttackHome(holder);
+                }*/
             } else {
                 GameDataFunction::repairHome(holder); 
             }
         }
 
         // Edge case where game repairs odyssey in ruined but doesn't unlock bowser kingdom
-        if (GameDataFunction::isRepairHomeByCrashedBoss(holder))
-            GameDataFunction::unlockWorld(holder, GameDataFunction::getWorldIndexSky());
+        /*if (GameDataFunction::isRepairHomeByCrashedBoss(holder))
+            GameDataFunction::unlockWorld(holder, GameDataFunction::getWorldIndexSky());*/
 
         // Check for lost kingdom softlock state
         if (GameDataFunction::isCrashHome(holder)) {
@@ -129,6 +159,12 @@ void updatePlayerInfo(GameDataHolderAccessor holder, PlayerActorBase* playerBase
             Client::setDying(false);
         }
 
+        if (isInGame && updateCounterTimer == 1800)
+        {
+            Client::startShineCount();
+            updateCounterTimer = 0;
+        }
+
         if (isYukimaru) {
             Client::sendGameInfPacket(holder);
         } else {
@@ -140,6 +176,7 @@ void updatePlayerInfo(GameDataHolderAccessor holder, PlayerActorBase* playerBase
 
     pInfSendTimer++;
     gameInfSendTimer++;
+    updateCounterTimer++;
 }
 
 // ------------- Hooks -------------
@@ -500,6 +537,7 @@ void sendShinePacket(GameDataHolderAccessor thisPtr, Shine* curShine) {
 void sendItemPacket(GameDataFile thisPtr, ShopItem::ItemInfo* info, bool flag) {
 
     Client::sendItemCollectPacket(info->mName, (int)info->mType);
+    Client::addItem(info);
     //thisPtr.buyItem(info, flag);
 }
 
@@ -526,22 +564,11 @@ void onStageChange(GameDataFile *file,const ChangeStageInfo* stageInfo, int para
 {
     if (isPartOf(stageInfo->changeStageName.cstr(), "WorldHomeStage"))
     {
-        if (isPartOf(stageInfo->changeStageName.cstr(), "Clash"))
-        {
-            Client::sendShineCollectPacket(2501);
-            Client::setScenario(GameDataFunction::getWorldIndexCloud(), 2);
-        }
-        if (isPartOf(stageInfo->changeStageName.cstr(), "Peach") && stageInfo->scenarioNo > 1)
-        {
-            Client::setScenario(GameDataFunction::getWorldIndexPeach(), 2);
-            Client::sendShineCollectPacket(2500);
-        }
-
         if (Client::getScenario(stageInfo->changeStageName.cstr()) != stageInfo->scenarioNo)
         {
             if (isPartOf(stageInfo->changeStageName.cstr(), "Sand")) {
                 Client::setScenario(GameDataFunction::getWorldIndexHat(), 2);
-                Client::setScenario(GameDataFunction::getWorldIndexWaterfall(), 3);
+                //Client::setScenario(GameDataFunction::getWorldIndexWaterfall(), 3);
             }
             if (isPartOf(stageInfo->changeStageName.cstr(), "City")) {
                 Client::setScenario(GameDataFunction::getWorldIndexClash(), 2);
@@ -561,11 +588,30 @@ void onStageChange(GameDataFile *file,const ChangeStageInfo* stageInfo, int para
 
 bool isBuyItems(ShopItem::ItemInfo* itemInfo) {
     // Add a collected outfits, gifts, stickers based implementation similar to shinechecks
-    return false;
+    
+    return Client::hasItem(itemInfo);
+}
+
+//isExistInHackDictionary for capture tracking
+void onAddHack(GameDataHolderWriter writer,const char* hackName)
+{
+    if (Client::getCapturesFlag()) {
+        //Client::setMessage(1, hackName);
+        Client::sendShineCollectPacket(getIndexCaptureList(hackName) + 3700);
+        isRecordCapture = true;
+    } else {
+        GameDataFunction::addHackDictionary(writer, hackName);
+    }
+}
+
+void onStartHack(PlayerHackKeeper* keeper, al::HitSensor* hitSensor1, al::HitSensor* hitSensor2, al::LiveActor* actor) 
+{
+    keeper->startHack(hitSensor1, hitSensor2, actor);
 }
 
 // _ZN16HakoniwaSequence15exeBootLoadDataEv = 0x50F29C - 0x50F304
-void onNewGameDemoStart(GameDataHolder* thisPtr) {
+void onNewGameDemoStart(al::LiveActor* thisPtr, al::ActorInitInfo const& info, sead::SafeStringBase<char> const& str,
+                        char const* name) {
     for (int i = 0; i < 18; i++) {
         Client::setScenario(i, 1);
     }
@@ -574,7 +620,44 @@ void onNewGameDemoStart(GameDataHolder* thisPtr) {
         Client::setShineChecks(i, 0);
     }
 
-    thisPtr->setRequireSave();
+    for (int i = 0; i < 12; i++) {
+        Client::setOutfitChecks(i, 0);
+    }
+
+    for (int i = 0; i < 4; i++) {
+        Client::setStickerChecks(i, 0);
+    }
+
+    for (int i = 0; i < 5; i++) {
+        Client::setSouvenirChecks(i, 0);
+    }
+
+    for (int i = 0; i < 8; i++) {
+        Client::setCaptureChecks(i, 0);
+    }
+
+    al::initActorWithArchiveName(thisPtr, info, str, name);
+    return;
+}
+
+// First time entering lost in demo from cloud
+void onUnlockLost(GameDataHolderWriter writer, int worldIndex)
+{
+    // Send Beat Bowser in Cloud location
+    Client::sendShineCollectPacket(2501);
+    Client::setScenario(GameDataFunction::getWorldIndexCloud(), 2);
+    
+    GameDataFunction::unlockWorld(writer, worldIndex);
+
+    return;
+}
+
+void onCreditsStart(al::Scene* thisPtr, const al::SceneInitInfo info) {
+
+    Client::setScenario(GameDataFunction::getWorldIndexPeach(), 2);
+    Client::sendShineCollectPacket(2500);
+    
+    thisPtr->initDrawSystemInfo(info);
     return;
 }
 
