@@ -5,4 +5,5 @@ class GameProgressData {
         int getHomeLevel(void) const;
         void upHomeLevel(void);
         void talkCapNearHomeInWaterfall(void);
+        void crashHome();
 };
