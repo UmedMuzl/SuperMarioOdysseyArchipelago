@@ -62,6 +62,10 @@ Client::Client() {
     
     worldScenarios.fill(1);
     collectedShines.fill(0);
+    collectedOutfits.fill(0);
+    collectedStickers.fill(0);
+    collectedSouvenirs.fill(0);
+    collectedCaptures.fill(0);
 
     mUserID.print();
 
@@ -1149,6 +1153,10 @@ void Client::sendToStage(ChangeStagePacket* packet) {
 
         GameDataHolderAccessor accessor(mSceneInfo->mSceneObjHolder);
 
+        if (packet->scenarioNo > 0) {
+            setScenario(accessor.mData->mWorldList->tryFindWorldIndexByStageName(packet->changeStage), packet->scenarioNo);
+        }
+
         Logger::log("Sending Player to %s at Entrance %s in Scenario %d\n", packet->changeStage,
                      packet->changeID, packet->scenarioNo);
         
@@ -1444,6 +1452,327 @@ void Client::setShineChecks(int index, int checks)
     sInstance->collectedShines[index] = checks;
 }
 
+void Client::addOutfit(const ShopItem::ItemInfo *info)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+
+    int index = getIndexCostumeList(info->mName) + 44 * static_cast<int>(info->mType);
+
+    int outfits = sInstance->collectedOutfits[index / 8];
+
+    int curIndex = (index / 8) * 8;
+    int i = 1;
+    while (i < 0x80) {
+        if (curIndex == index) {
+            outfits = outfits | i;
+            break;
+        }
+        i = i << 1;
+        curIndex += 1;
+    }
+
+
+    sInstance->collectedOutfits[index / 8] = outfits;
+}
+
+bool Client::hasOutfit(const ShopItem::ItemInfo *info)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return false;
+    }
+
+    int index = getIndexCostumeList(info->mName) + 44 * static_cast<int>(info->mType);
+
+    u8 outfits = sInstance->collectedOutfits[index / 8];
+
+    int curIndex = (index / 8) * 8;
+    int i = 1;
+    while (i < 0x80) {
+        if (curIndex == index) {
+            outfits = outfits & i;
+            return (outfits == i);
+        }
+        i = i << 1;
+        curIndex += 1;
+    }
+}
+
+int Client::getOutfitChecks(int index)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return 0;
+    }
+
+    return static_cast<int>(sInstance->collectedOutfits[index]);
+}
+
+void Client::setOutfitChecks(int index, int checks) {
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+    u8 u8Checks = static_cast<u8>(checks);
+    sInstance->collectedOutfits[index] = u8Checks;
+}
+
+void Client::addSticker(const ShopItem::ItemInfo *info)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+
+    int index = getIndexStickerList(info->mName);
+
+    int stickers = sInstance->collectedStickers[index / 8];
+
+    int curIndex = (index / 8) * 8;
+    int i = 1;
+    while (i < 0x80) {
+        if (curIndex == index) {
+            stickers = stickers | i;
+            break;
+        }
+        i = i << 1;
+        curIndex += 1;
+    }
+
+
+    sInstance->collectedStickers[index / 8] = stickers;
+}
+
+bool Client::hasSticker(const ShopItem::ItemInfo *info)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return false;
+    }
+
+    int index = getIndexStickerList(info->mName);
+
+    u8 stickers = sInstance->collectedStickers[index / 8];
+
+    int curIndex = (index / 8) * 8;
+    int i = 1;
+    while (i < 0x80) {
+        if (curIndex == index) {
+            stickers = stickers & i;
+            return (stickers == i);
+        }
+        i = i << 1;
+        curIndex += 1;
+    }
+}
+
+int Client::getStickerChecks(int index) {
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return 0;
+    }
+
+    return static_cast<int>(sInstance->collectedStickers[index]);
+}
+
+void Client::setStickerChecks(int index, int checks) {
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+    u8 u8Checks = static_cast<u8>(checks);
+    sInstance->collectedStickers[index] = u8Checks;
+}
+
+void Client::addSouvenir(const ShopItem::ItemInfo *info)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+
+    int index = getIndexSouvenirList(info->mName);
+
+    int souvenirs = sInstance->collectedSouvenirs[index / 8];
+
+    int curIndex = (index / 8) * 8;
+    int i = 1;
+    while (i < 0x80) {
+        if (curIndex == index) {
+            souvenirs = souvenirs | i;
+            break;
+        }
+        i = i << 1;
+        curIndex += 1;
+    }
+
+
+    sInstance->collectedSouvenirs[index / 8] = souvenirs;
+}
+
+bool Client::hasSouvenir(const ShopItem::ItemInfo *info)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return false;
+    }
+
+    int index = getIndexSouvenirList(info->mName);
+
+    u8 souvenirs = sInstance->collectedSouvenirs[index / 8];
+
+    int curIndex = (index / 8) * 8;
+    int i = 1;
+    while (i < 0x80) {
+        if (curIndex == index) {
+            souvenirs = souvenirs & i;
+            return (souvenirs == i);
+        }
+        i = i << 1;
+        curIndex += 1;
+    }
+}
+
+int Client::getSouvenirChecks(int index) {
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return 0;
+    }
+
+    return static_cast<int>(sInstance->collectedSouvenirs[index]);
+}
+
+void Client::setSouvenirChecks(int index, int checks) {
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+    u8 u8Checks = static_cast<u8>(checks);
+    sInstance->collectedSouvenirs[index] = u8Checks;
+}
+
+bool Client::hasItem(const ShopItem::ItemInfo* info)
+{
+    switch (info->mType)
+    { 
+        case ShopItem::ItemType::Cap:
+            return hasOutfit(info);
+        case ShopItem::ItemType::Cloth:
+            return hasOutfit(info);
+        case ShopItem::ItemType::Sticker:
+            return hasSticker(info);
+        case ShopItem::ItemType::Gift:
+            return hasSouvenir(info);
+        default:
+            // Moon and useitem
+            return false;
+    }
+}
+
+void Client::addItem(const ShopItem::ItemInfo* info)
+{
+    switch (info->mType)
+    { 
+        case ShopItem::ItemType::Cap:
+            addOutfit(info);
+            break;
+        case ShopItem::ItemType::Cloth:
+            addOutfit(info);
+            break;
+        case ShopItem::ItemType::Sticker:
+            addSticker(info);
+            break;
+        case ShopItem::ItemType::Gift:
+            addSouvenir(info);
+            break;
+        default:
+            // Moon and useitem
+            break;
+    }
+}
+
+void Client::addCapture(const char *capture)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+
+    int index = getIndexCaptureList(capture);
+
+    int checkedCaptures = sInstance->collectedCaptures[index / 8];
+
+    int curIndex = (index / 8) * 8;
+    int i = 1;
+    while (i < 0x80) {
+        if (curIndex == index) {
+            checkedCaptures = checkedCaptures | i;
+            break;
+        }
+        i = i << 1;
+        curIndex += 1;
+    }
+
+
+    sInstance->collectedCaptures[index / 8] = checkedCaptures;
+}
+
+bool Client::hasCapture(const char* capture) {
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return false;
+    }
+
+    int index = getIndexCaptureList(capture);
+    if (index == -1)
+    {
+        return false;
+    }
+
+    u8 checkedCaptures = sInstance->collectedCaptures[index / 8];
+
+    int curIndex = (index / 8) * 8;
+    int i = 1;
+    while (i < 0x80) {
+        if (curIndex == index) {
+            checkedCaptures = checkedCaptures & i;
+            return (checkedCaptures == i);
+        }
+        i = i << 1;
+        curIndex += 1;
+    }
+}
+
+int Client::getCaptureChecks(int index) {
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return 0;
+    }
+
+    return static_cast<int>(sInstance->collectedCaptures[index]);
+}
+
+void Client::setCaptureChecks(int index, int checks) {
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+
+    u8 u8Checks = static_cast<u8>(checks);
+    sInstance->collectedCaptures[index] = u8Checks;
+}
+
+void Client::startShineCount() {
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+    sInstance->mCurStageScene->mSceneLayout->startShineCountAnim(false);
+}
+
 void Client::setMessage(int num, const char* msg)
 {
     if (!sInstance) {
@@ -1626,7 +1955,7 @@ void Client::updateShines() {
     }
     
     sInstance->resetCollectedShines();
-    sInstance->mCurStageScene->mSceneLayout->startShineCountAnim(false);
+    startShineCount();
     sInstance->mCurStageScene->mSceneLayout->updateCounterParts(); // updates shine chip layout to (maybe) prevent softlocks
 }
 
@@ -1735,6 +2064,7 @@ void Client::updateCounts(ShineCounts* packet)
     sInstance->clashCount = packet->clash;
     sInstance->raidCount = packet->raid;
     sInstance->regionals = packet->regionals;
+    sInstance->captures = packet->captures;
 }
 
 void Client::updateWorlds(UnlockWorld* packet)
