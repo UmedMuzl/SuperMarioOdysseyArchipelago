@@ -98,6 +98,46 @@ bool isInCostumeList(const char *costumeName) {
     return false;
 }
 
+int getIndexCostumeList(const char *costumeName) {
+    for (size_t i = 0; i < sizeof(costumeNames)/sizeof(costumeNames[0]); i++)
+    {
+        if(al::isEqualString(costumeNames[i], costumeName)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int getIndexStickerList(const char *stickerName) {
+    for (size_t i = 0; i < sizeof(stickerNames)/sizeof(stickerNames[0]); i++)
+    {
+        if (al::isEqualString(stickerNames[i], stickerName)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int getIndexSouvenirList(const char *souvenirName) {
+    for (size_t i = 0; i < sizeof(souvenirNames) / sizeof(souvenirNames[0]); i++)
+    {
+        if (al::isEqualString(souvenirNames[i], souvenirName)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int getIndexCaptureList(const char *captureName) {
+    for (size_t i = 0; i < sizeof(captureListNames) / sizeof(captureListNames[0]); i++)
+    {
+        if (al::isEqualString(captureListNames[i], captureName)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 const char *tryGetPuppetCapName(PuppetInfo *info) {
     if(info->costumeHead && isInCostumeList(info->costumeHead)) {
         return info->costumeHead;
