@@ -85,4 +85,5 @@ namespace rs {
     int getStageShineAnimFrame(al::LiveActor const*, char const*);
     const char* getStageShineArchiveName(al::LiveActor const*, char const*);
     const char* getStageShineEmptyArchiveName(al::LiveActor const*, char const*);
-}
+    void createSaveObjInfoWriteSaveData(al::ActorInitInfo const&);
+   }
