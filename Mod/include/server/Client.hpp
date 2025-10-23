@@ -162,6 +162,29 @@ class Client {
         static void setShineChecks(int index, int checks);
         static void sendShineChecksPacket();
 
+        static void addOutfit(const ShopItem::ItemInfo* info);
+        static bool hasOutfit(const ShopItem::ItemInfo* info);
+        static int getOutfitChecks(int index);
+        static void setOutfitChecks(int index, int checks);
+
+        static void addSticker(const ShopItem::ItemInfo* info);
+        static bool hasSticker(const ShopItem::ItemInfo* info);
+        static int getStickerChecks(int index);
+        static void setStickerChecks(int index, int checks);
+
+        static void addSouvenir(const ShopItem::ItemInfo* info);
+        static bool hasSouvenir(const ShopItem::ItemInfo* info);
+        static int getSouvenirChecks(int index);
+        static void setSouvenirChecks(int index, int checks);
+
+        static bool hasItem(const ShopItem::ItemInfo* info);
+        static void addItem(const ShopItem::ItemInfo* info);
+
+        static void addCapture(const char* capture);
+        static bool hasCapture(const char* capture);
+        static int getCaptureChecks(int index);
+        static void setCaptureChecks(int index, int checks);
+
         static void setMessage(int num, const char* msg);
 
         static Keyboard* getKeyboard();
@@ -179,6 +202,7 @@ class Client {
         static ushort getClashCount() { return sInstance ? sInstance->clashCount : 10; }
         static ushort getRaidCount() { return sInstance ? sInstance->raidCount : 3; }
         static bool getRegionalsFlag() { return sInstance ? sInstance->regionals : false; }
+        static bool getCapturesFlag() { return sInstance ? sInstance->captures : false; }
 
         static void setStageInfo(GameDataHolderAccessor holder);
         static void sendStage(GameDataHolderWriter writer, const ChangeStageInfo* stageInfo);
@@ -187,6 +211,8 @@ class Client {
         static void setApDeath(bool value);
         static bool isDying() { return sInstance ? sInstance->dying : false; }
         static bool isApDeath() { return sInstance ? sInstance->apDeath : false; }
+
+        static void startShineCount();
 
         static void setLastUsedIP(const char* ip);
 
@@ -267,6 +293,7 @@ class Client {
         ushort clashCount = 10;
         ushort raidCount = 3;
         bool regionals = false;
+        bool captures = false;
         sead::SafeArray<int, 17> worldScenarios;
         bool dying = false;
         bool apDeath = false;
@@ -274,7 +301,17 @@ class Client {
         // List of 23 ints to track which shine's have been grabbed
         sead::SafeArray<int, 24> collectedShines;
 
-        // Do the same for outfits, stickers, and souvenirs 
+        // List of 11 u8s for tracking which caps and clothes have been grabbed
+        sead::SafeArray<u8, 11> collectedOutfits;
+
+        // List of 3 u8s for tracking which stickers have been grabbed
+        sead::SafeArray<u8, 3> collectedStickers;
+
+        // List of 4 u8s for tracking which souvenirs have been grabbed
+        sead::SafeArray<u8, 4> collectedSouvenirs;
+        
+        // List of 7 u8s for tracking which captures have been grabbed
+        sead::SafeArray<u8, 7> collectedCaptures;
 
         // Backups for our last player/game packets, used for example to re-send them for newly connected clients
         PlayerInf lastPlayerInfPacket = PlayerInf();
