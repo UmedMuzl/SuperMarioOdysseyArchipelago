@@ -75,6 +75,8 @@ public:
     // checks save file if shine is collected using the shines stage and obj ID
     static bool isGotShine(GameDataHolderAccessor, const char *stageName, const char *objID);
 
+
+
     // Gets Index for X Kingdom
     static s32 getWorldIndexHat(void);
     static s32 getWorldIndexWaterfall(void);
@@ -101,6 +103,8 @@ public:
     static bool isEnableCap(GameDataHolderAccessor);
     // enables cappy if not enabled already
     static void enableCap(GameDataHolderWriter);
+
+    static void addHackDictionary(GameDataHolderWriter, const char*);
 
     // kills the player
     static void killPlayer(GameDataHolderWriter);
