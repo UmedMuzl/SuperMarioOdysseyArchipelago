@@ -36,7 +36,6 @@ namespace al
     class ActorPrePassLightKeeper;
     class ActorOcclusionKeeper;
     class LiveActorFlag;
-
     class ActorInitInfo;
     class HitSensor;
     class SensorMsg;
@@ -125,4 +124,10 @@ namespace al
         al::ActorSceneInfo *mSceneInfo;                        // 0xF8
         al::LiveActorFlag *mLiveActorFlag;                     // 0x100
     };
+};
+
+class alAnimFunction {
+
+public:
+    static bool isAllAnimEnd(al::LiveActor const*, int);
 };
