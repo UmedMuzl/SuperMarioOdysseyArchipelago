@@ -89,7 +89,7 @@ class Shine : public al::LiveActor , public IUseDimension {
         int dword360;
         int dword364;
         int dword368;
-        bool mIsPowerStar;
+        bool mIsPowerStar; // 0x36c
         bool mIsAppearDemoHeightHigh;
         void * qword370;
         u16 word378;
