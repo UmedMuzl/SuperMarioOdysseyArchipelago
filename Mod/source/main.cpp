@@ -159,7 +159,7 @@ void updatePlayerInfo(GameDataHolderAccessor holder, PlayerActorBase* playerBase
             Client::setDying(false);
         }
 
-        if (isInGame && updateCounterTimer == 1800)
+        if (isInGame && updateCounterTimer >= 1800)
         {
             Client::startShineCount();
             updateCounterTimer = 0;
@@ -562,25 +562,28 @@ void onGrandShineStageChange(GameDataHolderWriter holder, ChangeStageInfo const*
 
 void onStageChange(GameDataFile *file,const ChangeStageInfo* stageInfo, int param2)
 {
-    if (isPartOf(stageInfo->changeStageName.cstr(), "WorldHomeStage"))
-    {
-        if (Client::getScenario(stageInfo->changeStageName.cstr()) != stageInfo->scenarioNo)
-        {
-            if (isPartOf(stageInfo->changeStageName.cstr(), "Sand")) {
-                Client::setScenario(GameDataFunction::getWorldIndexHat(), 2);
-                //Client::setScenario(GameDataFunction::getWorldIndexWaterfall(), 3);
+    //Client::setMessage(1, stageInfo->changeStageId.cstr());
+    if (!al::isEqualString(stageInfo->changeStageId.cstr(), "obj846") &&
+        !al::isEqualString(stageInfo->changeStageId.cstr(), "obj1084")) {
+        if (isPartOf(stageInfo->changeStageName.cstr(), "WorldHomeStage")) {
+            if (Client::getScenario(stageInfo->changeStageName.cstr()) != stageInfo->scenarioNo) {
+                if (isPartOf(stageInfo->changeStageName.cstr(), "Sand")) {
+                    Client::setScenario(GameDataFunction::getWorldIndexHat(), 2);
+                    // Client::setScenario(GameDataFunction::getWorldIndexWaterfall(), 3);
+                }
+                if (isPartOf(stageInfo->changeStageName.cstr(), "City")) {
+                    Client::setScenario(GameDataFunction::getWorldIndexClash(), 2);
+                }
+                Client::sendCorrectScenario(stageInfo);
+            } else {
+                file->changeNextStage(stageInfo, param2);
             }
-            if (isPartOf(stageInfo->changeStageName.cstr(), "City")) {
-                Client::setScenario(GameDataFunction::getWorldIndexClash(), 2);
-            }
-            Client::sendCorrectScenario(stageInfo);
-        }
-        else
-        {
+        } else {
+            // Non world transitions
             file->changeNextStage(stageInfo, param2);
         }
     } else {
-        // Non world transitions
+        // Catch cap and cascade shop moons
         file->changeNextStage(stageInfo, param2);
     }
     
