@@ -1486,6 +1486,10 @@ bool Client::hasOutfit(const ShopItem::ItemInfo *info)
     }
 
     int index = getIndexCostumeList(info->mName) + 44 * static_cast<int>(info->mType);
+    if (index == -1) {
+        //setMessage(2, info->mName);
+        return false;
+    }
 
     u8 outfits = sInstance->collectedOutfits[index / 8];
 
@@ -1554,6 +1558,10 @@ bool Client::hasSticker(const ShopItem::ItemInfo *info)
     }
 
     int index = getIndexStickerList(info->mName);
+    if (index == -1) {
+        //setMessage(2, info->mName);
+        return false;
+    }
 
     u8 stickers = sInstance->collectedStickers[index / 8];
 
@@ -1621,6 +1629,10 @@ bool Client::hasSouvenir(const ShopItem::ItemInfo *info)
     }
 
     int index = getIndexSouvenirList(info->mName);
+    if (index == -1) {
+        //setMessage(2, info->mName);
+        return false;
+    }
 
     u8 souvenirs = sInstance->collectedSouvenirs[index / 8];
 
@@ -1656,15 +1668,15 @@ void Client::setSouvenirChecks(int index, int checks) {
 
 bool Client::hasItem(const ShopItem::ItemInfo* info)
 {
-    switch (info->mType)
+    switch (static_cast<int>(info->mType))
     { 
-        case ShopItem::ItemType::Cap:
+        case 1:
             return hasOutfit(info);
-        case ShopItem::ItemType::Cloth:
+        case 0:
             return hasOutfit(info);
-        case ShopItem::ItemType::Sticker:
+        case 3:
             return hasSticker(info);
-        case ShopItem::ItemType::Gift:
+        case 2:
             return hasSouvenir(info);
         default:
             // Moon and useitem
@@ -1674,18 +1686,17 @@ bool Client::hasItem(const ShopItem::ItemInfo* info)
 
 void Client::addItem(const ShopItem::ItemInfo* info)
 {
-    switch (info->mType)
-    { 
-        case ShopItem::ItemType::Cap:
+    switch (static_cast<int>(info->mType)) {
+        case 1:
             addOutfit(info);
             break;
-        case ShopItem::ItemType::Cloth:
+        case 0:
             addOutfit(info);
             break;
-        case ShopItem::ItemType::Sticker:
+        case 3:
             addSticker(info);
             break;
-        case ShopItem::ItemType::Gift:
+        case 2:
             addSouvenir(info);
             break;
         default:
