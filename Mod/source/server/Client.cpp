@@ -1296,6 +1296,8 @@ void Client::sendStage(GameDataHolderWriter writer, const ChangeStageInfo* stage
     {
         GameDataHolderAccessor accessor(sInstance->mCurStageScene);
 
+        setScenario(stageInfo->changeStageName.cstr(), stageInfo->scenarioNo);
+
         if (GameDataFunction::getWorldIndexWaterfall() ==
             GameDataFunction::getCurrentWorldId(accessor)
                  || GameDataFunction::isUnlockedCurrentWorld(accessor)) {
@@ -1327,6 +1329,22 @@ void Client::setScenario(int worldID, int scenario)
     sendProgressWorldPacket(worldID, scenario);
     sInstance->worldScenarios[worldID] = scenario;
 
+}
+
+bool Client::setScenario(const char* worldName, int scenario) {
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return false;
+    }
+
+    GameDataHolderAccessor accessor(sInstance->mCurStageScene);
+
+    int worldID = accessor.mData->mWorldList->tryFindWorldIndexByStageName(worldName);
+    if (accessor.mData->mWorldList->getMoonRockScenarioNo(worldID) <= scenario && scenario >= 1) {
+        setScenario(worldID, scenario);
+        return true;
+    }
+    return false;
 }
 
 int Client::getScenario(const char* worldName)
@@ -1379,6 +1397,7 @@ void Client::sendCorrectScenario(const ChangeStageInfo* stageInfo)
         48 + accessor.mData->mWorldList->tryFindWorldIndexByStageName(stageInfo->changeStageName.cstr()));
     sInstance->apChatLine2 = str2;*/
 
+    // try changing isReturn (param_4)
     ChangeStageInfo info(accessor.mData, stageInfo->changeStageId.cstr(),
                          stageInfo->changeStageName.cstr(),
                          false,
