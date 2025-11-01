@@ -151,7 +151,8 @@ class Client {
             return nullptr;
         }
 
-        static void setScenario(int worldID, int scnenario);
+        static void setScenario(int worldID, int scenario);
+        static bool setScenario(const char* worldName, int scenario);
         static int getScenario(const char* worldName);
         static int getScenario(int worldID);
         static void sendCorrectScenario(const ChangeStageInfo* info);
