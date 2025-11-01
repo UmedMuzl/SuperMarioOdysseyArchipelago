@@ -114,8 +114,9 @@ void updatePlayerInfo(GameDataHolderAccessor holder, PlayerActorBase* playerBase
         }
 
         // Edge case where game repairs odyssey in ruined but doesn't unlock bowser kingdom
-        /*if (GameDataFunction::isRepairHomeByCrashedBoss(holder))
-            GameDataFunction::unlockWorld(holder, GameDataFunction::getWorldIndexSky());*/
+        if (GameDataFunction::isRepairHomeByCrashedBoss(holder)) {
+            GameDataFunction::unlockWorld(holder, GameDataFunction::getWorldIndexSky());
+        }
 
         // Check for lost kingdom softlock state
         if (GameDataFunction::isCrashHome(holder)) {
@@ -455,6 +456,7 @@ void sendShinePacket(GameDataHolderAccessor thisPtr, Shine* curShine) {
     // Add some way to sync shinechecks grabbed before connecting, probably handle on connect or something
     Client::addShine(curHintInfo->mUniqueID);
 
+    /*
     switch (curHintInfo->mUniqueID) {
     //Cascade
         case 218:
@@ -531,7 +533,7 @@ void sendShinePacket(GameDataHolderAccessor thisPtr, Shine* curShine) {
             break;
 
     }
-
+    */
 }
 
 void sendItemPacket(GameDataFile thisPtr, ShopItem::ItemInfo* info, bool flag) {
@@ -563,19 +565,22 @@ void onGrandShineStageChange(GameDataHolderWriter holder, ChangeStageInfo const*
 void onStageChange(GameDataFile *file,const ChangeStageInfo* stageInfo, int param2)
 {
     //Client::setMessage(1, stageInfo->changeStageId.cstr());
+    // Add Wooded shop moon warp
     if (!al::isEqualString(stageInfo->changeStageId.cstr(), "obj846") &&
         !al::isEqualString(stageInfo->changeStageId.cstr(), "obj1084")) {
         if (isPartOf(stageInfo->changeStageName.cstr(), "WorldHomeStage")) {
-            if (Client::getScenario(stageInfo->changeStageName.cstr()) != stageInfo->scenarioNo) {
-                if (isPartOf(stageInfo->changeStageName.cstr(), "Sand")) {
-                    Client::setScenario(GameDataFunction::getWorldIndexHat(), 2);
-                    // Client::setScenario(GameDataFunction::getWorldIndexWaterfall(), 3);
-                }
-                if (isPartOf(stageInfo->changeStageName.cstr(), "City")) {
-                    Client::setScenario(GameDataFunction::getWorldIndexClash(), 2);
-                }
+            if (Client::setScenario(stageInfo->changeStageName.cstr(), stageInfo->scenarioNo)) {
+                //if (isPartOf(stageInfo->changeStageName.cstr(), "Sand")) {
+                //    Client::setScenario(GameDataFunction::getWorldIndexHat(), 2);
+                //    // Client::setScenario(GameDataFunction::getWorldIndexWaterfall(), 3);
+                //}
+                //if (isPartOf(stageInfo->changeStageName.cstr(), "City")) {
+                //    Client::setScenario(GameDataFunction::getWorldIndexClash(), 2);
+                //}
+                
                 Client::sendCorrectScenario(stageInfo);
             } else {
+                
                 file->changeNextStage(stageInfo, param2);
             }
         } else {
@@ -648,7 +653,7 @@ void onUnlockLost(GameDataHolderWriter writer, int worldIndex)
 {
     // Send Beat Bowser in Cloud location
     Client::sendShineCollectPacket(2501);
-    Client::setScenario(GameDataFunction::getWorldIndexCloud(), 2);
+    //Client::setScenario(GameDataFunction::getWorldIndexCloud(), 2);
     
     GameDataFunction::unlockWorld(writer, worldIndex);
 
@@ -657,7 +662,7 @@ void onUnlockLost(GameDataHolderWriter writer, int worldIndex)
 
 void onCreditsStart(al::Scene* thisPtr, const al::SceneInitInfo info) {
 
-    Client::setScenario(GameDataFunction::getWorldIndexPeach(), 2);
+    //Client::setScenario(GameDataFunction::getWorldIndexPeach(), 2);
     Client::sendShineCollectPacket(2500);
     
     thisPtr->initDrawSystemInfo(info);
