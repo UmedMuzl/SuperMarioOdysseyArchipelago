@@ -83,8 +83,33 @@ B59E28 B seadPrintHook // sead::system::print
 1CD870 LDR X1, [X19, #0x290]
 1CD878 BL isGrabShine
 
+// Shine::isGot()
+//1D06CC BL isGrabShine
+
+// GameDataFunction::isGotShine(Shine*)
+//1D06CC BL isGrabShine
+
+// SnowWorldSequenceFlagCheckObj::exeWait()
+325D00 BL isGrabShine
+325D1C BL isGrabShine
+325D38 BL isGrabShine
+325D54 BL isGrabShine
+
+// SessionMusicianLocalFunction::isAlreadySessionMember()
+3C2418 BL isGrabShine
+
+// Don't know if this is need I assume its for linked shines like chests
+// EventFlowNodeCheckGetLinkShine::getNextId()
+//1B57CC BL isGrabShine
+
+// TokimekiMayorNpc::init()
+3E930C BL isGrabShine
+
 // GameDataHolder::changeNextStage()
 52F71C BL onStageChange
+
+// GameDataFile::ChangeNextStageWithDemoWorldWarp()
+51DA40 BL onStageChange
 
 // Skip Shine Demo
 // PlayerActorHakoniwa::startDemoShineGet()
