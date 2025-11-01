@@ -41,7 +41,7 @@ class Shine : public al::LiveActor , public IUseDimension {
         ShineType mModelType; // 0x1A0
         void * qword1A8;
         bool byte1B0;
-        void * qword1B8;
+        ChangeStageInfo* stageInfo; // 0x1B8
         int dword1C0;
         int dword1C4;
         sead::FixedSafeString<0x80> mShineLabel;
