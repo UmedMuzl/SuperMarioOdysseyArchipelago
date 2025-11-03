@@ -146,6 +146,8 @@ void saveFileWriteHook(al::ByamlWriter* saveByaml)
         saveByaml->addInt(label.cstr(), Client::getCaptureChecks(i));
     }
 
+    saveByaml->addInt("CheckIndex", Client::getCheckIndex());
+
     saveByaml->pop();
    
 }
@@ -225,6 +227,10 @@ bool saveFileReadHook(al::ByamlIter *saveByaml, bool* firstNetworkBool, char con
         if (saveByaml->tryGetIntByKey(&data, label.cstr())) {
             Client::setCaptureChecks(i, data);
         }
+    }
+
+    if (saveByaml->tryGetIntByKey(&data, "CheckIndex")) {
+        Client::setCheckIndex(data);
     }
 
     return saveByaml->tryGetBoolByKey(firstNetworkBool, firstNetworkKey);
