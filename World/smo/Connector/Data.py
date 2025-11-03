@@ -1,12 +1,3 @@
-
-class Goal:
-    item : int
-    item_index : int
-
-    def __init__(self, item : int, item_index : int):
-        self.item = item
-        self.item_index = item_index
-
 shop_items = {
     "MarioInvisibleCap" : 2502,
     "MarioCaptainCap" : 2503,
@@ -2769,13 +2760,13 @@ valid_warps = {
 }
 
 goals = {
-    4: Goal(27,3),
-    5: Goal(29,  0),
-    9: Goal(30,6),
-    12: Goal(33, 4),
-    14: Goal(39, item_index=-1),
-    17: Goal(38, 0),
-    18: Goal(17, 0)
+    4: 560,
+    5: 424,
+    9: 95,
+    12: 290,
+    14: 2500,
+    17: 1055,
+    18: 1061
 }
 
 def get_item_type(item : int) -> int:
