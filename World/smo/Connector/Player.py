@@ -153,10 +153,9 @@ class SMOPlayer:
             case _:
                 return [self.messages.pop(0), self.messages[0], self.messages[1]]
 
-    def check_goal(self, item : NetworkItem) -> bool:
-        if goals[self.goal].item == item.item:
-            if goals[self.goal].item_index == self.moons[id_to_name[item.item]]:
-                return True
+    def check_goal(self, location : int) -> bool:
+        if self.goal and self.goal in goals:
+            return goals[self.goal] == location
         return False
 
     def get_scenario_dict(self) -> dict:
