@@ -186,8 +186,11 @@ class Client {
         static int getCaptureChecks(int index);
         static void setCaptureChecks(int index, int checks);
 
-        static void setMessage(int num, const char* msg);
+        static void setCheckIndex(int index);
+        static int getCheckIndex() { return sInstance ? sInstance->checkIndex : 0; };
 
+        static void setMessage(int num, const char* msg);
+        
         static Keyboard* getKeyboard();
 
         static const char* getCurrentIP();
@@ -298,6 +301,7 @@ class Client {
         sead::SafeArray<int, 17> worldScenarios;
         bool dying = false;
         bool apDeath = false;
+        int checkIndex = 0;
 
         // List of 23 ints to track which shine's have been grabbed
         sead::SafeArray<int, 24> collectedShines;
