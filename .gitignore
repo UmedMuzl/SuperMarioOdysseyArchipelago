@@ -21,4 +21,11 @@ settings.json
 /cache/
 /data/
 /World/smo/sarc/__pycache__/
+/World/smo/byml/__pycache__/
+/World/smo/MsbtEditor/__pycache__/
+/World/smo/rstb/__pycache__/
+/World/smo/sortedcontainers/__pycache__/
+/World/smo/yaz0/__pycache__/
+/World/smo/Connector/__pycache__/
 *.pyc
+*.cpy
