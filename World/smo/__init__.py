@@ -115,46 +115,26 @@ class SMOWorld(World):
         "dark": 375,
         "darker": 750
     }
-    # Number of Power Moons in the pool for each kingdom
-    # pool_counts = {
-    #     "Cap" : 31,
-    #     "Cascade" : 38,
-    #     "Sand" : 85,
-    #     "Lake" : 41,
-    #     "Wooded" : 72,
-    #     "Cloud" : 9,
-    #     "Lost" : 35,
-    #     "Metro" : 74,
-    #     "Snow" : 50,
-    #     "Seaside" : 66,
-    #     "Luncheon" : 63,
-    #     "Ruined" : 9,
-    #     "Bowser" : 58,
-    #     "Moon" : 38,
-    #     "Mushroom" : 37,
-    #     "Dark Side" : 23,
-    #     "Cascade Story" : 1,
-    #     "Sand Story" : 2,
-    #     "Wooded Story" : 2,
-    #     "Metro Story" : 5,
-    #     "Snow Story" : 4,
-    #     "Seaside Story" : 4,
-    #     "Luncheon Story" : 3,
-    #     "Bowser Story" : 3,
-    #     "Cascade Multi" : 1,
-    #     "Sand Multi" : 2,
-    #     "Lake Multi" : 1,
-    #     "Wooded Multi" : 2,
-    #     "Metro Multi" : 2,
-    #     "Snow Multi" : 1,
-    #     "Seaside Multi" : 1,
-    #     "Luncheon Multi" : 2,
-    #     "Ruined Multi" : 1,
-    #     "Bowser Multi" : 1,
-    #     "Mushroom Multi" : 6,
-    #     "Dark Side Multi" : 1,
-    #     "Darker Side Multi" : 1
-    # }
+    # Number of Power Moon checks in each kingdom
+    max_checks = {
+        "cap": 31,
+        "cascade": 42,
+        "sand": 93,
+        "lake": 44,
+        "wooded": 80,
+        "cloud": 9,
+        "lost": 35,
+        "metro": 85,
+        "snow": 57,
+        "seaside": 73,
+        "luncheon": 72,
+        "ruined": 12,
+        "bowser": 64,
+        "moon": 38,
+        "mushroom": 55,
+        "dark": 26,
+        "darker": 3
+    }
 
     placed_counts = {
         "cascade": 0,
@@ -196,7 +176,7 @@ class SMOWorld(World):
 
     # Change regionals to be dependent on the option
     def fill_slot_data(self) -> Mapping[str, Any]:
-        return {**(self.options.as_dict("goal", "death_link")), "clash" : self.moon_counts["lost"], "raid" : self.moon_counts["ruined"], "regionals" : False}
+        return {**(self.options.as_dict("goal", "death_link")), "clash" : self.moon_counts["lost"], "raid" : self.moon_counts["ruined"], "regionals" : False, "captures" : False}
 
     def create_regions(self):
         if self.options.counts > 0:
@@ -229,26 +209,28 @@ class SMOWorld(World):
                 # Until achievements implemented if possible
                 classification = ItemClassification.filler
             else:
-                if name in moon_types:
-                    if (name in self.item_name_groups["Dark"] and self.options.goal < 18) or name in self.item_name_groups["Darker"]:
-                        classification = ItemClassification.filler
-                    if "Story" in name or "Multi" in name:
-                        classification = ItemClassification.progression_skip_balancing
-                    if self.placed_counts["dark"] < self.moon_counts["dark"] and name not in self.item_name_groups["Dark"] and name not in self.item_name_groups["Darker"]:
-                        self.placed_counts["dark"] += 3 if "Multi" in name else 1
-                        classification = ItemClassification.progression_skip_balancing
-                    if self.placed_counts["darker"] < self.moon_counts["darker"] and name not in self.item_name_groups["Darker"]:
-                        self.placed_counts["darker"] += 3 if "Multi" in name else 1
-                        classification = ItemClassification.progression_skip_balancing
-                    for group in self.item_name_groups.keys():
-                        if (group.lower() in self.placed_counts
-                                and group != "Dark" and group != "Darker" and name in self.item_name_groups[group]
-                                and self.placed_counts[group.lower()] < self.moon_counts[group.lower()]):
-                            self.placed_counts[group.lower()] += 3 if "Multi" in name else 1
-                            #print(self.placed_counts[group.lower()], " ", group.lower())
-                            classification = ItemClassification.progression_skip_balancing
 
-                            break
+                if name in moon_types:
+                    classification = ItemClassification.progression_skip_balancing
+                #     if (name in self.item_name_groups["Dark"] and self.options.goal < 18) or name in self.item_name_groups["Darker"]:
+                #         classification = ItemClassification.filler
+                #     if "Story" in name or "Multi" in name:
+                #         classification = ItemClassification.progression_skip_balancing
+                #     if self.placed_counts["dark"] < self.moon_counts["dark"] and name not in self.item_name_groups["Dark"] and name not in self.item_name_groups["Darker"]:
+                #         self.placed_counts["dark"] += 3 if "Multi" in name else 1
+                #         classification = ItemClassification.progression_skip_balancing
+                #     if self.placed_counts["darker"] < self.moon_counts["darker"] and name not in self.item_name_groups["Darker"]:
+                #         self.placed_counts["darker"] += 3 if "Multi" in name else 1
+                #         classification = ItemClassification.progression_skip_balancing
+                #     for group in self.item_name_groups.keys():
+                #         if (group.lower() in self.placed_counts
+                #                 and group != "Dark" and group != "Darker" and name in self.item_name_groups[group]
+                #                 and self.placed_counts[group.lower()] < self.moon_counts[group.lower()]):
+                #             self.placed_counts[group.lower()] += 3 if "Multi" in name else 1
+                #             #print(self.placed_counts[group.lower()], " ", group.lower())
+                #             classification = ItemClassification.progression_skip_balancing
+                #
+                #             break
 
 
 
@@ -282,39 +264,109 @@ class SMOWorld(World):
                 locations += [location.name]
         # print(locations)
 
+        placement_counts = [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+        ]
+
+        revised_counts = [
+            0,
+            self.moon_counts["cascade"],
+            self.moon_counts["sand"],
+            self.moon_counts["lake"],
+            self.moon_counts["wooded"],
+            0,
+            self.moon_counts["lost"],
+            self.moon_counts["metro"],
+            self.moon_counts["snow"],
+            self.moon_counts["seaside"],
+            self.moon_counts["luncheon"],
+            self.moon_counts["ruined"],
+            self.moon_counts["bowser"],
+            0,
+            0,
+            0,
+            0,
+        ]
+        if self.options.goal == 16:
+            kingdoms : list = list(range(15))
+            while sum(revised_counts[0:15]) < self.moon_counts["dark"]:
+                index = kingdoms[random.randint(0, len(kingdoms) - 1)]
+                revised_counts[index] += 1
+                if revised_counts[index] == self.max_checks[world_list[index].lower()]:
+                    kingdoms.remove(index)
+        elif self.options.goal == 17:
+            kingdoms: list = list(range(16))
+            while sum(revised_counts[0:16]) < self.moon_counts["darker"]:
+                index = kingdoms[random.randint(0, len(kingdoms) - 1)]
+                revised_counts[index] += 1
+                if revised_counts[index] == self.max_checks[world_list[index].lower()]:
+                    kingdoms.remove(index)
+
         for location in locations:
             # found : bool = False
             for index in range(len(world_list)):
                 if location in full_moon_locations_list[index]:
-                    # found = True
-                    item: str = world_list[index]
-                    place : bool = False
-                    if "Dark" in item:
-                        item += " Side"
-                    # Multi
-                    if world_list[index] in multi_moons and location in multi_moons[world_list[index]]:
-                        item += " Multi-Moon"
-                        # Prevent placement of duplicate goal Multi-Moon
-                        if location == goals_table[self.options.goal.value]:
-                            break
-                        place = not self.options.story >= 2
-                    elif world_list[index] in story_moons and location in story_moons[world_list[index]]:
-                        item += " Story Moon"
-                        place = not (self.options.story == 1 or self.options.story == 3)
-                    else:
-                        if world_list[index] == "Mushroom":
-                            item = "Power Star"
-                        else:
-                            item += " Power Moon"
+                    if (placement_counts[index] < revised_counts[index]
+                        or (world_list[index] in story_moons and location in story_moons[world_list[index]])
+                        or (index < 14 and world_list[index] in multi_moons and location in multi_moons[world_list[index]])):
+                        # found = True
+                        item: str = world_list[index]
+                        place : bool = False
 
-                    if place:
-                        self.get_location(location).place_locked_item(self.create_item(item))
-                        break
+                        if "Dark" in item:
+                            item += " Side"
+                        # Multi
+                        if world_list[index] in multi_moons and location in multi_moons[world_list[index]]:
+                            item += " Multi-Moon"
+                            # Prevent placement of duplicate goal Multi-Moon
+                            if location == goals_table[self.options.goal.value]:
+                                break
+                            place = not self.options.story >= 2
+                        elif world_list[index] in story_moons and location in story_moons[world_list[index]]:
+                            item += " Story Moon"
+                            place = not (self.options.story == 1 or self.options.story == 3)
+                        else:
+                            if world_list[index] == "Mushroom":
+                                item = "Power Star"
+                            else:
+                                item += " Power Moon"
+
+                        placement_counts[index] += 3 if "Multi" in item else 1
+
+                        if place:
+                            self.get_location(location).place_locked_item(self.create_item(item))
+                            break
+                    else:
+                        item: str = "50 Coins"
 
                     pool.append(item)
                     break
             # if not found:
             #     print(location)
+        for index in range(len(world_list)):
+            while placement_counts[index] > revised_counts[index]:
+                if world_list[index] + " Power Moon" in pool:
+                    pool.remove(world_list[index] + " Power Moon")
+                    placement_counts[index] -= 1
+                    pool.append("50 Coins")
+                else:
+                    break
 
         locations : list = []
 
