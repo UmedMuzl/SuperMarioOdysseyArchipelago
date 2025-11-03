@@ -21,8 +21,9 @@ class PacketType(Enum):
     ArchipelagoChat : short = 15
     SlotData : short = 16
     RegionalCollect : short = 18
-    Deathlink : short = 19
+    DeathLink : short = 19
     Progress : short = 20
+    ShineChecks : short = 21
 
 class ConnectionType(Enum):
     Connect = 0
@@ -53,6 +54,142 @@ class ShinePacket:
             data = bytearray(data)
         self.id  = c_int(int.from_bytes(data[0:self.SIZE], "little"))
 
+class CheckPacket:
+    location_id : int
+    item_type : int
+    index : int
+    amount : int
+    SIZE : short = 16
+
+    def __init__(self, packet_bytes : bytearray = None, location_id : int = None, item_type : int = None, index : int = None, amount : int = None):
+        if packet_bytes:
+            self.deserialize(packet_bytes)
+        else:
+            self.location_id = location_id
+            self.item_type = item_type
+            self.index = index
+            self.amount = amount
+
+    def serialize(self) -> bytearray:
+        data : bytearray = bytearray()
+        data += self.location_id.to_bytes(4, "little")
+        data += self.item_type.to_bytes(4, "little")
+        data += self.index.to_bytes(4, "little")
+        data += self.amount.to_bytes(4, "little")
+        if len(data) > self.SIZE:
+            raise f"CheckPacket failed to serialize. bytearray exceeds maximum size {self.SIZE}."
+        return data
+
+    def deserialize(self, data : bytes | bytearray) -> None:
+        if data is bytes:
+            data = bytearray(data)
+        offset = 0
+        self.location_id  = int.from_bytes(data[offset:offset + 4], "little")
+        offset += 4
+        self.item_type  = int.from_bytes(data[offset:offset + 4], "little")
+        offset += 4
+        self.index  = int.from_bytes(data[offset:offset + 4], "little")
+        offset += 4
+        self.amount  = int.from_bytes(data[offset:offset + 4], "little")
+        offset += 4
+
+
+class ShineChecksPacket:
+    checks : list[c_int]
+    SIZE : short = 4 * 24
+
+    def __init__(self, packet_bytes : bytearray = None, checks : list[int] = None):
+        if packet_bytes:
+            self.deserialize(packet_bytes)
+        else:
+            for i in checks:
+                self.checks.append(c_int(i))
+
+    def serialize(self) -> bytearray:
+        data : bytearray = bytearray()
+        # int_value : int = self.id.value
+        # data += int_value.to_bytes(4, "little")
+        if len(data) > self.SIZE:
+            raise f"ShinePacket failed to serialize. bytearray exceeds maximum size {self.SIZE}."
+        return data
+
+    def deserialize(self, data : bytes | bytearray) -> None:
+        if data is bytes:
+            data = bytearray(data)
+        self.checks = []
+        offset = 0
+        a : c_int = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
+        a = c_int(int.from_bytes(data[offset:offset + 4], "little"))
+        self.checks.append(a)
+        offset = offset + 4
 
 class ItemPacket:
     ITEM_NAME_SIZE : c_int = 0x80
@@ -122,7 +259,7 @@ class FillerPacket:
         if packet_bytes:
             self.deserialize(packet_bytes)
         else:
-            self.item_type = c_int(item_type - 9990)
+            self.item_type = c_int(item_type)
 
     def serialize(self) -> bytearray:
         data: bytearray = bytearray()
@@ -184,15 +321,17 @@ class SlotDataPacket:
     clash : ushort
     raid : ushort
     regionals : bool
-    SIZE : short = 5
+    captures : bool
+    SIZE : short = 6
 
-    def __init__(self, packet_bytes : bytearray = None, clash : int = None, raid : int = None, regionals : bool = None):
+    def __init__(self, packet_bytes : bytearray = None, clash : int = None, raid : int = None, regionals : bool = None, captures : bool = None):
         if packet_bytes:
             self.deserialize(packet_bytes)
         else:
             self.raid = short(raid)
             self.regionals = regionals
             self.clash = short(clash)
+            self.captures = captures
 
     def serialize(self) -> bytearray:
         data : bytearray = bytearray()
@@ -201,6 +340,7 @@ class SlotDataPacket:
         int_value = self.raid.value
         data += int_value.to_bytes(2, "little")
         data += self.regionals.to_bytes(1, "little")
+        data += self.captures.to_bytes(1, "little")
         if len(data) > self.SIZE:
             raise f"CountsPacket failed to serialize. bytearray exceeds maximum size {self.SIZE}."
         return data
@@ -214,6 +354,8 @@ class SlotDataPacket:
         self.raid = ushort(int.from_bytes(data[offset:offset + 2], "little"))
         offset += 2
         self.regionals = bool.from_bytes(data[offset:offset + 1], "little")
+        offset += 1
+        self.captures = bool.from_bytes(data[offset:offset + 1], "little")
 
 
 
@@ -230,7 +372,7 @@ class ProgressPacket:
         if packet_bytes:
             self.deserialize(packet_bytes)
         else:
-            self.world_id = c_int(world_id)
+            self.world_id = c_int(int(world_id))
             self.scenario = c_int(scenario)
 
     def serialize(self) -> bytearray:
@@ -412,7 +554,7 @@ class Packet:
                     self.packet = SlotDataPacket(clash=packet_data[0], raid=packet_data[1], regionals=packet_data[2])
                 case PacketType.ArchipelagoChat:
                     self.packet = ChatMessagePacket(messages=packet_data[0])
-                case PacketType.Deathlink:
+                case PacketType.DeathLink:
                     self.packet = DeathLinkPacket()
                 case PacketType.Shine:
                     self.packet = ShinePacket(shine_id=packet_data[0])
@@ -421,9 +563,11 @@ class Packet:
                 case PacketType.RegionalCollect:
                     self.packet = RegionalCoinPacket()
                 case PacketType.Filler:
-                    self.packet = FillerPacket(packet_data[0])
+                    self.packet = FillerPacket(item_type=packet_data[0])
                 case PacketType.Progress:
                     self.packet = ProgressPacket(world_id=packet_data[0], scenario=packet_data[1])
+                case PacketType.ShineChecks:
+                    self.packet = ShineChecksPacket(checks=packet_data[0])
 
     def serialize(self) -> bytearray:
         self.header.packet_size = self.packet.SIZE
@@ -452,7 +596,9 @@ class Packet:
                 self.packet = ChatMessagePacket()
             case PacketType.SlotData:
                 self.packet = SlotDataPacket(packet_bytes=data)
-            case PacketType.Deathlink:
+            case PacketType.DeathLink:
                 self.packet = DeathLinkPacket()
             case PacketType.Progress:
                 self.packet = ProgressPacket(packet_bytes=data)
+            case PacketType.ShineChecks:
+                self.packet = ShineChecksPacket(packet_bytes=data)
