@@ -29,3 +29,5 @@ settings.json
 /World/smo/Connector/__pycache__/
 *.pyc
 *.cpy
+/World/smo/rstb/__pycache__
+/World/smo/sarc/__pycache__
