@@ -3,8 +3,6 @@ from BaseClasses import Location
 class SMOLocation(Location):
     game: str = "Super Mario Odyssey"
 
-
-
 # Cap
 loc_Cap = {
     "Frog-jumping above the Fog": 1019,
@@ -1135,6 +1133,61 @@ loc_Darker = {
 
 loc_Darker_Outfit = {
     "Invisibility Hat": 2502
+}
+
+loc_Captures = {
+    "Frog": 3701,
+    "Spark Pylon": 3702,
+    "Paragoomba": 3703,
+    "Chain Chomp": 3704,
+    "Big Chain Chomp": 3705,
+    "Broode's Chain Chomp": 3706,
+    "T-Rex": 3707,
+    "Binoculars": 3708,
+    "Bullet Bill": 3709,
+    "Moe-Eye": 3710,
+    "Cactus": 3711,
+    "Goomba": 3712,
+    "Knucklotec's Fist": 3713,
+    "Mini Rocket": 3714,
+    "Glydon": 3715,
+    "Lakitu": 3716,
+    "Zipper": 3717,
+    "Cheep Cheep": 3718,
+    "Puzzle Part (Lake Kingdom)": 3719,
+    "Poison Piranha Plant": 3720,
+    "Uproot": 3721,
+    "Fire Bro": 3722,
+    "Sherm": 3723,
+    "Coin Coffer": 3724,
+    "Tree": 3725,
+    "Boulder": 3726,
+    "Picture Match Part (Goomba)": 3727,
+    "Tropical Wiggler": 3728,
+    "Pole": 3729,
+    "Manhole": 3730,
+    "Taxi": 3731,
+    "RC Car": 3732,
+    "Ty-foo": 3733,
+    "Shiverian Racer": 3734,
+    "Cheep Cheep (Snow Kingdom)": 3735,
+    "Gushen": 3736,
+    "Lava Bubble": 3737,
+    "Volbonan": 3738,
+    "Hammer Bro": 3739,
+    "Meat": 3740,
+    "Fire Piranha Plant": 3741,
+    "Pokio": 3742,
+    "Jizo": 3743,
+    "Bowser statue": 3744,
+    "Parabones": 3745,
+    "Banzai Bill": 3746,
+    "Chargin' Chuck": 3747,
+    "Bowser": 3748,
+    "Letter": 3749,
+    "Puzzle Part (Metro Kingdom)": 3750,
+    "Picture Match Part (Mario)": 3751,
+    "Yoshi": 3752
 }
 
 base_locations_table = {
