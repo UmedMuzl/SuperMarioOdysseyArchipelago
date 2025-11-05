@@ -405,7 +405,10 @@ void drawMainHook(HakoniwaSequence *curSequence, sead::Viewport *viewport, sead:
 bool isGrabShine(GameDataHolderAccessor accessor, int shineIdx) {
     GameDataFile::HintInfo* curHintInfo =
         &accessor.mData->mGameDataFile->mShineHintList[shineIdx];
-    return Client::hasShine(curHintInfo->mUniqueID);
+    if (!curHintInfo->mIsGrand) {
+        return Client::hasShine(curHintInfo->mUniqueID);
+    }
+    return false;
 }
 
 void sendShinePacket(GameDataHolderAccessor thisPtr, Shine* curShine) {
