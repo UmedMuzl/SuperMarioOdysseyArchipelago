@@ -1297,6 +1297,8 @@ void Client::sendStage(GameDataHolderWriter writer, const ChangeStageInfo* stage
         GameDataHolderAccessor accessor(sInstance->mCurStageScene);
 
         setScenario(stageInfo->changeStageName.cstr(), stageInfo->scenarioNo);
+        //setMessage(1, "onGrandShineStageChange");
+        //setMessage(2, stageInfo->changeStageName.cstr());
 
         if (GameDataFunction::getWorldIndexWaterfall() ==
             GameDataFunction::getCurrentWorldId(accessor)
@@ -1801,6 +1803,7 @@ void Client::startShineCount() {
         return;
     }
     sInstance->mCurStageScene->mSceneLayout->startShineCountAnim(false);
+    sInstance->mCurStageScene->mSceneLayout->updateCounterParts();  // updates shine chip layout to (maybe) prevent softlocks
 }
 
 void Client::setMessage(int num, const char* msg)
@@ -1986,7 +1989,6 @@ void Client::updateShines() {
     
     sInstance->resetCollectedShines();
     startShineCount();
-    sInstance->mCurStageScene->mSceneLayout->updateCounterParts(); // updates shine chip layout to (maybe) prevent softlocks
 }
 
 /**
