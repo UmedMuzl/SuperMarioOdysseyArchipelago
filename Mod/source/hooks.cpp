@@ -229,9 +229,9 @@ bool saveFileReadHook(al::ByamlIter *saveByaml, bool* firstNetworkBool, char con
         }
     }
 
-    if (saveByaml->tryGetIntByKey(&data, "CheckIndex")) {
+    /*if (saveByaml->tryGetIntByKey(&data, "CheckIndex")) {
         Client::setCheckIndex(data);
-    }
+    }*/
 
     return saveByaml->tryGetBoolByKey(firstNetworkBool, firstNetworkKey);
 }
