@@ -138,6 +138,16 @@ int getIndexCaptureList(const char *captureName) {
     return -1;
 }
 
+int getIndexMoonItemList(const char *moonItem) {
+    for (size_t i = 0; i < sizeof(moonItemNames) / sizeof(moonItemNames[0]); i++)
+    {
+        if (al::isEqualString(moonItemNames[i], moonItem)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 const char *tryGetPuppetCapName(PuppetInfo *info) {
     if(info->costumeHead && isInCostumeList(info->costumeHead)) {
         return info->costumeHead;
