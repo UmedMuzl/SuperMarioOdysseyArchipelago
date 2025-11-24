@@ -61,11 +61,24 @@ Client::Client() {
     apChatLine3 = "";
     
     worldScenarios.fill(1);
+    worldPayCounts.fill(-1);
+
     collectedShines.fill(0);
     collectedOutfits.fill(0);
     collectedStickers.fill(0);
     collectedSouvenirs.fill(0);
     collectedCaptures.fill(0);
+
+    shopCapTextReplacements.fill({254, 255, 255, 255});
+    shopClothTextReplacements.fill({254, 255, 255, 255});
+    shopStickerTextReplacements.fill({254, 255, 255, 255});
+    shopGiftTextReplacements.fill({254, 255, 255, 255});
+    shopMoonTextReplacements.fill({254, 255, 255, 255});
+
+
+    apGameNames.fill(sead::WFixedSafeString<40>());
+    apSlotNames.fill(sead::WFixedSafeString<40>());
+    apItemNames.fill(sead::WFixedSafeString<40>());
 
     mUserID.print();
 
@@ -376,8 +389,8 @@ void Client::readFunc() {
             case PacketType::COSTUMEINF:
                 updateCostumeInfo((CostumeInf*)curPacket);
                 break;
-            case PacketType::SHINECOLL:
-                updateShineInfo((ShineCollect*)curPacket);
+            case PacketType::CHECK:
+                receiveCheck((Check*)curPacket);
                 break;
             case PacketType::ITEMCOLL:
                 updateItems((ItemCollect*)curPacket);
@@ -388,8 +401,14 @@ void Client::readFunc() {
             case PacketType::APCHATMESSAGE:
                 updateChatMessages((ArchipelagoChatMessage*)curPacket);
                 break;
-            case PacketType::SHINECOUNTS:
-                updateCounts((ShineCounts*)curPacket);
+            case PacketType::SLOTDATA:
+                updateSlotData((SlotData*)curPacket);
+                break;
+            case PacketType::APINFO:
+                addApInfo((ApInfo*)curPacket);
+                break;
+            case PacketType::SHOPREPLACE:
+                updateShopReplace((ShopReplacePacket*)curPacket);
                 break;
             case PacketType::UNLOCKWORLD:
                 updateWorlds((UnlockWorld*)curPacket);
@@ -761,25 +780,25 @@ void Client::resendInitPackets() {
  * 
  * @param shineID 
  */
-void Client::sendShineCollectPacket(int shineID) {
-
-    if (!sInstance) {
-        Logger::log("Static Instance is Null!\n");
-        return;
-    }
-
-    sead::ScopedCurrentHeapSetter setter(sInstance->mHeap);
-
-    if(sInstance->lastCollectedShine != shineID) {
-        ShineCollect *packet = new ShineCollect();
-        packet->mUserID = sInstance->mUserID;
-        packet->shineId = shineID;
-
-        sInstance->lastCollectedShine = shineID;
-
-        sInstance->mSocket->queuePacket(packet);
-    }
-}
+//void Client::sendShineCollectPacket(int shineID) {
+//
+//    if (!sInstance) {
+//        Logger::log("Static Instance is Null!\n");
+//        return;
+//    }
+//
+//    sead::ScopedCurrentHeapSetter setter(sInstance->mHeap);
+//
+//    if(sInstance->lastCollectedShine != shineID) {
+//        ShineCollect *packet = new ShineCollect();
+//        packet->mUserID = sInstance->mUserID;
+//        packet->shineId = shineID;
+//
+//        sInstance->lastCollectedShine = shineID;
+//
+//        sInstance->mSocket->queuePacket(packet);
+//    }
+//}
 
 /**
  * @brief
@@ -1042,13 +1061,13 @@ void Client::updateCostumeInfo(CostumeInf *packet) {
  * 
  * @param packet 
  */
-void Client::updateShineInfo(ShineCollect* packet) {
-    if(collectedShineCount < curCollectedShines.size() - 1) {
-        curCollectedShines[collectedShineCount] = packet->shineId;
-        collectedShineCount++;
-        
-    }
-}
+//void Client::updateShineInfo(ShineCollect* packet) {
+//    if(collectedShineCount < curCollectedShines.size() - 1) {
+//        curCollectedShines[collectedShineCount] = packet->shineId;
+//        collectedShineCount++;
+//        
+//    }
+//}
 
 /**
  * @brief 
@@ -1406,6 +1425,120 @@ void Client::sendCorrectScenario(const ChangeStageInfo* stageInfo)
                          getScenario(stageInfo->changeStageName.cstr()),
                          static_cast<ChangeStageInfo::SubScenarioType>(0));
     GameDataFunction::tryChangeNextStage(accessor, &info);
+}
+
+void Client::setCheckIndex(int index)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+
+    sInstance->checkIndex = index;
+}
+
+void Client::sendCheckPacket(int locationId, int itemType) {
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+
+    sead::ScopedCurrentHeapSetter setter(sInstance->mHeap);
+
+    Check *packet = new Check();
+    packet->locationId = locationId;
+    packet->itemType = itemType;
+
+    sInstance->mSocket->queuePacket(packet);
+}
+
+void Client::sendCheckPacket(int itemType, const char* objId, const char* stageName) {
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+
+    sead::ScopedCurrentHeapSetter setter(sInstance->mHeap);
+
+    Check *packet = new Check();
+    packet->itemType = itemType;
+    strcpy(packet->objId, objId);
+    strcpy(packet->stage, stageName);
+
+    sInstance->mSocket->queuePacket(packet);
+}
+
+void Client::receiveCheck(Check* packet)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+
+    int itemType = packet->itemType;
+
+    struct ShopItem::ShopItemInfo amiiboData = {1, 1};
+    struct ShopItem::ShopItemInfo* amiibo = &amiiboData;
+    struct ShopItem::ItemInfo info = {1, {}, static_cast<ShopItem::ItemType>(itemType), 1, amiibo, true};
+
+    struct ShopItem::ItemInfo* infoPtr;
+    GameDataHolderAccessor accessor(sInstance->mCurStageScene);
+
+    switch (itemType)
+    { 
+    case -2:
+        if (packet->index < getCheckIndex())
+        {
+            GameDataFunction::addCoin(accessor, packet->amount);
+        }
+        break;
+    case -1:
+        if (collectedShineCount < curCollectedShines.size() - 1) {
+            curCollectedShines[collectedShineCount] = packet->locationId;
+            collectedShineCount++;
+        }
+        break;
+    case 0:
+        strcpy(info.mName, costumeNames[packet->locationId]);
+        info.mType = static_cast<ShopItem::ItemType>(itemType);
+        infoPtr = &info;
+        accessor.mData->mGameDataFile->buyItem(infoPtr, false);
+        GameDataFunction::wearCostume(accessor, info.mName);
+        break;
+    case 1:
+        strcpy(info.mName, costumeNames[packet->locationId]);
+        info.mType = static_cast<ShopItem::ItemType>(itemType);
+        infoPtr = &info;
+        accessor.mData->mGameDataFile->buyItem(infoPtr, false);
+        GameDataFunction::wearCap(accessor, info.mName);
+        break;
+    case 2:
+        strcpy(info.mName, souvenirNames[packet->locationId]);
+        info.mType = static_cast<ShopItem::ItemType>(itemType);
+        infoPtr = &info;
+        accessor.mData->mGameDataFile->buyItem(infoPtr, false);
+        break;
+    case 3:
+        strcpy(info.mName, stickerNames[packet->locationId]);
+        info.mType = static_cast<ShopItem::ItemType>(itemType);
+        infoPtr = &info;
+        accessor.mData->mGameDataFile->buyItem(infoPtr, false);
+        break;
+    }
+
+    if (getCheckIndex() < packet->index) {
+        setCheckIndex(packet->index);
+    }
+
+}
+
+int Client::getWorldUnlockCount(int worldId) {
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return 0;
+    }
+
+    return sInstance->worldPayCounts[worldId];
 }
 
 void Client::addShine(int uid)
@@ -1826,6 +1959,636 @@ void Client::setMessage(int num, const char* msg)
     }
 }
 
+void Client::addApInfo(ApInfo* packet)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+
+    sead::WFixedSafeString<40> info1;
+    sead::WFixedSafeString<40> info2;
+    sead::WFixedSafeString<40> info3;
+    info1 = info1.cEmptyString;
+    info2 = info2.cEmptyString;
+    info3 = info3.cEmptyString;
+
+    for (int i = 0; i < 40; i++)
+    {
+        if (packet->info1[i] == '\0') {
+            break;
+        }
+        info1.append(static_cast<char16>(packet->info1[i]));
+    }
+
+    for (int i = 0; i < 40; i++)
+    {
+        if (packet->info2[i] == '\0') {
+            break;
+        }
+        info2.append(static_cast<char16>(packet->info2[i]));
+    }
+
+    for (int i = 0; i < 40; i++)
+    {
+        if (packet->info3[i] == '\0') {
+            break;
+        }
+        info3.append(static_cast<char16>(packet->info3[i]));
+    }
+
+    int type = static_cast<int>(packet->infoType);
+    //setMessage(2, "AP Info Entered");
+
+
+    if (type == 0)
+    {
+        //setMessage(1, "Game Info Entered");
+        //if (!info1.isEmpty()) 
+        //{
+            sInstance->apGameNames[packet->index1] =
+                sInstance->apGameNames[packet->index1].cEmptyString;
+            sInstance->apGameNames[packet->index1].append(info1.cstr());
+            sInstance->numApGames++;
+        //}
+        //if (!info2.isEmpty()) 
+        //{
+            sInstance->apGameNames[packet->index2] =
+                sInstance->apGameNames[packet->index2].cEmptyString;
+            sInstance->apGameNames[packet->index2].append(info2.cstr());
+            sInstance->numApGames++;
+            //}
+        //if (!info3.isEmpty()) 
+        //{
+            sInstance->apGameNames[packet->index3] =
+                sInstance->apGameNames[packet->index3].cEmptyString;
+            sInstance->apGameNames[packet->index3].append(info3.cstr());
+            sInstance->numApGames++;
+            //}
+    } 
+        
+    if (type == 1)
+    {
+        //if (!info1.isEmpty())
+        //{
+            sInstance->apSlotNames[packet->index1] =
+                sInstance->apSlotNames[packet->index1].cEmptyString;
+            sInstance->apSlotNames[packet->index1].append(info1.cstr());
+            sInstance->numApSlots++;
+        //}
+        //if (!info2.isEmpty()) 
+        //{
+            sInstance->apSlotNames[packet->index2] =
+                sInstance->apSlotNames[packet->index2].cEmptyString;
+            sInstance->apSlotNames[packet->index2].append(info2.cstr());
+                sInstance->numApSlots++;
+        //}
+        //if (!info3.isEmpty()) 
+        //{
+            sInstance->apSlotNames[packet->index3] =
+                sInstance->apSlotNames[packet->index3].cEmptyString;
+            sInstance->apSlotNames[packet->index3].append(info3.cstr());
+                sInstance->numApSlots++;
+        //}
+    }
+      
+    if (type == 2)
+    {
+        //if (!info1.isEmpty())
+        //{
+            sInstance->apItemNames[packet->index1] =
+                sInstance->apItemNames[packet->index1].cEmptyString;
+            sInstance->apItemNames[packet->index1].append(info1.cstr());
+            sInstance->numApItems++;
+        //}
+        //if (!info2.isEmpty()) 
+        //{
+            sInstance->apItemNames[packet->index2] =
+                sInstance->apItemNames[packet->index2].cEmptyString;
+            sInstance->apItemNames[packet->index2].append(info2.cstr());
+            sInstance->numApItems++;
+        //}
+        //if (!info3.isEmpty())
+        //{
+            sInstance->apItemNames[packet->index3] =
+                sInstance->apItemNames[packet->index3].cEmptyString;
+            sInstance->apItemNames[packet->index3].append(info3.cstr());
+            sInstance->numApItems++;
+        //}
+    }
+
+}
+
+void Client::updateShopReplace(ShopReplacePacket* packet)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+    int type = static_cast<int>(packet->infoType);
+    // Cap
+    if (type == 0)
+    {
+        sInstance->shopCapTextReplacements[0] = {packet->gameIndex0, packet->playerIndex0,
+                                                 packet->itemIndex0, packet->itemClassification0};
+        sInstance->shopCapTextReplacements[1] = {packet->gameIndex1, packet->playerIndex1,
+                                                 packet->itemIndex1, packet->itemClassification1};
+        sInstance->shopCapTextReplacements[2] = {packet->gameIndex2, packet->playerIndex2,
+                                                 packet->itemIndex2, packet->itemClassification2};
+        sInstance->shopCapTextReplacements[3] = {packet->gameIndex3, packet->playerIndex3,
+                                                 packet->itemIndex3, packet->itemClassification3};
+        sInstance->shopCapTextReplacements[4] = {packet->gameIndex4, packet->playerIndex4,
+                                                 packet->itemIndex4, packet->itemClassification4};
+        sInstance->shopCapTextReplacements[5] = {packet->gameIndex5, packet->playerIndex5,
+                                                 packet->itemIndex5, packet->itemClassification5};
+        sInstance->shopCapTextReplacements[6] = {packet->gameIndex6, packet->playerIndex6,
+                                                 packet->itemIndex6, packet->itemClassification6};
+        sInstance->shopCapTextReplacements[7] = {packet->gameIndex7, packet->playerIndex7,
+                                                 packet->itemIndex7, packet->itemClassification7};
+        sInstance->shopCapTextReplacements[8] = {packet->gameIndex8, packet->playerIndex8,
+                                                 packet->itemIndex8, packet->itemClassification8};
+        sInstance->shopCapTextReplacements[9] = {packet->gameIndex9, packet->playerIndex9,
+                                                 packet->itemIndex9, packet->itemClassification9};
+        sInstance->shopCapTextReplacements[10] = {packet->gameIndex10, packet->playerIndex10,
+                                                  packet->itemIndex10,
+                                                  packet->itemClassification10};
+        sInstance->shopCapTextReplacements[11] = {packet->gameIndex11, packet->playerIndex11,
+                                                  packet->itemIndex11,
+                                                  packet->itemClassification11};
+        sInstance->shopCapTextReplacements[12] = {packet->gameIndex12, packet->playerIndex12,
+                                                  packet->itemIndex12,
+                                                  packet->itemClassification12};
+        sInstance->shopCapTextReplacements[13] = {packet->gameIndex13, packet->playerIndex13,
+                                                  packet->itemIndex13,
+                                                  packet->itemClassification13};
+        sInstance->shopCapTextReplacements[14] = {packet->gameIndex14, packet->playerIndex14,
+                                                  packet->itemIndex14,
+                                                  packet->itemClassification14};
+        sInstance->shopCapTextReplacements[15] = {packet->gameIndex15, packet->playerIndex15,
+                                                  packet->itemIndex15,
+                                                  packet->itemClassification15};
+        sInstance->shopCapTextReplacements[16] = {packet->gameIndex16, packet->playerIndex16,
+                                                  packet->itemIndex16,
+                                                  packet->itemClassification16};
+        sInstance->shopCapTextReplacements[17] = {packet->gameIndex17, packet->playerIndex17,
+                                                  packet->itemIndex17,
+                                                  packet->itemClassification17};
+        sInstance->shopCapTextReplacements[18] = {packet->gameIndex18, packet->playerIndex18,
+                                                  packet->itemIndex18,
+                                                  packet->itemClassification18};
+        sInstance->shopCapTextReplacements[19] = {packet->gameIndex19, packet->playerIndex19,
+                                                  packet->itemIndex19,
+                                                  packet->itemClassification19};
+        sInstance->shopCapTextReplacements[20] = {packet->gameIndex20, packet->playerIndex20,
+                                                  packet->itemIndex20,
+                                                  packet->itemClassification20};
+        sInstance->shopCapTextReplacements[21] = {packet->gameIndex21, packet->playerIndex21,
+                                                  packet->itemIndex21,
+                                                  packet->itemClassification21};
+        sInstance->shopCapTextReplacements[22] = {packet->gameIndex22, packet->playerIndex22,
+                                                  packet->itemIndex22,
+                                                  packet->itemClassification22};
+        sInstance->shopCapTextReplacements[23] = {packet->gameIndex23, packet->playerIndex23,
+                                                  packet->itemIndex23,
+                                                  packet->itemClassification23};
+        sInstance->shopCapTextReplacements[24] = {packet->gameIndex24, packet->playerIndex24,
+                                                  packet->itemIndex24,
+                                                  packet->itemClassification24};
+        sInstance->shopCapTextReplacements[25] = {packet->gameIndex25, packet->playerIndex25,
+                                                  packet->itemIndex25,
+                                                  packet->itemClassification25};
+        sInstance->shopCapTextReplacements[26] = {packet->gameIndex26, packet->playerIndex26,
+                                                  packet->itemIndex26,
+                                                  packet->itemClassification26};
+        sInstance->shopCapTextReplacements[27] = {packet->gameIndex27, packet->playerIndex27,
+                                                  packet->itemIndex27,
+                                                  packet->itemClassification27};
+        sInstance->shopCapTextReplacements[28] = {packet->gameIndex28, packet->playerIndex28,
+                                                  packet->itemIndex28,
+                                                  packet->itemClassification28};
+        sInstance->shopCapTextReplacements[29] = {packet->gameIndex29, packet->playerIndex29,
+                                                  packet->itemIndex29,
+                                                  packet->itemClassification29};
+        sInstance->shopCapTextReplacements[30] = {packet->gameIndex30, packet->playerIndex30,
+                                                  packet->itemIndex30,
+                                                  packet->itemClassification30};
+        sInstance->shopCapTextReplacements[31] = {packet->gameIndex31, packet->playerIndex31,
+                                                  packet->itemIndex31,
+                                                  packet->itemClassification31};
+        sInstance->shopCapTextReplacements[32] = {packet->gameIndex32, packet->playerIndex32,
+                                                  packet->itemIndex32,
+                                                  packet->itemClassification32};
+        sInstance->shopCapTextReplacements[33] = {packet->gameIndex33, packet->playerIndex33,
+                                                  packet->itemIndex33,
+                                                  packet->itemClassification33};
+        sInstance->shopCapTextReplacements[34] = {packet->gameIndex34, packet->playerIndex34,
+                                                  packet->itemIndex34,
+                                                  packet->itemClassification34};
+        sInstance->shopCapTextReplacements[35] = {packet->gameIndex35, packet->playerIndex35,
+                                                  packet->itemIndex35,
+                                                  packet->itemClassification35};
+        sInstance->shopCapTextReplacements[36] = {packet->gameIndex36, packet->playerIndex36,
+                                                  packet->itemIndex36,
+                                                  packet->itemClassification36};
+        sInstance->shopCapTextReplacements[37] = {packet->gameIndex37, packet->playerIndex37,
+                                                  packet->itemIndex37,
+                                                  packet->itemClassification37};
+        sInstance->shopCapTextReplacements[38] = {packet->gameIndex38, packet->playerIndex38,
+                                                  packet->itemIndex38,
+                                                  packet->itemClassification38};
+        sInstance->shopCapTextReplacements[39] = {packet->gameIndex39, packet->playerIndex39,
+                                                  packet->itemIndex39,
+                                                  packet->itemClassification39};
+        sInstance->shopCapTextReplacements[40] = {packet->gameIndex40, packet->playerIndex40,
+                                                  packet->itemIndex40,
+                                                  packet->itemClassification40};
+        sInstance->shopCapTextReplacements[41] = {packet->gameIndex41, packet->playerIndex41,
+                                                  packet->itemIndex41,
+                                                  packet->itemClassification41};
+        sInstance->shopCapTextReplacements[42] = {packet->gameIndex42, packet->playerIndex42,
+                                                  packet->itemIndex42,
+                                                  packet->itemClassification42};
+        sInstance->shopCapTextReplacements[43] = {packet->gameIndex43, packet->playerIndex43,
+                                                  packet->itemIndex43,
+                                                  packet->itemClassification43};
+    }
+    // Cloth
+    if (type == 1)
+    {
+        sInstance->shopClothTextReplacements[0] = {packet->gameIndex0, packet->playerIndex0,
+                                                   packet->itemIndex0, packet->itemClassification0};
+        sInstance->shopClothTextReplacements[1] = {packet->gameIndex1, packet->playerIndex1,
+                                                   packet->itemIndex1, packet->itemClassification1};
+        sInstance->shopClothTextReplacements[2] = {packet->gameIndex2, packet->playerIndex2,
+                                                   packet->itemIndex2, packet->itemClassification2};
+        sInstance->shopClothTextReplacements[3] = {packet->gameIndex3, packet->playerIndex3,
+                                                   packet->itemIndex3, packet->itemClassification3};
+        sInstance->shopClothTextReplacements[4] = {packet->gameIndex4, packet->playerIndex4,
+                                                   packet->itemIndex4, packet->itemClassification4};
+        sInstance->shopClothTextReplacements[5] = {packet->gameIndex5, packet->playerIndex5,
+                                                   packet->itemIndex5, packet->itemClassification5};
+        sInstance->shopClothTextReplacements[6] = {packet->gameIndex6, packet->playerIndex6,
+                                                   packet->itemIndex6, packet->itemClassification6};
+        sInstance->shopClothTextReplacements[7] = {packet->gameIndex7, packet->playerIndex7,
+                                                   packet->itemIndex7, packet->itemClassification7};
+        sInstance->shopClothTextReplacements[8] = {packet->gameIndex8, packet->playerIndex8,
+                                                   packet->itemIndex8, packet->itemClassification8};
+        sInstance->shopClothTextReplacements[9] = {packet->gameIndex9, packet->playerIndex9,
+                                                   packet->itemIndex9, packet->itemClassification9};
+        sInstance->shopClothTextReplacements[10] = {packet->gameIndex10, packet->playerIndex10,
+                                                    packet->itemIndex10,
+                                                    packet->itemClassification10};
+        sInstance->shopClothTextReplacements[11] = {packet->gameIndex11, packet->playerIndex11,
+                                                    packet->itemIndex11,
+                                                    packet->itemClassification11};
+        sInstance->shopClothTextReplacements[12] = {packet->gameIndex12, packet->playerIndex12,
+                                                    packet->itemIndex12,
+                                                    packet->itemClassification12};
+        sInstance->shopClothTextReplacements[13] = {packet->gameIndex13, packet->playerIndex13,
+                                                    packet->itemIndex13,
+                                                    packet->itemClassification13};
+        sInstance->shopClothTextReplacements[14] = {packet->gameIndex14, packet->playerIndex14,
+                                                    packet->itemIndex14,
+                                                    packet->itemClassification14};
+        sInstance->shopClothTextReplacements[15] = {packet->gameIndex15, packet->playerIndex15,
+                                                    packet->itemIndex15,
+                                                    packet->itemClassification15};
+        sInstance->shopClothTextReplacements[16] = {packet->gameIndex16, packet->playerIndex16,
+                                                    packet->itemIndex16,
+                                                    packet->itemClassification16};
+        sInstance->shopClothTextReplacements[17] = {packet->gameIndex17, packet->playerIndex17,
+                                                    packet->itemIndex17,
+                                                    packet->itemClassification17};
+        sInstance->shopClothTextReplacements[18] = {packet->gameIndex18, packet->playerIndex18,
+                                                    packet->itemIndex18,
+                                                    packet->itemClassification18};
+        sInstance->shopClothTextReplacements[19] = {packet->gameIndex19, packet->playerIndex19,
+                                                    packet->itemIndex19,
+                                                    packet->itemClassification19};
+        sInstance->shopClothTextReplacements[20] = {packet->gameIndex20, packet->playerIndex20,
+                                                    packet->itemIndex20,
+                                                    packet->itemClassification20};
+        sInstance->shopClothTextReplacements[21] = {packet->gameIndex21, packet->playerIndex21,
+                                                    packet->itemIndex21,
+                                                    packet->itemClassification21};
+        sInstance->shopClothTextReplacements[22] = {packet->gameIndex22, packet->playerIndex22,
+                                                    packet->itemIndex22,
+                                                    packet->itemClassification22};
+        sInstance->shopClothTextReplacements[23] = {packet->gameIndex23, packet->playerIndex23,
+                                                    packet->itemIndex23,
+                                                    packet->itemClassification23};
+        sInstance->shopClothTextReplacements[24] = {packet->gameIndex24, packet->playerIndex24,
+                                                    packet->itemIndex24,
+                                                    packet->itemClassification24};
+        sInstance->shopClothTextReplacements[25] = {packet->gameIndex25, packet->playerIndex25,
+                                                    packet->itemIndex25,
+                                                    packet->itemClassification25};
+        sInstance->shopClothTextReplacements[26] = {packet->gameIndex26, packet->playerIndex26,
+                                                    packet->itemIndex26,
+                                                    packet->itemClassification26};
+        sInstance->shopClothTextReplacements[27] = {packet->gameIndex27, packet->playerIndex27,
+                                                    packet->itemIndex27,
+                                                    packet->itemClassification27};
+        sInstance->shopClothTextReplacements[28] = {packet->gameIndex28, packet->playerIndex28,
+                                                    packet->itemIndex28,
+                                                    packet->itemClassification28};
+        sInstance->shopClothTextReplacements[29] = {packet->gameIndex29, packet->playerIndex29,
+                                                    packet->itemIndex29,
+                                                    packet->itemClassification29};
+        sInstance->shopClothTextReplacements[30] = {packet->gameIndex30, packet->playerIndex30,
+                                                    packet->itemIndex30,
+                                                    packet->itemClassification30};
+        sInstance->shopClothTextReplacements[31] = {packet->gameIndex31, packet->playerIndex31,
+                                                    packet->itemIndex31,
+                                                    packet->itemClassification31};
+        sInstance->shopClothTextReplacements[32] = {packet->gameIndex32, packet->playerIndex32,
+                                                    packet->itemIndex32,
+                                                    packet->itemClassification32};
+        sInstance->shopClothTextReplacements[33] = {packet->gameIndex33, packet->playerIndex33,
+                                                    packet->itemIndex33,
+                                                    packet->itemClassification33};
+        sInstance->shopClothTextReplacements[34] = {packet->gameIndex34, packet->playerIndex34,
+                                                    packet->itemIndex34,
+                                                    packet->itemClassification34};
+        sInstance->shopClothTextReplacements[35] = {packet->gameIndex35, packet->playerIndex35,
+                                                    packet->itemIndex35,
+                                                    packet->itemClassification35};
+        sInstance->shopClothTextReplacements[36] = {packet->gameIndex36, packet->playerIndex36,
+                                                    packet->itemIndex36,
+                                                    packet->itemClassification36};
+        sInstance->shopClothTextReplacements[37] = {packet->gameIndex37, packet->playerIndex37,
+                                                    packet->itemIndex37,
+                                                    packet->itemClassification37};
+        sInstance->shopClothTextReplacements[38] = {packet->gameIndex38, packet->playerIndex38,
+                                                    packet->itemIndex38,
+                                                    packet->itemClassification38};
+        sInstance->shopClothTextReplacements[39] = {packet->gameIndex39, packet->playerIndex39,
+                                                    packet->itemIndex39,
+                                                    packet->itemClassification39};
+        sInstance->shopClothTextReplacements[40] = {packet->gameIndex40, packet->playerIndex40,
+                                                    packet->itemIndex40,
+                                                    packet->itemClassification40};
+        sInstance->shopClothTextReplacements[41] = {packet->gameIndex41, packet->playerIndex41,
+                                                    packet->itemIndex41,
+                                                    packet->itemClassification41};
+        sInstance->shopClothTextReplacements[42] = {packet->gameIndex42, packet->playerIndex42,
+                                                    packet->itemIndex42,
+                                                    packet->itemClassification42};
+        sInstance->shopClothTextReplacements[43] = {packet->gameIndex43, packet->playerIndex43,
+                                                    packet->itemIndex43,
+                                                    packet->itemClassification43};
+    }
+    // Sticker
+    if (type == 2)
+    {
+        sInstance->shopStickerTextReplacements[0] = {packet->gameIndex0, packet->playerIndex0,
+                                                     packet->itemIndex0,
+                                                     packet->itemClassification0};
+        sInstance->shopStickerTextReplacements[1] = {packet->gameIndex1, packet->playerIndex1,
+                                                     packet->itemIndex1,
+                                                     packet->itemClassification1};
+        sInstance->shopStickerTextReplacements[2] = {packet->gameIndex2, packet->playerIndex2,
+                                                     packet->itemIndex2,
+                                                     packet->itemClassification2};
+        sInstance->shopStickerTextReplacements[3] = {packet->gameIndex3, packet->playerIndex3,
+                                                     packet->itemIndex3,
+                                                     packet->itemClassification3};
+        sInstance->shopStickerTextReplacements[4] = {packet->gameIndex4, packet->playerIndex4,
+                                                     packet->itemIndex4,
+                                                     packet->itemClassification4};
+        sInstance->shopStickerTextReplacements[5] = {packet->gameIndex5, packet->playerIndex5,
+                                                     packet->itemIndex5,
+                                                     packet->itemClassification5};
+        sInstance->shopStickerTextReplacements[6] = {packet->gameIndex6, packet->playerIndex6,
+                                                     packet->itemIndex6,
+                                                     packet->itemClassification6};
+        sInstance->shopStickerTextReplacements[7] = {packet->gameIndex7, packet->playerIndex7,
+                                                     packet->itemIndex7,
+                                                     packet->itemClassification7};
+        sInstance->shopStickerTextReplacements[8] = {packet->gameIndex8, packet->playerIndex8,
+                                                     packet->itemIndex8,
+                                                     packet->itemClassification8};
+        sInstance->shopStickerTextReplacements[9] = {packet->gameIndex9, packet->playerIndex9,
+                                                     packet->itemIndex9,
+                                                     packet->itemClassification9};
+        sInstance->shopStickerTextReplacements[10] = {packet->gameIndex10, packet->playerIndex10,
+                                                      packet->itemIndex10,
+                                                      packet->itemClassification10};
+        sInstance->shopStickerTextReplacements[11] = {packet->gameIndex11, packet->playerIndex11,
+                                                      packet->itemIndex11,
+                                                      packet->itemClassification11};
+        sInstance->shopStickerTextReplacements[12] = {packet->gameIndex12, packet->playerIndex12,
+                                                      packet->itemIndex12,
+                                                      packet->itemClassification12};
+        sInstance->shopStickerTextReplacements[13] = {packet->gameIndex13, packet->playerIndex13,
+                                                      packet->itemIndex13,
+                                                      packet->itemClassification13};
+        sInstance->shopStickerTextReplacements[14] = {packet->gameIndex14, packet->playerIndex14,
+                                                      packet->itemIndex14,
+                                                      packet->itemClassification14};
+        sInstance->shopStickerTextReplacements[15] = {packet->gameIndex15, packet->playerIndex15,
+                                                      packet->itemIndex15,
+                                                      packet->itemClassification15};
+        sInstance->shopStickerTextReplacements[16] = {packet->gameIndex16, packet->playerIndex16,
+                                                      packet->itemIndex16,
+                                                      packet->itemClassification16};
+    }
+    // Gift
+    if (type == 3)
+    {
+        sInstance->shopGiftTextReplacements[0] = {packet->gameIndex0, packet->playerIndex0,
+                                                  packet->itemIndex0, packet->itemClassification0};
+        sInstance->shopGiftTextReplacements[1] = {packet->gameIndex1, packet->playerIndex1,
+                                                  packet->itemIndex1, packet->itemClassification1};
+        sInstance->shopGiftTextReplacements[2] = {packet->gameIndex2, packet->playerIndex2,
+                                                  packet->itemIndex2, packet->itemClassification2};
+        sInstance->shopGiftTextReplacements[3] = {packet->gameIndex3, packet->playerIndex3,
+                                                  packet->itemIndex3, packet->itemClassification3};
+        sInstance->shopGiftTextReplacements[4] = {packet->gameIndex4, packet->playerIndex4,
+                                                  packet->itemIndex4, packet->itemClassification4};
+        sInstance->shopGiftTextReplacements[5] = {packet->gameIndex5, packet->playerIndex5,
+                                                  packet->itemIndex5, packet->itemClassification5};
+        sInstance->shopGiftTextReplacements[6] = {packet->gameIndex6, packet->playerIndex6,
+                                                  packet->itemIndex6, packet->itemClassification6};
+        sInstance->shopGiftTextReplacements[7] = {packet->gameIndex7, packet->playerIndex7,
+                                                  packet->itemIndex7, packet->itemClassification7};
+        sInstance->shopGiftTextReplacements[8] = {packet->gameIndex8, packet->playerIndex8,
+                                                  packet->itemIndex8, packet->itemClassification8};
+        sInstance->shopGiftTextReplacements[9] = {packet->gameIndex9, packet->playerIndex9,
+                                                  packet->itemIndex9, packet->itemClassification9};
+        sInstance->shopGiftTextReplacements[10] = {packet->gameIndex10, packet->playerIndex10,
+                                                   packet->itemIndex10,
+                                                   packet->itemClassification10};
+        sInstance->shopGiftTextReplacements[11] = {packet->gameIndex11, packet->playerIndex11,
+                                                   packet->itemIndex11,
+                                                   packet->itemClassification11};
+        sInstance->shopGiftTextReplacements[12] = {packet->gameIndex12, packet->playerIndex12,
+                                                   packet->itemIndex12,
+                                                   packet->itemClassification12};
+        sInstance->shopGiftTextReplacements[13] = {packet->gameIndex13, packet->playerIndex13,
+                                                   packet->itemIndex13,
+                                                   packet->itemClassification13};
+        sInstance->shopGiftTextReplacements[14] = {packet->gameIndex14, packet->playerIndex14,
+                                                   packet->itemIndex14,
+                                                   packet->itemClassification14};
+        sInstance->shopGiftTextReplacements[15] = {packet->gameIndex15, packet->playerIndex15,
+                                                   packet->itemIndex15,
+                                                   packet->itemClassification15};
+        sInstance->shopGiftTextReplacements[16] = {packet->gameIndex16, packet->playerIndex16,
+                                                   packet->itemIndex16,
+                                                   packet->itemClassification16};
+        sInstance->shopGiftTextReplacements[17] = {packet->gameIndex17, packet->playerIndex17,
+                                                   packet->itemIndex17,
+                                                   packet->itemClassification17};
+        sInstance->shopGiftTextReplacements[18] = {packet->gameIndex18, packet->playerIndex18,
+                                                   packet->itemIndex18,
+                                                   packet->itemClassification18};
+        sInstance->shopGiftTextReplacements[19] = {packet->gameIndex19, packet->playerIndex19,
+                                                   packet->itemIndex19,
+                                                   packet->itemClassification19};
+        sInstance->shopGiftTextReplacements[20] = {packet->gameIndex20, packet->playerIndex20,
+                                                   packet->itemIndex20,
+                                                   packet->itemClassification20};
+        sInstance->shopGiftTextReplacements[21] = {packet->gameIndex21, packet->playerIndex21,
+                                                   packet->itemIndex21,
+                                                   packet->itemClassification21};
+        sInstance->shopGiftTextReplacements[22] = {packet->gameIndex22, packet->playerIndex22,
+                                                   packet->itemIndex22,
+                                                   packet->itemClassification22};
+        sInstance->shopGiftTextReplacements[23] = {packet->gameIndex23, packet->playerIndex23,
+                                                   packet->itemIndex23,
+                                                   packet->itemClassification23};
+        sInstance->shopGiftTextReplacements[24] = {packet->gameIndex24, packet->playerIndex24,
+                                                   packet->itemIndex24,
+                                                   packet->itemClassification24};
+        sInstance->shopGiftTextReplacements[25] = {packet->gameIndex25, packet->playerIndex25,
+                                                   packet->itemIndex25,
+                                                   packet->itemClassification25};
+    }
+    // Moon
+    if (type == 4)
+    {
+        sInstance->shopMoonTextReplacements[0] = {packet->gameIndex0, packet->playerIndex0,
+                                                  packet->itemIndex0, packet->itemClassification0};
+        sInstance->shopMoonTextReplacements[1] = {packet->gameIndex1, packet->playerIndex1,
+                                                  packet->itemIndex1, packet->itemClassification1};
+        sInstance->shopMoonTextReplacements[2] = {packet->gameIndex2, packet->playerIndex2,
+                                                  packet->itemIndex2, packet->itemClassification2};
+        sInstance->shopMoonTextReplacements[3] = {packet->gameIndex3, packet->playerIndex3,
+                                                  packet->itemIndex3, packet->itemClassification3};
+        sInstance->shopMoonTextReplacements[4] = {packet->gameIndex4, packet->playerIndex4,
+                                                  packet->itemIndex4, packet->itemClassification4};
+        sInstance->shopMoonTextReplacements[5] = {packet->gameIndex5, packet->playerIndex5,
+                                                  packet->itemIndex5, packet->itemClassification5};
+        sInstance->shopMoonTextReplacements[6] = {packet->gameIndex6, packet->playerIndex6,
+                                                  packet->itemIndex6, packet->itemClassification6};
+        sInstance->shopMoonTextReplacements[7] = {packet->gameIndex7, packet->playerIndex7,
+                                                  packet->itemIndex7, packet->itemClassification7};
+        sInstance->shopMoonTextReplacements[8] = {packet->gameIndex8, packet->playerIndex8,
+                                                  packet->itemIndex8, packet->itemClassification8};
+        sInstance->shopMoonTextReplacements[9] = {packet->gameIndex9, packet->playerIndex9,
+                                                  packet->itemIndex9, packet->itemClassification9};
+        sInstance->shopMoonTextReplacements[10] = {packet->gameIndex10, packet->playerIndex10,
+                                                   packet->itemIndex10,
+                                                   packet->itemClassification10};
+        sInstance->shopMoonTextReplacements[11] = {packet->gameIndex11, packet->playerIndex11,
+                                                   packet->itemIndex11,
+                                                   packet->itemClassification11};
+        sInstance->shopMoonTextReplacements[12] = {packet->gameIndex12, packet->playerIndex12,
+                                                   packet->itemIndex12,
+                                                   packet->itemClassification12};
+    }
+
+}
+
+const char16_t* Client::getShopReplacementText(const char* fileName, const char* key) 
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return u"";
+    }
+
+    sead::WFixedSafeString<200> message;
+    message = message.cEmptyString;
+    bool isExplain = false;
+    sead::FixedSafeString<40> convert;
+    convert = "";
+    convert.append(key);
+    if (convert.calcLength() != convert.removeSuffix("_Explain")) {
+        key = convert.cstr();
+        isExplain = true;
+    }
+    shopReplaceText curItem = {255,255,255,255};
+    
+
+    if (strcmp("ItemCap", fileName) == 0)
+    {
+        curItem = sInstance->shopCapTextReplacements[getIndexCostumeList(key)];
+    }
+    else if (strcmp("ItemCloth", fileName) == 0) 
+    {
+        curItem = sInstance->shopClothTextReplacements[getIndexCostumeList(key)];
+    }
+    else if (strcmp("ItemSticker", fileName) == 0) 
+    {
+        curItem = sInstance->shopStickerTextReplacements[getIndexStickerList(key)];
+    }
+    else if (strcmp("ItemGift", fileName) == 0) 
+    {
+        curItem = sInstance->shopGiftTextReplacements[getIndexSouvenirList(key)];
+    }
+    else if (strcmp("ItemMoon", fileName) == 0) 
+    {
+        // Find out key for each kingdom as still is unknown
+        curItem = sInstance->shopMoonTextReplacements[getIndexMoonItemList(key)];
+    } else {
+        // Not included items like Life Up Hearts
+        return u"";
+    }
+
+    if (curItem.gameIndex == 254)
+    {
+        setMessage(1, "No Item Data Received.");
+    }
+
+    if (isExplain)
+    {
+        message.append(u"Comes from the world of ");
+        //if (sInstance->apGameNames[curItem.gameIndex].isEmpty()) {
+            message.append(sInstance->apGameNames[curItem.gameIndex].cstr());
+        //} else {
+            //message.append(u"Missing Game");
+       // }
+
+        message.append(u".\nSeems to belong to ");
+        //if (sInstance->apSlotNames[curItem.slotIndex].isEmpty()) {
+            message.append(sInstance->apSlotNames[curItem.slotIndex].cstr());
+        //} else {
+            //message.append(u"Missing Slot Name");
+        //}
+        message.append(u".\n");
+        if (curItem.itemClassification == 0) {
+            message.append(u"It looks like junk, but may as well ask...");
+        } else if (curItem.itemClassification == 0b0010) {
+            message.append(u"It looks useful.");
+           
+        } else if (curItem.itemClassification == 254) {
+            message.append(u"Error or Not in the Item Pool.");
+        }
+        else {
+            message.append(u"It looks really important!");
+        }
+    } else {
+        //if (sInstance->apSlotNames[curItem.slotIndex].isEmpty()) {
+            message.append(sInstance->apItemNames[curItem.apItemNameIndex].cstr());
+        //} else {
+            //message.append(u"Missing Item Name");
+        //}
+    }
+
+    return message.cstr();
+}
+
 /**
  * @brief 
  * 
@@ -2086,17 +2849,30 @@ void Client::updateChatMessages(ArchipelagoChatMessage* packet)
     sInstance->apChatLine3 = packet->message3;
 }
 
-void Client::updateCounts(ShineCounts* packet)
-{
+void Client::updateSlotData(SlotData* packet) {
     if (!sInstance) {
         Logger::log("Client Null!\n");
         return;
     }
-
-    sInstance->clashCount = packet->clash;
-    sInstance->raidCount = packet->raid;
+    sInstance->worldPayCounts[1] = packet->cascade;
+    sInstance->worldPayCounts[2] = packet->sand;
+    sInstance->worldPayCounts[3] = packet->wooded;
+    sInstance->worldPayCounts[4] = packet->lake;
+    sInstance->worldPayCounts[6] = packet->lost;
+    sInstance->worldPayCounts[7] = packet->metro;
+    sInstance->worldPayCounts[8] = packet->seaside;
+    sInstance->worldPayCounts[9] = packet->snow;
+    sInstance->worldPayCounts[10] = packet->luncheon;
+    sInstance->worldPayCounts[11] = packet->ruined;
+    sInstance->worldPayCounts[12] = packet->bowser;
+    sInstance->worldPayCounts[15] = packet->dark;
+    sInstance->worldPayCounts[16] = packet->darker;
     sInstance->regionals = packet->regionals;
     sInstance->captures = packet->captures;
+
+    sInstance->numApGames = 0;
+    sInstance->numApSlots = 0;
+    sInstance->numApItems = 0;
 }
 
 void Client::updateWorlds(UnlockWorld* packet)
