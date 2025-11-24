@@ -194,8 +194,7 @@ outfits = [
     "Invisibility Hat"
 ]
 
-# Technically filler until achievements implemented
-shop_items = [
+stickers = [
     "Cap Kingdom Sticker",
     "Cascade Kingdom Sticker",
     "Sand Kingdom Sticker",
@@ -212,7 +211,10 @@ shop_items = [
     "Coin Sticker",
     "Block Sticker",
     "? Block Sticker",
-    "Mushroom Kingdom Sticker",
+    "Mushroom Kingdom Sticker"
+]
+
+souvenirs = [
     "Plush Frog",
     "Bonneton Tower Model",
     "T-Rex Model",
@@ -239,6 +241,12 @@ shop_items = [
     "Moon Lamp",
     "Mushroom Cushion Set",
     "Peach's Castle Model"
+]
+
+# Technically filler until achievements implemented
+shop_items = [
+    *stickers,
+    *souvenirs
 ]
 
 loc_Captures = {
