@@ -6,4 +6,5 @@ class GameProgressData {
         void upHomeLevel(void);
         void talkCapNearHomeInWaterfall(void);
         void crashHome();
+        bool isUnlockWorld(int) const;
 };
