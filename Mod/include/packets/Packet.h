@@ -9,6 +9,7 @@
 
 #define PACKBUFSIZE      0x30
 #define COSTUMEBUFSIZE   0x20
+#define APNAMESIZE       0x28
 #define ITEMNAMESIZE     0x80
 #define APMESSAGESIZE    0x4B
 #define OBJECTIDSIZE     0x20
@@ -24,19 +25,21 @@ enum PacketType : short {
     PLAYERCON,
     PLAYERDC,
     COSTUMEINF,
-    SHINECOLL,
+    CHECK,
     CAPTUREINF,
     CHANGESTAGE,
     CMD,
     ITEMCOLL,
     FILLERCOLL,
     APCHATMESSAGE,
-    SHINECOUNTS,
+    SLOTDATA,
     UNLOCKWORLD,
     REGCOLL,
     DEATHLINK,
     PROGRESS,
     SHINECHECKS,
+    APINFO,
+    SHOPREPLACE,
     UDPINIT,
     HOLEPUNCH,
     End // end of enum for bounds checking
@@ -53,7 +56,7 @@ USED static const char *packetNames[] = {
     "Player Connect",
     "Player Disconnect",
     "Costume Info",
-    "Moon Collection",
+    "Check Collection",
     "Capture Info",
     "Change Stage",
     "Server Command",
@@ -66,6 +69,8 @@ USED static const char *packetNames[] = {
     "Deathlink",
     "World Scenario",
     "Shine Checks",
+    "AP Info",
+    "Shop Replace",
     "Udp Initialization",
     "Hole punch",
     
@@ -104,11 +109,14 @@ struct PACKED Packet {
 #include "packets/TagInf.h"
 #include "packets/CostumeInf.h"
 #include "packets/ServerCommand.h"
-#include "packets/ShineCollect.h"
+#include "packets/Check.h"
+//#include "packets/ShineCollect.h"
 #include "packets/ItemCollect.h"
 #include "packets/FillerCollect.h"
 #include "packets/ArchipelagoChatMessage.h"
-#include "packets/ShineCounts.h"
+#include "packets/ApInfo.h"
+#include "packets/ShopReplacePacket.h"
+#include "packets/SlotData.h"
 #include "packets/ShineChecks.h"
 #include "packets/UnlockWorld.h"
 #include "packets/RegionalCollect.h"
