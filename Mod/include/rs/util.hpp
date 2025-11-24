@@ -8,6 +8,7 @@
 #include "al/sensor/SensorMsg.h"
 #include "game/Player/PlayerActorHakoniwa.h"
 #include "al/area/ChangeStageInfo.h"
+#include "game/Actors/Shine.h"
 
 namespace rs {
 
@@ -81,6 +82,8 @@ namespace rs {
     void calcGroundNormalOrGravityDir(sead::Vector3f *result, al::LiveActor const *actor, IUsePlayerCollision const *col);
 
     void calcPlayerFrontDir(sead::Vector3f* result, al::LiveActor const*);
+
+    bool isGotShine(const Shine*);
 
     int getStageShineAnimFrame(al::LiveActor const*, char const*);
     const char* getStageShineArchiveName(al::LiveActor const*, char const*);
