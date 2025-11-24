@@ -37,6 +37,8 @@
 #include "server/gamemode/GameModeBase.hpp"
 #include "server/hns/HideAndSeekMode.hpp"
 #include "server/gamemode/GameModeManager.hpp"
+#include "sead/prim/seadSafeString.h"
+#include "sead/prim/seadSafeString.hpp"
 
 static int pInfSendTimer = 0;
 static int gameInfSendTimer = 0;
@@ -126,7 +128,7 @@ void updatePlayerInfo(GameDataHolderAccessor holder, PlayerActorBase* playerBase
                     if (GameDataFunction::isGotShine(holder, GameDataFunction::getWorldIndexClash(), i))
                         lostCount++;
                 }
-                if (lostCount < Client::getClashCount()) {
+                if (lostCount < Client::getWorldUnlockCount(GameDataFunction::getWorldIndexClash())) {
                     GameDataFunction::repairHome(holder);
                     GameDataFunction::unlockWorld(holder, GameDataFunction::getWorldIndexClash());
                 } else {
@@ -411,6 +413,12 @@ bool isGrabShine(GameDataHolderAccessor accessor, int shineIdx) {
     return false;
 }
 
+bool isGotShineRedirect(const Shine* curShine)
+{
+    GameDataHolderAccessor accessor = GameDataHolderAccessor(curShine);
+    return isGrabShine(accessor, curShine->mShineIdx);
+}
+
 void sendShinePacket(GameDataHolderAccessor thisPtr, Shine* curShine) {
 
     GameDataFile::HintInfo* curHintInfo =
@@ -418,43 +426,43 @@ void sendShinePacket(GameDataHolderAccessor thisPtr, Shine* curShine) {
 
     if (curHintInfo->mUniqueID == 0) {
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "CapWorldHomeStage") == 0) {
-            Client::sendShineCollectPacket(1086);
+            Client::sendCheckPacket(1086, -1);
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "SandWorldHomeStage") == 0) {
-            Client::sendShineCollectPacket(1096);
+            Client::sendCheckPacket(1096, -1);
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "LakeWorldHomeStage") == 0) {
-            Client::sendShineCollectPacket(1094);
+            Client::sendCheckPacket(1094, -1);
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "ForestWorldHomeStage") == 0) {
-            Client::sendShineCollectPacket(1089);
+            Client::sendCheckPacket(1089, -1);
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "CityWorldHomeStage") == 0) {
-            Client::sendShineCollectPacket(1088);
+            Client::sendCheckPacket(1088, -1);
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "SnowWorldHomeStage") == 0) {
-            Client::sendShineCollectPacket(1087);
+            Client::sendCheckPacket(1087, -1);
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "SeaWorldHomeStage") == 0) {
-            Client::sendShineCollectPacket(1095);
+            Client::sendCheckPacket(1095, -1);
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "LavaWorldHomeStage") == 0) {
-            Client::sendShineCollectPacket(1090);
+            Client::sendCheckPacket(1090, -1);
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "SkyWorldHomeStage") == 0) {
-            Client::sendShineCollectPacket(1091);
+            Client::sendCheckPacket(1091, -1);
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "MoonWorldHomeStage") == 0) {
-            Client::sendShineCollectPacket(1165);
+            Client::sendCheckPacket(1165, -1);
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "PeachWorldHomeStage") == 0) {
-            Client::sendShineCollectPacket(1152);
+            Client::sendCheckPacket(1152, -1);
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "Special1WorldHomeStage") == 0) {
-            Client::sendShineCollectPacket(1123);
+            Client::sendCheckPacket(1123, -1);
         }
     } else {
-        Client::sendShineCollectPacket(curHintInfo->mUniqueID);
+        Client::sendCheckPacket(curHintInfo->mUniqueID, -1);
     }
     // Add some way to sync shinechecks grabbed before connecting, probably handle on connect or something
     Client::addShine(curHintInfo->mUniqueID);
@@ -541,7 +549,24 @@ void sendShinePacket(GameDataHolderAccessor thisPtr, Shine* curShine) {
 
 void sendItemPacket(GameDataFile thisPtr, ShopItem::ItemInfo* info, bool flag) {
 
-    Client::sendItemCollectPacket(info->mName, (int)info->mType);
+    int itemType = static_cast<int>(info->mType);
+
+    switch (itemType) 
+    { 
+        case 0:
+            Client::sendCheckPacket(getIndexCostumeList(info->mName), itemType);
+            break;
+        case 1:
+            Client::sendCheckPacket(getIndexCostumeList(info->mName), itemType);
+            break;
+        case 2:
+            Client::sendCheckPacket(getIndexSouvenirList(info->mName), itemType);
+            break;
+        case 3:
+            Client::sendCheckPacket(getIndexStickerList(info->mName), itemType);
+            break;
+    }
+    
     Client::addItem(info);
     //thisPtr.buyItem(info, flag);
 }
@@ -550,7 +575,9 @@ void sendCollectPacket(GameDataHolderAccessor thisPtr, al::PlacementId* placemen
 {
     if (Client::getRegionalsFlag())
     {
-        Client::sendRegionalCollectPacket(thisPtr, placementId);
+        sead::FixedSafeString<0x20> placementString;
+        placementId->makeString(&placementString);
+        Client::sendCheckPacket(4, placementString.cstr(), GameDataFunction::getCurrentStageName(thisPtr));
     }
     else
     {
@@ -558,6 +585,51 @@ void sendCollectPacket(GameDataHolderAccessor thisPtr, al::PlacementId* placemen
     }
     
     // Add flag in client to determine when option is disabled and pass regularly to GameDataFunction
+}
+
+int getUnlockShineNum(GameDataHolder* thisPtr, bool* unkBool, int worldId)
+{
+    if (worldId < 1 || worldId > 16)
+    {
+        worldId = 0;
+    }
+    //*unkBool = thisPtr->mGameDataFile->mGameProgressData->isUnlockWorld(worldId);
+    //if (*unkBool) {
+    return Client::getWorldUnlockCount(worldId);
+    //}
+    //return -1;
+}
+
+int getUnlockShineNumByAccessor(bool* unkBool, GameDataHolderAccessor accessor)
+{
+    int worldId = accessor.mData->mGameDataFile->mCurWorldID;
+    if (worldId < 1 || worldId > 16)
+    {
+        worldId = 0;
+    }
+    //*unkBool = GameDataFunction::isUnlockedWorld(accessor, worldId);
+    //if (*unkBool) {
+        return Client::getWorldUnlockCount(worldId);
+    //}
+    return -1;
+}
+
+int getUnlockShineNumByGameDataFile(GameDataFile* file, bool* unkBool)
+{
+    int worldId = file->mCurWorldID;
+    if (worldId < 1 || worldId > 16) {
+        worldId = 0;
+    }
+    //*unkBool = file->mGameProgressData->isUnlockWorld(worldId);
+    //if (*unkBool) {
+    return Client::getWorldUnlockCount(worldId);
+    //}
+    //return -1;
+}
+
+int getUnlockShineNumByWorldId(bool* unkBool, GameDataHolder* thisPtr, int worldId)
+{
+    return getUnlockShineNum(thisPtr, unkBool, worldId);
 }
 
 void onGrandShineStageChange(GameDataHolderWriter holder, ChangeStageInfo const* stageInfo) 
@@ -597,6 +669,21 @@ void onStageChange(GameDataFile *file,const ChangeStageInfo* stageInfo, int para
     
 }
 
+const char16_t* getShopItemMessage(al::IUseMessageSystem const* messageSystem, char const* fileName, char const* key) 
+{
+    const char16_t* msg =  Client::getShopReplacementText(fileName, key);
+    sead::WFixedSafeString<200> confirm;
+    confirm = confirm.cEmptyString;
+    confirm.append(msg);
+    if (!confirm.isEmpty())
+    {
+        return msg;
+    }
+    // Default to base game text if no ap text exists
+    return al::getSystemMessageString(messageSystem, fileName, key);
+    
+}
+
 bool isBuyItems(ShopItem::ItemInfo* itemInfo) {
     // Add a collected outfits, gifts, stickers based implementation similar to shinechecks
     
@@ -608,7 +695,7 @@ void onAddHack(GameDataHolderWriter writer,const char* hackName)
 {
     if (Client::getCapturesFlag()) {
         //Client::setMessage(1, hackName);
-        Client::sendShineCollectPacket(getIndexCaptureList(hackName) + 3700);
+        Client::sendCheckPacket(getIndexCaptureList(hackName), 5);
         isRecordCapture = true;
     } else {
         GameDataFunction::addHackDictionary(writer, hackName);
@@ -647,6 +734,8 @@ void onNewGameDemoStart(al::LiveActor* thisPtr, al::ActorInitInfo const& info, s
         Client::setCaptureChecks(i, 0);
     }
 
+    Client::setCheckIndex(-1);
+
     al::initActorWithArchiveName(thisPtr, info, str, name);
     return;
 }
@@ -655,7 +744,7 @@ void onNewGameDemoStart(al::LiveActor* thisPtr, al::ActorInitInfo const& info, s
 void onUnlockLost(GameDataHolderWriter writer, int worldIndex)
 {
     // Send Beat Bowser in Cloud location
-    Client::sendShineCollectPacket(2501);
+    Client::sendCheckPacket(2500, -1);
     //Client::setScenario(GameDataFunction::getWorldIndexCloud(), 2);
     
     GameDataFunction::unlockWorld(writer, worldIndex);
@@ -666,7 +755,7 @@ void onUnlockLost(GameDataHolderWriter writer, int worldIndex)
 void onCreditsStart(al::Scene* thisPtr, const al::SceneInitInfo info) {
 
     //Client::setScenario(GameDataFunction::getWorldIndexPeach(), 2);
-    Client::sendShineCollectPacket(2500);
+    Client::sendCheckPacket(2499, -1);
     
     thisPtr->initDrawSystemInfo(info);
     return;
