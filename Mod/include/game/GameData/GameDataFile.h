@@ -40,6 +40,7 @@ class PlayerHitPointData;
 
 class GameDataHolder;
 class ShineInfo;
+class CoinCollectInfo;
 
 class GameDataFile
 {
@@ -466,7 +467,7 @@ class GameDataFile
         sead::PtrArrayImpl sead__ptrarrayimpl9C8;
         sead::PtrArrayImpl sead__ptrarrayimpl9D8;
         void *qword9E8;
-        int mCurWorldID;
+        int mCurWorldID; // 0x9F0
         void *qword9F8;
         void *qwordA00;
         u16 wordA08;
