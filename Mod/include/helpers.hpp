@@ -34,6 +34,7 @@ int getIndexCostumeList(const char *costumeName);
 int getIndexStickerList(const char *stickerName);
 int getIndexSouvenirList(const char *souvenirName);
 int getIndexCaptureList(const char *captureName);
+int getIndexMoonItemList(const char *moonItemName);
 
 const char *tryGetPuppetCapName(PuppetInfo *info);
 const char* tryGetPuppetBodyName(PuppetInfo* info);
@@ -45,48 +46,48 @@ void killMainPlayer(PlayerActorHakoniwa* mainPlayer);
 
 __attribute__((used)) static const char* costumeNames[] = {
     "Mario",
-    "Mario64",
-    "Mario64Metal",
-    "MarioAloha",
-    "MarioArmor",
-    "MarioBone",
-    "MarioClown",
-    "MarioColorClassic",
-    "MarioColorGold",
-    "MarioColorLuigi",
-    "MarioColorWaluigi",
-    "MarioColorWario",
-    "MarioCook",
-    "MarioDiddyKong",
-    "MarioDoctor",
-    "MarioExplorer",
-    "MarioFootball",
-    "MarioGolf",
-    "MarioGunman",
-    "MarioHakama",
-    "MarioHappi",
-    "MarioKing",
-    "MarioKoopa",
-    "MarioMaker",
-    "MarioMechanic",
-    "MarioNew3DS",
-    "MarioPainter",
-    "MarioPeach",
-    "MarioPilot",
-    "MarioPirate",
-    "MarioPoncho",
-    "MarioPrimitiveMan",
-    "MarioSailor",
-    "MarioScientist",
-    "MarioShopman",
-    "MarioSnowSuit",
-    "MarioSpaceSuit",
-    "MarioSuit",
-    "MarioSwimwear",
     "MarioTailCoat",
+    "MarioPrimitiveMan",
+    "MarioPoncho",
+    "MarioGunman",
+    "MarioSwimwear",
+    "MarioExplorer",
+    "MarioScientist",
+    "MarioPilot",
+    "MarioMaker",
+    "MarioGolf",
+    "MarioSnowSuit",
+    "MarioAloha",
+    "MarioSailor",
+    "MarioCook",
+    "MarioPainter",
+    "MarioArmor",
+    "MarioHappi",
+    "MarioSpaceSuit",
+    "Mario64",
+    "MarioShopman",
+    "MarioNew3DS",
+    "MarioMechanic",
+    "MarioSuit",
+    "MarioPirate",
+    "MarioClown",
+    "MarioFootball",
+    "MarioColorClassic",
+    "MarioColorLuigi",
+    "MarioColorWario",
+    "MarioColorWaluigi",
+    "MarioColorGold",
+    "MarioDoctor",
+    "MarioDiddyKong",
+    "MarioKoopa",
+    "MarioPeach",
+    "Mario64Metal",
+    "MarioKing",
     "MarioTuxedo",
-    "MarioUnderwear",
     "MarioCaptain",
+    "MarioUnderwear",
+    "MarioHakama",
+    "MarioBone",
     "MarioInvisible"
 };
 // full costume list from 1.3
@@ -168,6 +169,22 @@ __attribute__((used)) static const char* souvenirNames[] = {
     "SouvenirPeach2"
 };
 
+__attribute__((used)) static const char* moonItemNames[] = {
+    "MoonCity", // 101
+    "MoonForest", // 138
+    "MoonWaterfall", //211   
+    "MoonCap",  //230
+    "MoonLava", // 294
+    "MoonSky",  // 360
+    "MoonClash",// 398
+    "MoonLake", // 430
+    "MoonSea",  // 460
+    "MoonSand", // 565
+    "MoonSnow", // 868
+    "MoonPeach", // 933
+    "MoonMoon" // 1157
+};
+
 __attribute__((used)) static const char* captureListNames[] = {
     "Frog",
     "ElectricWire", // Spark pylon
@@ -222,6 +239,23 @@ __attribute__((used)) static const char* captureListNames[] = {
     "FukuwaraiFacePartsMario", // Mario Picture Match Piece
     "Yoshi",
 
+};
+
+__attribute__((used)) static const char* changeStageIdList[] = {};
+
+__attribute__((used)) static const char* changeStageNameList[] = {};
+
+struct stageConnection {
+    short fromStageIdIndex;
+    short toStageIdIndex;
+    short toStageNameIndex;
+};
+
+struct shopReplaceText {
+    u8 gameIndex;
+    u8 slotIndex;
+    u8 apItemNameIndex;
+    u8 itemClassification;
 };
 
 struct HackActorName {
