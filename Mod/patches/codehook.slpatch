@@ -73,21 +73,23 @@ B59E28 B seadPrintHook // sead::system::print
 //1C0560 BL sendCollectPacket
 
 // Shine::exeGot
-//1D2E8C LDR X8, [X19, 0x1A0]
-//1d2e90 NOP
-//1D2E94 CMP X8,#0x2
-//1d2e98 B.eq 0x1D2D48+1A0
 1D2F08 BL onGrandShineStageChange
 
 // Shine::init
 1CD870 LDR X1, [X19, #0x290]
 1CD878 BL isGrabShine
 
-// Shine::isGot()
+// Shine::isGot() (Breaks wooded story moon 1)
 //1D06CC BL isGrabShine
 
+// CageShineWatcher::init()
+227768 BL isGotShineRedirect
+
 // GameDataFunction::isGotShine(Shine*)
-//1D06CC BL isGrabShine
+1D06CC BL isGrabShine
+
+// rs::isGotShine(Shine*)
+1d06cc BL isGrabShine
 
 // SnowWorldSequenceFlagCheckObj::exeWait()
 325D00 BL isGrabShine
@@ -115,12 +117,77 @@ B59E28 B seadPrintHook // sead::system::print
 // PlayerActorHakoniwa::startDemoShineGet()
 //4220E4 NOP
 
+// GameDataFunction::findUnlockShineNum
+
+// Add last one here if necessary though is const function so might not work
+
+// FUN_7100202d20
+202dc8 BL getUnlockShineNumByAccessor
+
+// FUN_710030b934
+30b968 BL getUnlockShineNumByAccessor
+
+// FUN_710030d6ec
+30d720 BL getUnlockShineNumByAccessor
+
+// FUN_710030da68
+30db08 BL getUnlockShineNumByAccessor
+
+// FUN_71003cdc24
+3cdc58 BL getUnlockShineNumByAccessor
+
+// GameDataFile::findUnlockShineNumCurrentWorld
+
+// GameDataFunction::isUnlockedNextWorld
+52a0f0 BL getUnlockShineNumByGameDataFile
+
+// GameDataFunction::isCollectShineForNextWorldAndNotUnlockNextWorld
+52a190 BL getUnlockShineNumByGameDataFile
+
+// GameDataFunction::checkEnableUnlockWorldSpecial1
+52a748 BL getUnlockShineNumByGameDataFile
+
+// GameDataFunction::checkEnableUnlockWorldSpecial2
+52a820 BL getUnlockShineNumByGameDataFile
+
+// rs::checkGetEnoughShine
+5336e8 BL getUnlockShineNum
+
+// rs::checkGetEnoughShineInCurrentWorld
+533770 BL getUnlockShineNum
+
+// rs::checkNeedTalkPrevWorld
+533928 BL getUnlockShineNum
+
+// rs::isSequenceCollectShineBeforeGameClear
+533c0c BL getUnlockShineNum
+
+// rs::isSequenceCollectShineForRepairHome
+533ca0 BL getUnlockShineNum
+
+// rs::tryShowCapMsgMoonGetSpecial1(IUseSceneObjHolder *param_1)
+23cbf0 BL getUnlockShineNumByWorldId
+
+// rs::tryShowCapMsgMoonGetSpecial2(IUseSceneObjHolder *param_1)
+23ced8 BL getUnlockShineNumByWorldId
+
+// FUN_710030f1e0(LiveActor *param_1,int param_2)
+30f230 BL getUnlockShineNumByWorldId
+
+// FUN_71003126ec(LiveActor *param_1)
+312734 BL getUnlockShineNumByWorldId
 
 // PlayerHackKeeper::recordHack
 4496AC BL onAddHack
 
 // rs::startHack
 //56ba9c BL onStartHack
+
+// ShopLayoutInfo::updateItemPartsData(CommonHorizontalList*, sead::PtrArray<ShopLayoutItemInfo>const*,
+//  al::LayoutActor const*, Shine const*, bool)
+2089C4 BL getShopItemMessage
+
+208A44 BL getShopItemMessage
 
 //rs::buyCap
 54CB9C BL sendItemPacket
