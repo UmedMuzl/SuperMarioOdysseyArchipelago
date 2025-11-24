@@ -12,7 +12,7 @@ class PacketType(Enum):
     Connect : short = 6
     Disconnect : short = 7
     CostumeInfo : short = 8
-    Shine : short = 9
+    Check : short = 9
     CaptureInfo : short = 10
     ChangeStage : short = 11
     Command : short = 12
@@ -24,10 +24,24 @@ class PacketType(Enum):
     DeathLink : short = 19
     Progress : short = 20
     ShineChecks : short = 21
+    ApInfo : short = 22
+    ShopReplace : short = 23
+    Shine : short = -2
 
 class ConnectionType(Enum):
     Connect = 0
     Reconnect = 1
+
+class ItemType(Enum):
+    Coins = -2
+    Moon = -1
+    Clothes = 0
+    Cap = 1
+    Souvenir = 2
+    Sticker = 3
+    RegionalCoin = 4
+    Capture = 5
+
 
 #region Check Packets
 
@@ -45,8 +59,8 @@ class ShinePacket:
         data : bytearray = bytearray()
         int_value : int = self.id.value
         data += int_value.to_bytes(4, "little")
-        if len(data) > self.SIZE:
-            raise f"ShinePacket failed to serialize. bytearray exceeds maximum size {self.SIZE}."
+        if len(data) != self.SIZE:
+            raise f"ShinePacket failed to serialize. bytearray is incorrect size {self.SIZE}."
         return data
 
     def deserialize(self, data : bytes | bytearray) -> None:
@@ -55,29 +69,46 @@ class ShinePacket:
         self.id  = c_int(int.from_bytes(data[0:self.SIZE], "little"))
 
 class CheckPacket:
+    OBJ_ID_SIZE = 0x10
+    STAGE_NAME_SIZE = 0x30
     location_id : int
-    item_type : int
+    # Shop Items
+    item_type : ItemType
+    # Prevent Repeat Filler ETC
     index : int
+    # OBJ ID
+    obj_id : str
+    # Stage
+    stage : str
+    # Coins
     amount : int
-    SIZE : short = 16
+    SIZE : short = 16 + 0x10 + 0x30
 
-    def __init__(self, packet_bytes : bytearray = None, location_id : int = None, item_type : int = None, index : int = None, amount : int = None):
+    def __init__(self, packet_bytes : bytearray = None, location_id : int = None, item_type : int = None, index : int = None, obj_id : str = None, stage : str = None, amount : int = None):
         if packet_bytes:
             self.deserialize(packet_bytes)
         else:
             self.location_id = location_id
-            self.item_type = item_type
+            self.item_type = ItemType(item_type)
             self.index = index
+            self.obj_id = obj_id
+            self.stage = stage
             self.amount = amount
 
     def serialize(self) -> bytearray:
         data : bytearray = bytearray()
-        data += self.location_id.to_bytes(4, "little")
-        data += self.item_type.to_bytes(4, "little")
-        data += self.index.to_bytes(4, "little")
+        data += self.location_id.to_bytes(4, "little", signed=True)
+        data += self.item_type.value.to_bytes(4, "little", signed=True)
+        data += self.index.to_bytes(4, "little", signed=True)
+        data += self.obj_id.encode()
+        while len(data) < 12 + self.OBJ_ID_SIZE:
+            data += b"\x00"
+        data += self.stage.encode()
+        while len(data) < 12 + self.OBJ_ID_SIZE + self.STAGE_NAME_SIZE:
+            data += b"\x00"
         data += self.amount.to_bytes(4, "little")
-        if len(data) > self.SIZE:
-            raise f"CheckPacket failed to serialize. bytearray exceeds maximum size {self.SIZE}."
+        if len(data) != self.SIZE:
+            raise f"CheckPacket failed to serialize. bytearray is incorrect size {self.SIZE}."
         return data
 
     def deserialize(self, data : bytes | bytearray) -> None:
@@ -86,10 +117,14 @@ class CheckPacket:
         offset = 0
         self.location_id  = int.from_bytes(data[offset:offset + 4], "little")
         offset += 4
-        self.item_type  = int.from_bytes(data[offset:offset + 4], "little")
+        self.item_type  = ItemType(int.from_bytes(data[offset:offset + 4], "little",signed=True))
         offset += 4
-        self.index  = int.from_bytes(data[offset:offset + 4], "little")
+        self.index  = int.from_bytes(data[offset:offset + 4], "little",signed=True)
         offset += 4
+        self.obj_id = data[offset:offset + self.OBJ_ID_SIZE].decode()
+        offset += self.OBJ_ID_SIZE
+        self.stage = data[offset:offset + self.STAGE_NAME_SIZE].decode()
+        offset += self.STAGE_NAME_SIZE
         self.amount  = int.from_bytes(data[offset:offset + 4], "little")
         offset += 4
 
@@ -109,8 +144,8 @@ class ShineChecksPacket:
         data : bytearray = bytearray()
         # int_value : int = self.id.value
         # data += int_value.to_bytes(4, "little")
-        if len(data) > self.SIZE:
-            raise f"ShinePacket failed to serialize. bytearray exceeds maximum size {self.SIZE}."
+        if len(data) != self.SIZE:
+            raise f"ShinePacket failed to serialize. bytearray is incorrect size {self.SIZE}."
         return data
 
     def deserialize(self, data : bytes | bytearray) -> None:
@@ -211,8 +246,8 @@ class ItemPacket:
             data += b"\x00"
         int_value : int = self.item_type.value
         data += int_value.to_bytes(4, "little")
-        if len(data) > self.SIZE:
-            raise f"ItemPacket failed to serialize. bytearray exceeds maximum size {self.SIZE}."
+        if len(data) != self.SIZE:
+            raise f"ItemPacket failed to serialize. bytearray is incorrect size {self.SIZE}."
         return data
 
     def deserialize(self, data : bytes | bytearray) -> None:
@@ -239,8 +274,8 @@ class RegionalCoinPacket:
         data += self.stage_name.encode()
         while len(data) < self.STAGE_NAME_SIZE + self.OBJECT_ID_SIZE:
             data += b"\x00"
-        if len(data) > self.SIZE:
-            raise f"RegionalCoinPacket failed to serialize. bytearray exceeds maximum size {self.SIZE}."
+        if len(data) != self.SIZE:
+            raise f"RegionalCoinPacket failed to serialize. bytearray is incorrect size {self.SIZE}."
         return data
 
     def deserialize(self, data : bytes | bytearray) -> None:
@@ -265,8 +300,8 @@ class FillerPacket:
         data: bytearray = bytearray()
         int_value : int = self.item_type.value
         data += int_value.to_bytes(4,"little")
-        if len(data) > self.SIZE:
-            raise f"FillerPacket failed to serialize. bytearray exceeds maximum size {self.SIZE}."
+        if len(data) != self.SIZE:
+            raise f"FillerPacket failed to serialize. bytearray is incorrect size {self.SIZE}."
         return data
 
     def deserialize(self, data : bytes | bytearray) -> None:
@@ -300,8 +335,8 @@ class ChatMessagePacket:
 
             while len(data) < self.MESSAGE_SIZE * (index + 1):
                 data += b"\x00"
-        if len(data) > self.SIZE:
-            raise f"ChatMessagePacket failed to serialize. bytearray exceeds maximum size {self.SIZE}."
+        if len(data) != self.SIZE:
+            raise f"ChatMessagePacket failed to serialize. bytearray is incorrect size {self.SIZE}."
         return data
 
 
@@ -318,40 +353,106 @@ class ChatMessagePacket:
 
 
 class SlotDataPacket:
-    clash : ushort
-    raid : ushort
+    cascade : ushort
+    sand : ushort
+    wooded : ushort
+    lake : ushort
+    lost : ushort
+    metro : ushort
+    seaside : ushort
+    snow : ushort
+    luncheon : ushort
+    ruined : ushort
+    bowser : ushort
+    dark : ushort
+    darker : ushort
     regionals : bool
     captures : bool
-    SIZE : short = 6
+    SIZE : short = 28
 
-    def __init__(self, packet_bytes : bytearray = None, clash : int = None, raid : int = None, regionals : bool = None, captures : bool = None):
+    def __init__(self, packet_bytes : bytearray = None, cascade : int = None, sand : int = None, wooded : int = None, lake : int = None, lost : int = None, metro : int = None, seaside : int = None, snow : int = None, luncheon : int = None, ruined : int = None, bowser : int = None, dark : int = None, darker : int = None,  regionals : bool = None, captures : bool = None):
         if packet_bytes:
             self.deserialize(packet_bytes)
         else:
-            self.raid = short(raid)
+            self.cascade = short(cascade)
+            self.sand = short(sand)
+            self.wooded = short(wooded)
+            self.lake = short(lake)
+            self.lost = short(lost)
+            self.metro = short(metro)
+            self.seaside = short(seaside)
+            self.snow = short(snow)
+            self.luncheon = short(luncheon)
+            self.ruined = short(ruined)
+            self.bowser = short(bowser)
+            self.dark = short(dark)
+            self.darker = short(darker)
             self.regionals = regionals
-            self.clash = short(clash)
             self.captures = captures
 
     def serialize(self) -> bytearray:
         data : bytearray = bytearray()
-        int_value : int = self.clash.value
+        int_value : int = self.cascade.value
         data += int_value.to_bytes(2, "little")
-        int_value = self.raid.value
+        int_value = self.sand.value
+        data += int_value.to_bytes(2, "little")
+        int_value = self.wooded.value
+        data += int_value.to_bytes(2, "little")
+        int_value = self.lake.value
+        data += int_value.to_bytes(2, "little")
+        int_value = self.lost.value
+        data += int_value.to_bytes(2, "little")
+        int_value = self.metro.value
+        data += int_value.to_bytes(2, "little")
+        int_value = self.seaside.value
+        data += int_value.to_bytes(2, "little")
+        int_value = self.snow.value
+        data += int_value.to_bytes(2, "little")
+        int_value = self.luncheon.value
+        data += int_value.to_bytes(2, "little")
+        int_value = self.ruined.value
+        data += int_value.to_bytes(2, "little")
+        int_value = self.bowser.value
+        data += int_value.to_bytes(2, "little")
+        int_value = self.dark.value
+        data += int_value.to_bytes(2, "little")
+        int_value = self.darker.value
         data += int_value.to_bytes(2, "little")
         data += self.regionals.to_bytes(1, "little")
         data += self.captures.to_bytes(1, "little")
-        if len(data) > self.SIZE:
-            raise f"CountsPacket failed to serialize. bytearray exceeds maximum size {self.SIZE}."
+        if len(data) != self.SIZE:
+            raise f"CountsPacket failed to serialize. bytearray is incorrect size {self.SIZE}."
         return data
 
     def deserialize(self, data : bytes | bytearray) -> None:
         if data is bytes:
             data = bytearray(data)
         offset = 0
-        self.clash = ushort(int.from_bytes(data[offset:2], "little"))
+        self.cascade = ushort(int.from_bytes(data[offset:2], "little"))
         offset += 2
-        self.raid = ushort(int.from_bytes(data[offset:offset + 2], "little"))
+        self.sand = ushort(int.from_bytes(data[offset:offset + 2], "little"))
+        offset += 2
+        self.wooded = ushort(int.from_bytes(data[offset:offset + 2], "little"))
+        offset += 2
+        self.lake = ushort(int.from_bytes(data[offset:offset + 2], "little"))
+        offset += 2
+        self.lost = ushort(int.from_bytes(data[offset:offset + 2], "little"))
+        offset += 2
+        self.metro = ushort(int.from_bytes(data[offset:offset + 2], "little"))
+        offset += 2
+        self.seaside = ushort(int.from_bytes(data[offset:offset + 2], "little"))
+        offset += 2
+        self.snow = ushort(int.from_bytes(data[offset:offset + 2], "little"))
+        offset += 2
+        self.luncheon = ushort(int.from_bytes(data[offset:offset + 2], "little"))
+        offset += 2
+        self.ruined = ushort(int.from_bytes(data[offset:offset + 2], "little"))
+        offset += 2
+        self.bowser = ushort(int.from_bytes(data[offset:offset + 2], "little"))
+        offset += 2
+        self.dark = ushort(int.from_bytes(data[offset:offset + 2], "little"))
+        offset += 2
+        self.darker = ushort(int.from_bytes(data[offset:offset + 2], "little"))
         offset += 2
         self.regionals = bool.from_bytes(data[offset:offset + 1], "little")
         offset += 1
@@ -381,8 +482,8 @@ class ProgressPacket:
         data += int_value.to_bytes(4, "little")
         int_value = self.scenario.value
         data += int_value.to_bytes(2, "little")
-        if len(data) > self.SIZE:
-            raise f"ProgressPacket failed to serialize. bytearray exceeds maximum size {self.SIZE}."
+        if len(data) != self.SIZE:
+            raise f"ProgressPacket failed to serialize. bytearray is incorrect size {self.SIZE}."
         return data
 
     # Shouldn't be necessary
@@ -421,8 +522,8 @@ class ChangeStagePacket:
         data += int_value.to_bytes(1, "little", signed=True)
         int_value2 : int = self.sub_scenario_type.value
         data += int_value2.to_bytes(1, "little", signed=False)
-        if len(data) > self.SIZE:
-            raise f"ChangeStagePacket failed to serialize. bytearray exceeds maximum size {self.SIZE}."
+        if len(data) != self.SIZE:
+            raise f"ChangeStagePacket failed to serialize. bytearray is incorrect size {self.SIZE}."
         return data
 
     def deserialize(self, data : bytes | bytearray) -> None:
@@ -437,6 +538,101 @@ class ChangeStagePacket:
         offset += 1
         self.sub_scenario_type = byte(int.from_bytes(data[offset:offset + 1], "little"))
 
+class ApInfoPacket:
+    INFO_SIZE : int = 40
+    info_type : int = -1
+    index1 : int = -1
+    index2 : int = -1
+    index3 : int = -1
+    info : list[str] = []
+
+    SIZE : short = 128
+
+    def __init__(self, info_type: int, index1 : int, index2 : int, index3 : int, info : list[str]):
+        self.info_type = info_type
+        self.index1 = index1
+        self.index2 = index2
+        self.index3 = index3
+        self.info = info
+
+    def serialize(self) -> bytearray:
+        data : bytearray = bytearray()
+        data += self.info_type.to_bytes(2,"little")
+        data += self.index1.to_bytes(2,"little")
+        data += self.index2.to_bytes(2,"little")
+        data += self.index3.to_bytes(2,"little")
+
+        for i in range(3):
+            if i < len(self.info):
+                if len(self.info[i]) > 40:
+                    data += self.info[i][:40].encode()
+                else:
+                    data += self.info[i].encode()
+
+            while len(data) < 8 + self.INFO_SIZE * (i + 1):
+                data += b"\x00"
+
+        if len(data) != self.SIZE:
+            raise f"ApInfoPacket failed to serialize. bytearray is incorrect size {self.SIZE}."
+        return data
+
+    def deserialize(self, data : bytes | bytearray) -> None:
+        if data is bytes:
+            data = bytearray(data)
+        offset : int = 0
+        self.info_type = int.from_bytes(data[offset:2], "little")
+        offset += 2
+        self.index1 = int.from_bytes(data[offset:2], "little")
+        offset += 2
+        self.index2 = int.from_bytes(data[offset:2], "little")
+        offset += 2
+        self.index3 = int.from_bytes(data[offset:2], "little")
+        offset += 2
+        self.info.append(data[offset:offset + self.INFO_SIZE].decode("utf-16"))
+        offset += self.INFO_SIZE
+        self.info.append(data[offset:offset + self.INFO_SIZE].decode("utf-16"))
+        offset += self.INFO_SIZE
+        self.info.append(data[offset:offset + self.INFO_SIZE].decode("utf-16"))
+
+class ShopReplace:
+    info_type : int = 255
+    info : list[list[int]] = []
+
+    SIZE : short = 177
+
+    def __init__(self, info_type: int, info : list[list[int]]):
+        self.info_type = info_type
+        self.info = info
+
+    def serialize(self) -> bytearray:
+        data : bytearray = bytearray()
+        data += self.info_type.to_bytes(1,"little", signed=False)
+
+        for i in range(44):
+            if i < len(self.info):
+                for value in self.info[i]:
+                    data += value.to_bytes(1,"little", signed=False)
+
+            else:
+                filler = 255
+                data += filler.to_bytes(1,"little", signed=False)
+                data += filler.to_bytes(1,"little", signed=False)
+                data += filler.to_bytes(1,"little", signed=False)
+                data += filler.to_bytes(1,"little", signed=False)
+
+        if len(data) != self.SIZE:
+            raise f"ShopReplace failed to serialize. bytearray is incorrect size {self.SIZE}."
+        return data
+
+    def deserialize(self, data : bytes | bytearray) -> None:
+        if data is bytes:
+            data = bytearray(data)
+        offset : int = 0
+        self.info_type = data[offset]
+        offset += 1
+        for i in range(11):
+            self.info.append([data[offset], data[offset+1], data[offset+2], data[offset+3]])
+            offset += 4
 
 class DeathLinkPacket:
     SIZE : short = 0x0
@@ -485,8 +681,8 @@ class InitPacket:
         data : bytearray = bytearray()
         as_integer : int = self.max_players.value
         data += as_integer.to_bytes(2, "little")
-        if len(data) > self.SIZE:
-            raise f"InitPacket failed to serialize. bytearray exceeds maximum size {self.SIZE}."
+        if len(data) != self.SIZE:
+            raise f"InitPacket failed to serialize. bytearray is incorrect size {self.SIZE}."
         return data
 
 
@@ -499,12 +695,12 @@ class InitPacket:
 
 class PacketHeader:
     GUID_SIZE : int = 16
-    guid : bytes
+    guid : str
     packet_type : PacketType
     packet_size : short
     SIZE : short = 16 + 4
 
-    def __init__(self, header_bytes : bytearray = None , guid : bytes = None, packet_type : PacketType = PacketType.Init):
+    def __init__(self, header_bytes : bytearray = None, guid : str = None,  packet_type : PacketType = PacketType.Init):
         if header_bytes:
             self.deserialize(header_bytes)
         else:
@@ -513,22 +709,22 @@ class PacketHeader:
 
     def serialize(self) -> bytearray:
         data: bytearray = bytearray()
-        data += self.guid
+        data += self.guid.encode("utf-16")
         while len(data) < self.GUID_SIZE:
             data += b"\x00"
         int_value: int = self.packet_type.value
         data += int_value.to_bytes(2, "little")
         int_value2 : int = self.packet_size
         data += int_value2.to_bytes(2, "little")
-        if len(data) > self.SIZE:
-            raise f"PacketHeader failed to serialize. bytearray exceeds maximum size {self.SIZE}."
+        if len(data) != self.SIZE:
+            raise f"PacketHeader failed to serialize. bytearray is incorrect size {self.SIZE}."
         return data
 
     def deserialize(self, data : bytes | bytearray) -> None:
         if data is bytes:
             data = bytearray(data)
         offset = 0
-        self.guid = bytes(data[offset:self.GUID_SIZE])
+        self.guid = data[offset:self.GUID_SIZE].decode("utf-16", "ignore")
         offset += self.GUID_SIZE
         self.packet_type = PacketType(int.from_bytes(data[offset:offset + 2], "little"))
         offset += 2
@@ -537,8 +733,9 @@ class PacketHeader:
 class Packet:
     header : PacketHeader
     packet : Any
+    max_size : int = 256 # max size without header
 
-    def __init__(self, header_bytes : bytearray = None, guid : bytes = None, packet_type : PacketType = PacketType.Connect, packet_data : list = None):
+    def __init__(self, guid : str, header_bytes : bytearray = None, packet_type : PacketType = PacketType.Connect, packet_data : list = None):
         if header_bytes:
             self.header = PacketHeader(header_bytes=header_bytes)
         else:
@@ -551,9 +748,14 @@ class Packet:
                 case PacketType.ChangeStage:
                     self.packet = ChangeStagePacket(stage=packet_data[0], scenario=packet_data[1])
                 case PacketType.SlotData:
-                    self.packet = SlotDataPacket(clash=packet_data[0], raid=packet_data[1], regionals=packet_data[2])
+                    self.packet = SlotDataPacket(cascade=packet_data[0], sand=packet_data[1], wooded=packet_data[2],
+                        lake=packet_data[3], lost =packet_data[4], metro=packet_data[5], seaside=packet_data[6],
+                        snow=packet_data[7], luncheon=packet_data[8], ruined=packet_data[9], bowser=packet_data[10],
+                        dark=packet_data[11], darker=packet_data[12], regionals=packet_data[13], captures=packet_data[14])
                 case PacketType.ArchipelagoChat:
                     self.packet = ChatMessagePacket(messages=packet_data[0])
+                case PacketType.Check:
+                    self.packet = CheckPacket(location_id=packet_data[0], item_type=packet_data[1], index=packet_data[2], obj_id=packet_data[3], stage=packet_data[4], amount=packet_data[5])
                 case PacketType.DeathLink:
                     self.packet = DeathLinkPacket()
                 case PacketType.Shine:
@@ -568,6 +770,10 @@ class Packet:
                     self.packet = ProgressPacket(world_id=packet_data[0], scenario=packet_data[1])
                 case PacketType.ShineChecks:
                     self.packet = ShineChecksPacket(checks=packet_data[0])
+                case PacketType.ApInfo:
+                    self.packet = ApInfoPacket(info_type=packet_data[0], index1=packet_data[1], index2=packet_data[2], index3=packet_data[3], info=packet_data[4])
+                case PacketType.ShopReplace:
+                    self.packet = ShopReplace(info_type=packet_data[0], info=packet_data[1])
 
     def serialize(self) -> bytearray:
         self.header.packet_size = self.packet.SIZE
@@ -584,6 +790,8 @@ class Packet:
                 print("Client sending ChangeStagePacket Deprecated")
             # case PacketType.Command:
             #     self.packet = CommandP()
+            case PacketType.Check:
+                self.packet = CheckPacket(packet_bytes=data)
             case PacketType.Shine:
                 self.packet = ShinePacket(packet_bytes=data)
             case PacketType.Item:
