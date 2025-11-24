@@ -2,7 +2,7 @@ import random
 import os
 from typing import Mapping, Any
 from .Items import item_table, SMOItem, filler_item_table, outfits, shop_items, multi_moons, \
-    moon_item_table, moon_types, story_moons, world_list
+    moon_item_table, moon_types, story_moons, world_list, stickers, souvenirs
 from .Locations import locations_table, SMOLocation, locations_list, post_game_locations_list, \
     special_locations_table, full_moon_locations_list, goals_table
 from .Options import SMOOptions
@@ -174,9 +174,17 @@ class SMOWorld(World):
         "Darker": ["Darker Side Multi-Moon"]
     }
 
+    shop_games : list[str] = []
+    shop_players : list[str] = []
+    shop_ap_items : list[str] = []
+    shop_replace_data = {}
+
     # Change regionals to be dependent on the option
     def fill_slot_data(self) -> Mapping[str, Any]:
-        return {**(self.options.as_dict("goal", "death_link")), "clash" : self.moon_counts["lost"], "raid" : self.moon_counts["ruined"], "regionals" : False, "captures" : False}
+        return {**(self.options.as_dict("goal", "death_link")), "counts" : self.moon_counts,
+                "shop_games" : self.shop_games, "shop_players" : self.shop_players, "shop_ap_items" : self.shop_ap_items,
+                "shop_replace_data" : self.shop_replace_data,
+                "regionals" : False, "captures" : False}
 
     def create_regions(self):
         if self.options.counts > 0:
@@ -207,32 +215,10 @@ class SMOWorld(World):
                     classification = ItemClassification.progression_skip_balancing
             elif name in shop_items:
                 # Until achievements implemented if possible
+                # some outfits for dark and darker goals not handled correctly
                 classification = ItemClassification.filler
-            else:
-
-                if name in moon_types:
-                    classification = ItemClassification.progression_skip_balancing
-                #     if (name in self.item_name_groups["Dark"] and self.options.goal < 18) or name in self.item_name_groups["Darker"]:
-                #         classification = ItemClassification.filler
-                #     if "Story" in name or "Multi" in name:
-                #         classification = ItemClassification.progression_skip_balancing
-                #     if self.placed_counts["dark"] < self.moon_counts["dark"] and name not in self.item_name_groups["Dark"] and name not in self.item_name_groups["Darker"]:
-                #         self.placed_counts["dark"] += 3 if "Multi" in name else 1
-                #         classification = ItemClassification.progression_skip_balancing
-                #     if self.placed_counts["darker"] < self.moon_counts["darker"] and name not in self.item_name_groups["Darker"]:
-                #         self.placed_counts["darker"] += 3 if "Multi" in name else 1
-                #         classification = ItemClassification.progression_skip_balancing
-                #     for group in self.item_name_groups.keys():
-                #         if (group.lower() in self.placed_counts
-                #                 and group != "Dark" and group != "Darker" and name in self.item_name_groups[group]
-                #                 and self.placed_counts[group.lower()] < self.moon_counts[group.lower()]):
-                #             self.placed_counts[group.lower()] += 3 if "Multi" in name else 1
-                #             #print(self.placed_counts[group.lower()], " ", group.lower())
-                #             classification = ItemClassification.progression_skip_balancing
-                #
-                #             break
-
-
+            elif name in moon_types:
+                    classification = ItemClassification.progression
 
         item: SMOItem
 
@@ -478,7 +464,50 @@ class SMOWorld(World):
             # if self.outfit_moon_counts[key] > self.moon_counts["dark"]:
             #     self.outfit_moon_counts[key] = self.moon_counts["dark"] - 1
 
-
+    def post_fill(self) -> None:
+        self.shop_replace_data["caps"] = {}
+        self.shop_replace_data["clothes"] = {}
+        self.shop_replace_data["stickers"] = {}
+        self.shop_replace_data["souvenirs"] = {}
+        self.shop_replace_data["moons"] = {}
+        self.shop_games = []
+        self.shop_players = []
+        self.shop_ap_items = []
+        for location in self.multiworld.get_locations(self.player):
+            if location.name in shop_items or location.name in outfits or "Shopping" in location.name:
+                if not self.multiworld.get_player_name(location.item.player) in self.shop_players:
+                    self.shop_players.append(self.multiworld.get_player_name(location.item.player))
+                if not location.item.name in self.shop_ap_items:
+                    self.shop_ap_items.append(location.item.name)
+                if not location.item.game in self.shop_games:
+                    self.shop_games.append(location.item.game)
+        self.shop_games = sorted(self.shop_games)
+        self.shop_players = sorted(self.shop_players)
+        self.shop_ap_items = sorted(self.shop_ap_items)
+        for location in self.multiworld.get_locations(self.player):
+                if self.location_name_to_id[location.name] < 2582 :
+                    if "Shopping" in location.name:
+                        self.shop_replace_data["moons"][self.location_name_to_id[location.name]] = [self.shop_games.index(location.item.game),
+                        self.shop_players.index(self.multiworld.get_player_name(location.item.player)),
+                        self.shop_ap_items.index(location.item.name), location.item.classification.value]
+                    else:
+                        if 2539 > self.location_name_to_id[location.name] > 2500 or 2582 > self.location_name_to_id[location.name] > 2576:
+                            print(location.name)
+                            self.shop_replace_data["caps"][self.location_name_to_id[location.name]] = [self.shop_games.index(location.item.game),
+                            self.shop_players.index(self.multiworld.get_player_name(location.item.player)),
+                            self.shop_ap_items.index( location.item.name), location.item.classification.value]
+                        if self.location_name_to_id[location.name] > 2538:
+                            self.shop_replace_data["clothes"][self.location_name_to_id[location.name]] = [self.shop_games.index(location.item.game),
+                            self.shop_players.index(self.multiworld.get_player_name(location.item.player)),
+                            self.shop_ap_items.index(location.item.name), location.item.classification.value]
+                if location.name in stickers:
+                    self.shop_replace_data["stickers"][self.location_name_to_id[location.name]] = [self.shop_games.index(location.item.game),
+                    self.shop_players.index(self.multiworld.get_player_name(location.item.player)),
+                    self.shop_ap_items.index(location.item.name), location.item.classification.value]
+                if location.name in souvenirs:
+                    self.shop_replace_data["souvenirs"][self.location_name_to_id[location.name]] = [self.shop_games.index(location.item.game),
+                    self.shop_players.index(self.multiworld.get_player_name(location.item.player)),
+                    self.shop_ap_items.index(location.item.name), location.item.classification.value]
 
     def generate_output(self, output_directory: str):
         if self.options.colors.value or self.options.counts.value > 0 or self.options.shop_sanity.value > 0:
