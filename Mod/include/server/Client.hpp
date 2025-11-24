@@ -99,9 +99,11 @@ class Client {
         static void sendGameInfPacket(const PlayerActorHakoniwa *player, GameDataHolderAccessor holder);
         static void sendGameInfPacket(GameDataHolderAccessor holder);
         static void sendCostumeInfPacket(const char *body, const char *cap);
-        static void sendShineCollectPacket(int shineId);
+        //static void sendShineCollectPacket(int shineId);
         static void sendItemCollectPacket(char* itemName, int itemType);
         static void sendRegionalCollectPacket(GameDataHolderAccessor holder, al::PlacementId* placementId);
+        static void sendCheckPacket(int locationId, int itemType);
+        static void sendCheckPacket(int itemType, const char* objId, const char* stageName);
         static void sendDeathlinkPacket();
         static void sendProgressWorldPacket(int worldID, int scenario);
         static void sendTagInfPacket();
@@ -203,10 +205,11 @@ class Client {
         static sead::FixedSafeString<0x4B> getAPChatMessage2() { return sInstance ? sInstance->apChatLine2 : sead::FixedSafeString<0x20>::cEmptyString;}
         static sead::FixedSafeString<0x4B> getAPChatMessage3() { return sInstance ? sInstance->apChatLine3 : sead::FixedSafeString<0x20>::cEmptyString;}
 
-        static ushort getClashCount() { return sInstance ? sInstance->clashCount : 10; }
-        static ushort getRaidCount() { return sInstance ? sInstance->raidCount : 3; }
+        static int getWorldUnlockCount(int worldId); 
         static bool getRegionalsFlag() { return sInstance ? sInstance->regionals : false; }
         static bool getCapturesFlag() { return sInstance ? sInstance->captures : false; }
+
+        static const char16_t* getShopReplacementText(const char* fileName, const char* key);
 
         static void setStageInfo(GameDataHolderAccessor holder);
         static void sendStage(GameDataHolderWriter writer, const ChangeStageInfo* stageInfo);
@@ -250,13 +253,16 @@ class Client {
         void updateHackCapInfo(HackCapInf *packet);
         void updateGameInfo(GameInf *packet);
         void updateCostumeInfo(CostumeInf *packet);
-        void updateShineInfo(ShineCollect *packet);
+        //void updateShineInfo(ShineCollect *packet);
         void updateItems(ItemCollect *packet);
         void updateFiller(FillerCollect *packet);
         void updateChatMessages(ArchipelagoChatMessage *packet);
-        void updateCounts(ShineCounts *packet);
+        void addApInfo(ApInfo *packet);
+        void updateShopReplace(ShopReplacePacket *packet);
+        void updateSlotData(SlotData* packet);
         void updateWorlds(UnlockWorld *packet);
         void updateProgress(ProgressWorld *packet);
+        void receiveCheck(Check* packet);
         void receiveDeath(Deathlink *packet);
         void updatePlayerConnect(PlayerConnect *packet);
         void updateTagInfo(TagInf *packet);
@@ -296,6 +302,8 @@ class Client {
 
         ushort clashCount = 10;
         ushort raidCount = 3;
+        // shine pay counts
+        sead::SafeArray<int, 17> worldPayCounts;
         bool regionals = false;
         bool captures = false;
         sead::SafeArray<int, 17> worldScenarios;
@@ -317,6 +325,19 @@ class Client {
         
         // List of 7 u8s for tracking which captures have been grabbed
         sead::SafeArray<u8, 7> collectedCaptures;
+
+        // Shop Text Replacement Handling
+        sead::SafeArray<shopReplaceText, 44> shopCapTextReplacements;
+        sead::SafeArray<shopReplaceText, 44> shopClothTextReplacements;
+        sead::SafeArray<shopReplaceText, 17> shopStickerTextReplacements;
+        sead::SafeArray<shopReplaceText, 26> shopGiftTextReplacements;
+        sead::SafeArray<shopReplaceText, 13> shopMoonTextReplacements;
+        sead::SafeArray<sead::WFixedSafeString<40>, 144> apGameNames;
+        sead::SafeArray<sead::WFixedSafeString<40>, 144> apSlotNames;
+        sead::SafeArray<sead::WFixedSafeString<40>, 144> apItemNames;
+        int numApGames = 0;
+        int numApSlots = 0;
+        int numApItems = 0;
 
         // Backups for our last player/game packets, used for example to re-send them for newly connected clients
         PlayerInf lastPlayerInfPacket = PlayerInf();
