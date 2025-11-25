@@ -18,12 +18,27 @@ loc_Cap = {
     "Secrets of the Frog Pond": 239,
 }
 
+sub_area_frog = {
+    "Searching the Frog Pond": 238,
+    "Secrets of the Frog Pond": 239,
+}
+
+sub_area_poison_tide = {
+    "Skimming the Poison Tide": 236,
+    "Slipping through the Poison Tide": 237,
+}
+
+sub_area_push_block = {
+    "Push-Block Peril": 234,
+    "Hidden Among the Push-Blocks": 235,
+}
+
 loc_Cap_Shop = {
-    "Cap Kingdom Sticker": 2506,
-    "Plush Frog": 2507,
-    "Bonneton Tower Model": 2508,
-    "Black Top Hat": 2504,
-    "Black Tuxedo": 2505
+    "Cap Kingdom Sticker": 2582,
+    "Plush Frog": 2599,
+    "Bonneton Tower Model": 2600,
+    "Black Top Hat": 2501,
+    "Black Tuxedo": 2539
 }
 
 loc_Cap_Postgame = {
@@ -49,6 +64,10 @@ loc_Cap_Postgame = {
     "Precision Rolling": 951
 }
 
+sub_area_rolling = {
+    "Roll On and On": 950,
+    "Precision Rolling": 951
+}
 
 # Cascade
 loc_Cascade = {
@@ -76,12 +95,27 @@ loc_Cascade_Revisit = {
     "Shopping in Fossil Falls": 211,
 }
 
+sub_area_chain_chomp = {
+    "Nice Shot with the Chain Chomp!": 225,
+    "Very Nice Shot with the Chain Chomp!": 226,
+}
+
+sub_area_trex_nest = {
+    "Dinosaur Nest: Big Cleanup!": 1116,
+    "Dinosaur Nest: Running Wild!": 1115,
+}
+
+sub_area_cascade_2d = {
+    "Past the Chasm Lifts": 221,
+    "Hidden Chasm Passage": 222
+}
+
 loc_Cascade_Shop = {
-    "Caveman Headwear": 2509,
-    "Caveman Outfit": 2510,
-    "Cascade Kingdom Sticker": 2511,
-    "T-Rex Model": 2512,
-    "Triceratops Trophy": 2513
+    "Caveman Headwear": 2502,
+    "Caveman Outfit": 2540,
+    "Cascade Kingdom Sticker": 2583,
+    "T-Rex Model": 2601,
+    "Triceratops Trophy": 2602
 }
 
 loc_Cascade_Post_Metro = {
@@ -110,6 +144,11 @@ loc_Cascade_Postgame = {
     "Across the Mysterious Clouds": 894,
     "Cascade Kingdom Master Cup": 224,
     "Atop a Wall Among the Clouds": 223,
+    "Across the Gusty Bridges": 673,
+    "Flying Far Away from Gusty Bridges": 674
+}
+
+sub_area_gusty_bridges = {
     "Across the Gusty Bridges": 673,
     "Flying Far Away from Gusty Bridges": 674
 }
@@ -188,18 +227,49 @@ loc_Sand_Peace = {
     "Above a Strange Neighborhood": 571
 }
 
+sub_area_invisible_maze = {
+    "The Invisible Maze": 562,
+    "Skull Sign in the Transparent Maze": 561,
+}
+
+sub_area_bullet_bill_maze = {
+    "The Bullet Bill Maze: Break Through!": 555,
+    "The Bullet Bill Maze: Side Path": 554,
+}
+
+sub_area_jaxi = {
+    "Jaxi Driver": 557,
+    "Jaxi Stunt Driving": 556,
+}
+
+sub_area_strange_neighborhood = {
+    "Strange Neighborhood": 570,
+    "Above a Strange Neighborhood": 571
+}
+
+sub_area_sand_outfit = {
+    "Dancing with New Friends": 569,
+}
+
+sub_area_sand_rumbling_floor = {
+    "A Rumble from the Sandy Floor": 1136,
+}
+
+# Sand Underground and Jaxi Ruins Crusher cave, sphynx room
+# Continue new souvenir ids here
+
 loc_Sand_Shop = {
-    "Captain's Hat": 2503,
-    "Sombrero": 2514,
-    "Poncho": 2515,
-    "Cowboy Hat": 2516,
-    "Cowboy Outfit": 2517,
-    "Sand Kingdom Sticker": 2518,
-    "Jaxi Statue": 2519,
-    "Inverted Pyramid Model": 2520,
-    "Employee Cap": 2585,
-    "Employee Uniform": 2586,
-    "Boxer Shorts": 2587
+    "Captain's Hat": 2577,
+    "Sombrero": 2503,
+    "Poncho": 2541,
+    "Cowboy Hat": 2504,
+    "Cowboy Outfit": 2542,
+    "Sand Kingdom Sticker": 2584,
+    "Jaxi Statue": 2604,
+    "Inverted Pyramid Model": 2603,
+    "Employee Cap": 2520,
+    "Employee Uniform": 2558,
+    "Boxer Shorts": 2578
 }
 
 loc_Sand_Postgame = {
@@ -236,6 +306,21 @@ loc_Sand_Revisit = {
     "Secret Path to Tostarena!": 524,
 }
 
+sub_area_transparent_platform = {
+    "Where the Transparent Platforms End": 572,
+    "Jump Onto the Transparent Lift": 573,
+}
+
+sub_area_colossal_ruins = {
+    "Colossal Ruins: Dash Jump!": 575,
+    "Sinking Colossal Ruins: Hurry!": 574,
+}
+
+sub_area_freezing_waterway = {
+    "Through the Freezing Waterway": 35,
+    "Freezing Waterway: Hidden Room": 36
+}
+
 # Lake
 loc_Lake = {
     "Broodals Over the Lake": 424,
@@ -266,14 +351,28 @@ loc_Lake = {
     "Found with Lake Kingdom Art": 1094,
 }
 
+sub_area_repair = {
+    "A Successful Repair Job": 971,
+}
+
+sub_area_zipper = {
+    "Unzip the Chasm": 1008,
+    "Super-Secret Zipper": 1009,
+}
+
+sub_area_jump_grab_climb = {
+    "Jump, Grab, Cling, and Climb": 425,
+    "Jump, Grab, and Climb Some More": 426,
+}
+
 loc_Lake_Shop = {
-    "Swim Goggles": 2521,
-    "Swimwear": 2522,
-    "Lake Kingdom Sticker": 2523,
-    "Rubber Dorrie": 2524,
-    "Underwater Dome": 2525,
-    "Fashionable Cap": 2588,
-    "Fashionable Outfit": 2589
+    "Swim Goggles": 2505,
+    "Swimwear": 2543,
+    "Lake Kingdom Sticker": 2585,
+    "Rubber Dorrie": 2606,
+    "Underwater Dome": 2605,
+    "Fashionable Cap": 2521,
+    "Fashionable Outfit": 2559
 }
 
 loc_Lake_Post_Seaside = {
@@ -294,6 +393,11 @@ loc_Lake_Postgame = {
     "Bird Traveling Over the Lake": 423,
     "Love by the Lake": 1017,
     "Lake Kingdom Master Cup": 720,
+    "Waves of Poison: Hoppin' Over": 434,
+    "Waves of Poison: Hop to It!": 431
+}
+
+sub_area_waves_poison ={
     "Waves of Poison: Hoppin' Over": 434,
     "Waves of Poison: Hop to It!": 431
 }
@@ -360,16 +464,54 @@ loc_Wooded_Peace = {
     "Found with Wooded Kingdom Art": 1089
 }
 
+sub_area_woods_treasure_trap = {
+    "Deep Woods Treasure Trap": 188,
+}
+
+sub_area_explorer = {
+    "Exploring for Treasure": 187,
+}
+
+sub_area_flooding_pipe = {
+    "Flooding Pipeway": 196,
+    "Flooding Pipeway Ceiling Secret": 197,
+}
+
+sub_area_flower_road = {
+    "Flower Road Run": 191,
+    "Flower Road Reach": 192,
+}
+
+sub_area_elevator_escalation = {
+    "Elevator Escalation": 190,
+    "Elevator Blind Spot": 189
+}
+
+sub_area_wooded_fog = {
+    "Wandering in the Fog": 193,
+    "Nut Hidden in the Fog": 194,
+}
+
+sub_area_wooded_clouds = {
+    "Walking on Clouds": 198,
+    "Above the Clouds": 199,
+}
+
+sub_area_flower_field = {
+    "Defend the Secret Flower Field!": 181,
+    "Make the Secret Flower Field Bloom": 182,
+}
+
 loc_Wooded_Shop = {
-    "Explorer Hat": 2526,
-    "Explorer Outfit": 2527,
-    "Scientist Visor": 2528,
-    "Scientist Outfit": 2529,
-    "Wooded Kingdom Sticker": 2530,
-    "Flowers from Steam Gardens": 2531,
-    "Steam Gardener Watering Can": 2532,
-    "Mechanic Cap": 2590,
-    "Mechanic Outfit": 2591
+    "Explorer Hat": 2506,
+    "Explorer Outfit": 2544,
+    "Scientist Visor": 2507,
+    "Scientist Outfit": 2545,
+    "Wooded Kingdom Sticker": 2586,
+    "Flowers from Steam Gardens": 2607,
+    "Steam Gardener Watering Can": 2608,
+    "Mechanic Cap": 2522,
+    "Mechanic Outfit": 2560
 }
 
 loc_Wooded_Postgame = {
@@ -406,7 +548,7 @@ loc_Cloud = {
 }
 
 loc_Post_Cloud = {
-    "Beat Bowser in Cloud": 2501
+    "Beat Bowser in Cloud": 2500
 }
 
 loc_Cloud_Postgame = {
@@ -448,11 +590,11 @@ loc_Lost_Revisit = {
 }
 
 loc_Lost_Shop = {
-    "Aviator Cap": 2533,
-    "Aviator Outfit": 2534,
-    "Lost Kingdom Sticker": 2535,
-    "Potted Palm Tree": 2536,
-    "Butterfly Mobile": 2537
+    "Aviator Cap": 2508,
+    "Aviator Outfit": 2546,
+    "Lost Kingdom Sticker": 2587,
+    "Potted Palm Tree": 2609,
+    "Butterfly Mobile": 2610
 }
 
 loc_Lost_Postgame = {
@@ -538,15 +680,15 @@ loc_Metro_Peace = {
 }
 
 loc_Metro_Shop = {
-    "Builder Helmet": 2538,
-    "Builder Outfit": 2539,
-    "Golf Cap": 2540,
-    "Golf Outfit": 2541,
-    "Metro Kingdom Sticker": 2542,
-    "New Donk City Hall Model": 2543,
-    "Pauline Statue": 2544,
-    "Black Fedora": 2592,
-    "Black Suit": 2593
+    "Builder Helmet": 2509,
+    "Builder Outfit": 2547,
+    "Golf Cap": 2510,
+    "Golf Outfit": 2548,
+    "Metro Kingdom Sticker": 2588,
+    "New Donk City Hall Model": 2612,
+    "Pauline Statue": 2611,
+    "Black Fedora": 2523,
+    "Black Suit": 2561
 }
 
 loc_Metro_Postgame = {
@@ -636,15 +778,15 @@ loc_Seaside_Peace = {
 }
 
 loc_Seaside_Shop = {
-    "Resort Hat": 2550,
-    "Resort Outfit": 2551,
-    "Sailor Hat": 2552,
-    "Sailor Suit": 2553,
-    "Seaside Kingdom Sticker": 2554,
-    "Glass Tower Model": 2555,
-    "Sand Jar": 2556,
-    "Pirate Hat": 2594,
-    "Pirate Outfit": 2595
+    "Resort Hat": 2512,
+    "Resort Outfit": 2550,
+    "Sailor Hat": 2513,
+    "Sailor Suit": 2551,
+    "Seaside Kingdom Sticker": 2590,
+    "Glass Tower Model": 2616,
+    "Sand Jar": 2615,
+    "Pirate Hat": 2524,
+    "Pirate Outfit": 2562
 }
 
 loc_Seaside_Postgame = {
@@ -707,16 +849,16 @@ loc_Snow_Peace = {
     "Jump ‘n' Swim in the Freezing Water": 14,
     "Freezing Water Near the Ceiling": 15,
     "Blowing and Sliding": 33,
-    "Spinning Above the Clouds": 30,
+    "Spinning Above the Clouds": 830,
     "High-Altitude Spinning": 831,
 }
 
 loc_Snow_Shop = {
-    "Snow Hood": 2545,
-    "Snow Suit": 2546,
-    "Snow Kingdom Sticker": 2547,
-    "Shiverian Rug": 2548,
-    "Shiverian Nesting Dolls": 2549
+    "Snow Hood": 2511,
+    "Snow Suit": 2549,
+    "Snow Kingdom Sticker": 2589,
+    "Shiverian Rug": 2613,
+    "Shiverian Nesting Dolls": 2614
 }
 
 loc_Snow_Postgame = {
@@ -809,15 +951,15 @@ loc_Luncheon_Peace = {
 }
 
 loc_Luncheon_Shop = {
-    "Chef Hat": 2557,
-    "Chef Suit": 2558,
-    "Painter's Cap": 2559,
-    "Painter Outfit": 2560,
-    "Luncheon Kingdom Sticker": 2561,
-    "Souvenir Forks": 2562,
-    "Vegetable Plate": 2563,
-    "Clown Hat": 2596,
-    "Clown Suit": 2597
+    "Chef Hat": 2514,
+    "Chef Suit": 2552,
+    "Painter's Cap": 2515,
+    "Painter Outfit": 2553,
+    "Luncheon Kingdom Sticker": 2591,
+    "Souvenir Forks": 2617,
+    "Vegetable Plate": 2618,
+    "Clown Hat": 2525,
+    "Clown Suit": 2563
 }
 
 loc_Luncheon_Postgame = {
@@ -913,13 +1055,13 @@ loc_Bowser_Peace = {
 }
 
 loc_Bowser_Shop = {
-    "Samurai Helmet": 2564,
-    "Samurai Armor": 2565,
-    "Happi Headband": 2566,
-    "Happi Outfit": 2567,
-    "Bowser's Kingdom Sticker": 2568,
-    "Paper Lantern": 2569,
-    "Jizo Statue": 2570
+    "Samurai Helmet": 2516,
+    "Samurai Armor": 2554,
+    "Happi Headband": 2517,
+    "Happi Outfit": 2555,
+    "Bowser's Kingdom Sticker": 2592,
+    "Paper Lantern": 2619,
+    "Jizo Statue": 2620
 }
 
 loc_Bowser_Postgame = {
@@ -967,19 +1109,19 @@ loc_Moon = {
 }
 
 loc_Moon_Shop = {
-    "Space Helmet": 2571,
-    "Space Suit": 2572,
-    "Moon Kingdom Sticker": 2573,
-    "Moon Rock Fragment": 2574,
-    "Moon Lamp": 2575,
-    "Football Helmet": 2598,
-    "Football Uniform": 2599,
-    "Mario's Top Hat": 2624,
-    "Mario's Tuxedo": 2625
+    "Space Helmet": 2518,
+    "Space Suit": 2556,
+    "Moon Kingdom Sticker": 2593,
+    "Moon Rock Fragment": 2621,
+    "Moon Lamp": 2622,
+    "Football Helmet": 2526,
+    "Football Uniform": 2564,
+    "Mario's Top Hat": 2538,
+    "Mario's Tuxedo": 2576
 }
 
 loc_Moon_Post_Moon = {
-    "Beat the Game": 2500
+    "Beat the Game": 2499
 }
 
 loc_Moon_Postgame = {
@@ -1059,40 +1201,40 @@ loc_Mushroom_Post_Luncheon = {
 }
 
 loc_Mushroom_Shop = {
-    "Mario 64 Cap": 2576,
-    "Mario 64 Suit": 2577,
-    "Mushroom Cushion Set": 2583,
-    "Peach's Castle Model": 2584,
-    "Pipe Sticker": 2578,
-    "Coin Sticker": 2579,
-    "Block Sticker": 2580,
-    "? Block Sticker": 2581,
-    "Mushroom Kingdom Sticker": 2582,
-    "Classic Cap": 2600,
-    "Classic Suit": 2601,
-    "Skeleton Suit": 2602
+    "Mario 64 Cap": 2519,
+    "Mario 64 Suit": 2557,
+    "Mushroom Cushion Set": 2623,
+    "Peach's Castle Model": 2624,
+    "Pipe Sticker": 2594,
+    "Coin Sticker": 2595,
+    "Block Sticker": 2596,
+    "? Block Sticker": 2597,
+    "Mushroom Kingdom Sticker": 2598,
+    "Classic Cap": 2527,
+    "Classic Suit": 2565,
+    "Skeleton Suit": 2580
 }
 
 loc_Postgame_Shop = {
-    "Luigi Cap": 2603,
-    "Luigi Suit": 2604,
-    "Doctor Headwear": 2605,
-    "Doctor Outfit": 2606,
-    "Waluigi Cap": 2607,
-    "Waluigi Suit": 2608,
-    "Diddy Kong Hat": 2609,
-    "Diddy Kong Suit": 2610,
-    "Wario Cap": 2611,
-    "Wario Suit": 2612,
-    "Hakama": 2613,
-    "Bowser's Top Hat": 2614,
-    "Bowser's Tuxedo": 2615,
-    "Bridal Veil": 2616,
-    "Bridal Gown": 2617,
-    "Gold Mario Cap": 2618,
-    "Gold Mario Suit": 2619,
-    "Metal Mario Cap": 2620,
-    "Metal Mario Suit": 2621
+    "Luigi Cap": 2528,
+    "Luigi Suit": 2566,
+    "Doctor Headwear": 2532,
+    "Doctor Outfit": 2570,
+    "Waluigi Cap": 2530,
+    "Waluigi Suit": 2568,
+    "Diddy Kong Hat": 2533,
+    "Diddy Kong Suit": 2571,
+    "Wario Cap": 2529,
+    "Wario Suit": 2567,
+    "Hakama": 2579,
+    "Bowser's Top Hat": 2534,
+    "Bowser's Tuxedo": 2572,
+    "Bridal Veil": 2535,
+    "Bridal Gown": 2573,
+    "Gold Mario Cap": 2531,
+    "Gold Mario Suit": 2569,
+    "Metal Mario Cap": 2536,
+    "Metal Mario Suit": 2574
 }
 
 loc_Dark = {
@@ -1123,8 +1265,8 @@ loc_Dark = {
 }
 
 loc_Dark_Outfit = {
-    "King's Crown": 2622,
-    "King's Outfit": 2623
+    "King's Crown": 2537,
+    "King's Outfit": 2575
 }
 
 loc_Darker = {
@@ -1132,7 +1274,7 @@ loc_Darker = {
 }
 
 loc_Darker_Outfit = {
-    "Invisibility Hat": 2502
+    "Invisibility Hat": 2581
 }
 
 loc_Captures = {
