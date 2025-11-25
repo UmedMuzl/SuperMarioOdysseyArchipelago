@@ -45,10 +45,13 @@ class SMOProcedurePatch(APProcedurePatch):
         player_names = json.loads(self.get_file(names_file))
 
         if options["shop_sanity"] != 0:
+            pass
             patch_data[
                 "atmosphere/contents/0100000000010000/romfs/LocalizedData/USen/MessageData/SystemMessage.szs"] = patch_shop_text(rom_fs, location_data, self.player, player_names)
 
         patch_data["atmosphere/contents/0100000000010000/romfs/SystemData/ItemList.szs"] = patch_items(rom_fs, options)
+
+        #patch_stages(rom_fs)
 
         patch_dir = os.path.join(self.path[:self.path.rindex("/")], "atmosphere/contents/0100000000010000/romfs/")
         os.makedirs(os.path.join(patch_dir, "LocalizedData/USen/MessageData/"))
@@ -464,6 +467,34 @@ def read_regionals_from_world(stage_file : sarc.SARC, file_name : str) -> dict:
 
     return regionals
 
+def read_warps_from_world(stage_file : sarc.SARC, file_name : str) -> dict:
+    data = stage_file.get_file_data(file_name.replace(".szs", ".byml"))
+    root = byml.Byml(data.tobytes()).parse()
+
+    warp_ids = {}
+    warp_objs = []
+    if root:
+        for map_dict in root:
+            if not "AreaList" in map_dict:
+                break
+            for entry in map_dict["AreaList"]:
+                if entry["UnitConfigName"] == "ChangeStageArea":
+                    if "ChangeStageName" in entry and "ChangeStageId" in entry:
+                        if not entry["Id"] in warp_objs:
+                            warp_ids[(entry["Id"], entry["ChangeStageId"])] = entry["ChangeStageName"]
+                            warp_objs.append(entry["Id"])
+        for map_dict in root:
+            if not "PlayerStartInfoList" in map_dict:
+                break
+            for entry in map_dict["PlayerStartInfoList"]:
+                if entry["UnitConfigName"] == "DokanStageChange":
+                    if "ChangeStageName" in entry and "ChangeStageId" in entry:
+                        if not entry["Id"] in warp_objs:
+                            warp_ids[(entry["Id"], entry["ChangeStageId"])] = entry["ChangeStageName"]
+                            warp_objs.append(entry["Id"])
+
+    return warp_ids
+
 
 def patch_shop_text(rom_fs : str, location_data : dict, player : int, names : dict) -> bytes:
     """ Generates a ByteStream for a .szs (SARC) archive to replace the English localized text for shops with the respective item at that location.
@@ -555,42 +586,51 @@ def patch_stages(rom_fs : str) -> None:
     dirs = os.listdir(stage_path)
 
     regional_coins = {}
+    stage_ids = {}
 
 
     for file_name in dirs:
-        for prefix in world_prefixes:
-            if file_name.startswith(prefix):
-                if "Map.szs" in file_name:
-                    stage = sarc.read_file_and_make_sarc(open(os.path.join(stage_path, file_name), "rb"))
-                    regional_coins[file_name.replace(".szs", "")] = {}
-                    regional_coins[file_name.replace(".szs", "")] = read_regionals_from_world(stage, file_name)
-                    break
+        # for prefix in world_prefixes:
+        #     if file_name.startswith(prefix):
+        #         if "Map.szs" in file_name:
+        #             stage = sarc.read_file_and_make_sarc(open(os.path.join(stage_path, file_name), "rb"))
+        #             regional_coins[file_name.replace(".szs", "")] = {}
+        #             regional_coins[file_name.replace(".szs", "")] = read_regionals_from_world(stage, file_name)
+        #             break
+        if "Map" in file_name and "Zone" not in file_name:
+            stage = sarc.read_file_and_make_sarc(open(os.path.join(stage_path, file_name), "rb"))
+            warps = read_warps_from_world(stage, file_name)
+            if len(warps) > 0:
+                stage_ids[file_name] = {}
+                stage_ids[file_name] = warps
+
 
     out_line : str = ""
 
-    for world in world_prefixes:
-        group_num = 0
-        out_line = "\t\t\t{"
-        out_line +=  "\"" + world + "WorldHomeStage\"" + ", "
-        out_line += "new Regionals {\n"
-        out_line += "\t\t\t\tobjGroupLookup = new Dictionary<string, int>() {\n"
-        for world_stage in regional_coins:
-            if world in world_stage:
-
-                if len(regional_coins[world_stage]) > 0:
-
-                    for group in regional_coins[world_stage]:
-                        group_num += 1
-                        coin_count = 0
-                        for coin in regional_coins[world_stage][group]:
-                            out_line += "\t\t\t\t\t{\"" + coin + "\", "
-                            out_line +=  str(group_num) + "},\n"
-                            coin_count += 1
-
-        out_line += "\t\t\t\t}}\n"
-
-        out_line += "\n\t\t\t},"
-        print(out_line)
+    # for world in world_prefixes:
+    #     group_num = 0
+    #     out_line = "\t\t\t{"
+    #     out_line +=  "\"" + world + "WorldHomeStage\"" + ", "
+    #     out_line += "new Regionals {\n"
+    #     out_line += "\t\t\t\tobjGroupLookup = new Dictionary<string, int>() {\n"
+    #     for world_stage in regional_coins:
+    #         if world in world_stage:
+    #
+    #             if len(regional_coins[world_stage]) > 0:
+    #
+    #                 for group in regional_coins[world_stage]:
+    #                     group_num += 1
+    #                     coin_count = 0
+    #                     for coin in regional_coins[world_stage][group]:
+    #                         out_line += "\t\t\t\t\t{\"" + coin + "\", "
+    #                         out_line +=  str(group_num) + "},\n"
+    #                         coin_count += 1
+    #
+    #     out_line += "\t\t\t\t}}\n"
+    #
+    #     out_line += "\n\t\t\t},"
+    #     print(out_line)
+    print(stage_ids)
 
 
 def make_output(patch_file : str):
