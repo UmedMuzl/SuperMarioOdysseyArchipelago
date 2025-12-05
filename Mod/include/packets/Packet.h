@@ -40,6 +40,7 @@ enum PacketType : short {
     SHINECHECKS,
     APINFO,
     SHOPREPLACE,
+    SHINEREPLACE,
     UDPINIT,
     HOLEPUNCH,
     End // end of enum for bounds checking
@@ -71,6 +72,7 @@ USED static const char *packetNames[] = {
     "Shine Checks",
     "AP Info",
     "Shop Replace",
+    "Shine Replace",
     "Udp Initialization",
     "Hole punch",
     
@@ -116,6 +118,7 @@ struct PACKED Packet {
 #include "packets/ArchipelagoChatMessage.h"
 #include "packets/ApInfo.h"
 #include "packets/ShopReplacePacket.h"
+#include "packets/ShineReplacePacket.h"
 #include "packets/SlotData.h"
 #include "packets/ShineChecks.h"
 #include "packets/UnlockWorld.h"
