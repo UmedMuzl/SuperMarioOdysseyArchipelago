@@ -99,6 +99,7 @@ class Client {
         static void sendGameInfPacket(const PlayerActorHakoniwa *player, GameDataHolderAccessor holder);
         static void sendGameInfPacket(GameDataHolderAccessor holder);
         static void sendCostumeInfPacket(const char *body, const char *cap);
+        static void sendChangeStagePacket(GameDataHolderAccessor accessor);
         //static void sendShineCollectPacket(int shineId);
         static void sendItemCollectPacket(char* itemName, int itemType);
         static void sendRegionalCollectPacket(GameDataHolderAccessor holder, al::PlacementId* placementId);
@@ -204,11 +205,14 @@ class Client {
         static sead::FixedSafeString<0x4B> getAPChatMessage1() { return sInstance ? sInstance->apChatLine1 : sead::FixedSafeString<0x20>::cEmptyString;}
         static sead::FixedSafeString<0x4B> getAPChatMessage2() { return sInstance ? sInstance->apChatLine2 : sead::FixedSafeString<0x20>::cEmptyString;}
         static sead::FixedSafeString<0x4B> getAPChatMessage3() { return sInstance ? sInstance->apChatLine3 : sead::FixedSafeString<0x20>::cEmptyString;}
+        static void setRecentShine(Shine* curShine);
+        static Shine* getRecentShine() { return sInstance ? sInstance->recentShine : nullptr; }
 
         static int getWorldUnlockCount(int worldId); 
         static bool getRegionalsFlag() { return sInstance ? sInstance->regionals : false; }
         static bool getCapturesFlag() { return sInstance ? sInstance->captures : false; }
 
+        static const char* getShineReplacementText();
         static const char16_t* getShopReplacementText(const char* fileName, const char* key);
 
         static void setStageInfo(GameDataHolderAccessor holder);
@@ -220,6 +224,7 @@ class Client {
         static bool isApDeath() { return sInstance ? sInstance->apDeath : false; }
 
         static void startShineCount();
+        static void startShineChipCount();
 
         static void setLastUsedIP(const char* ip);
 
@@ -258,6 +263,7 @@ class Client {
         void updateFiller(FillerCollect *packet);
         void updateChatMessages(ArchipelagoChatMessage *packet);
         void addApInfo(ApInfo *packet);
+        void updateShineReplace(ShineReplacePacket *packet);
         void updateShopReplace(ShopReplacePacket *packet);
         void updateSlotData(SlotData* packet);
         void updateWorlds(UnlockWorld *packet);
@@ -309,7 +315,7 @@ class Client {
         sead::SafeArray<int, 17> worldScenarios;
         bool dying = false;
         bool apDeath = false;
-        int checkIndex = 0;
+        int checkIndex = -1;
 
         // List of 23 ints to track which shine's have been grabbed
         sead::SafeArray<int, 24> collectedShines;
@@ -325,6 +331,12 @@ class Client {
         
         // List of 7 u8s for tracking which captures have been grabbed
         sead::SafeArray<u8, 7> collectedCaptures;
+
+        // Moon Text Replacement Handling
+        Shine* recentShine = nullptr;
+        sead::SafeArray<shineReplaceText, 100> shineTextReplacements;
+        sead::SafeArray<sead::FixedSafeString<40>, 100> shineItemNames;
+
 
         // Shop Text Replacement Handling
         sead::SafeArray<shopReplaceText, 44> shopCapTextReplacements;
