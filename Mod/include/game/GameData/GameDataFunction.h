@@ -53,6 +53,8 @@ public:
 
     static char* getMainStageName(GameDataHolderAccessor, int);
 
+    static char* tryGetCurrentMainStageName(GameDataHolderAccessor);
+
     static char* getNextStageName(GameDataHolderAccessor);
 
     static s32 getCurrentShineNum(GameDataHolderAccessor);
