@@ -478,8 +478,8 @@ class GameDataFile
         int dwordA24;
         int dwordA28;
         bool byteA2C;
-        ChangeStageInfo *mChangeStageInfo;
-        ChangeStageInfo *mChangeStageInfo2;
+        ChangeStageInfo *mChangeStageInfo; // 0xA2D
+        ChangeStageInfo *mChangeStageInfo2; // 0xA30
         void *qwordA40;
         void *qwordA48;
         void *qwordA50;
