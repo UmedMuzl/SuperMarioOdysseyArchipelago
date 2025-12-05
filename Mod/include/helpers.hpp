@@ -251,6 +251,12 @@ struct stageConnection {
     short toStageNameIndex;
 };
 
+struct shineReplaceText {
+    s8 itemType;
+    u8 shineItemNameIndex;
+    //s8 color;
+};
+
 struct shopReplaceText {
     u8 gameIndex;
     u8 slotIndex;
