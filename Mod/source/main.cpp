@@ -24,7 +24,9 @@
 #include "al/util/CameraUtil.h"
 #include "al/util/ControllerUtil.h"
 #include "al/util/LiveActorUtil.h"
+#include "al/util/HeapUtil.h"
 #include "al/util/NerveUtil.h"
+#include "al/layout/IUseLayout.h"
 #include "debugMenu.hpp"
 #include "game/GameData/GameDataFunction.h"
 #include "game/HakoniwaSequence/HakoniwaSequence.h"
@@ -39,6 +41,8 @@
 #include "server/gamemode/GameModeManager.hpp"
 #include "sead/prim/seadSafeString.h"
 #include "sead/prim/seadSafeString.hpp"
+#include "game/Demo/DemoStateHackFirst.h"
+#include "game/Actors/GrowFlowerPot.h"
 
 static int pInfSendTimer = 0;
 static int gameInfSendTimer = 0;
@@ -62,23 +66,35 @@ void updatePlayerInfo(GameDataHolderAccessor holder, PlayerActorBase* playerBase
             al::LiveActor* curHack = playerBase->getPlayerHackKeeper()->currentHackActor;
             const char* hackName = playerBase->getPlayerHackKeeper()->getCurrentHackName();
             if (hackName != nullptr && !Client::hasCapture(hackName) && isRecordCapture) {
-                if (!al::isActionPlaying(curHack, "HackStartWithTurn") &&
-                    !al::isActionPlaying(curHack, "HackStartShort") &&
-                    !al::isActionPlaying(curHack, "Sleep")) {
-                    if (al::isEqualString(hackName, "TRex")) {
-                        playerBase->getPlayerHackKeeper()->tryEscapeHack();
-
-                    } else {
-                        playerBase->getPlayerHackKeeper()->tryEscapeHack();
+                if (!(al::isEqualString(hackName, "ElectricWire") && Client::getScenario(0) < 2
+                    && GameDataFunction::getCurrentWorldId(holder) == 0)) {
+                    if (!playerBase->getPlayerHackKeeper()->isActiveHackStartDemo()) {
+                        bool tryEscape = false;
+                        int nonKillCaptures[7] = {10, 13, 24, 25, 28, 29, 37};
+                        for (int i = 0; i < 7; i++) {
+                            tryEscape =
+                                al::isEqualString(captureListNames[nonKillCaptures[i]], hackName);
+                            if (tryEscape) {
+                                break;
+                            }
+                        }
+                        if (tryEscape) {
+                            playerBase->getPlayerHackKeeper()->tryEscapeHack();
+                        } else {
+                            playerBase->getPlayerHackKeeper()->forceKillHack();
+                        }
+                        isRecordCapture = false;
                     }
-                    //
-                    // Client::setMessage(1, al::getActionName(playerBase));
-                    // Client::setMessage(2, al::getActionName(curHack));
-                    // Client::setMessage(3,
-                    // playerBase->getPlayerHackKeeper()->getCurrentHackName());
                 }
-                isRecordCapture = false;
             }
+        }
+
+        if (!(al::isEqualString(GameDataFunction::tryGetCurrentMainStageName(holder),
+                              "CapWorldHomeStage") &&
+              Client::getScenario(0) < 2) &&
+            rs::isExistShineChipWatcher(playerBase) &&
+            rs::getShineChipCount(playerBase) > 0) {
+            Client::startShineChipCount();
         }
         pInfSendTimer = 0;
     }
@@ -408,6 +424,11 @@ bool isGrabShine(GameDataHolderAccessor accessor, int shineIdx) {
     GameDataFile::HintInfo* curHintInfo =
         &accessor.mData->mGameDataFile->mShineHintList[shineIdx];
     if (!curHintInfo->mIsGrand) {
+        if (curHintInfo->mUniqueID == 205 && Client::getScenario(1) > 1 ||
+            curHintInfo->mUniqueID == 129)
+        {
+            return true;
+        }
         return Client::hasShine(curHintInfo->mUniqueID);
     }
     return false;
@@ -423,6 +444,8 @@ void sendShinePacket(GameDataHolderAccessor thisPtr, Shine* curShine) {
 
     GameDataFile::HintInfo* curHintInfo =
     &thisPtr.mData->mGameDataFile->mShineHintList[curShine->mShineIdx];
+
+    Client::setRecentShine(curShine);
 
     if (curHintInfo->mUniqueID == 0) {
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "CapWorldHomeStage") == 0) {
@@ -466,85 +489,6 @@ void sendShinePacket(GameDataHolderAccessor thisPtr, Shine* curShine) {
     }
     // Add some way to sync shinechecks grabbed before connecting, probably handle on connect or something
     Client::addShine(curHintInfo->mUniqueID);
-
-    /*
-    switch (curHintInfo->mUniqueID) {
-    //Cascade
-        case 218:
-            Client::setScenario(GameDataFunction::getCurrentWorldId(thisPtr), 2);
-            break;
-
-    //Sand
-        case 495:
-            Client::setScenario(GameDataFunction::getCurrentWorldId(thisPtr), 2);
-            break;
-
-        case 560:
-            Client::setScenario(GameDataFunction::getCurrentWorldId(thisPtr), 3);
-            break;
-
-
-    //Lake
-        case 424:
-            Client::setScenario(GameDataFunction::getCurrentWorldId(thisPtr), 2);
-            break;
-
-
-    //Wooded
-        case 130:
-            Client::setScenario(GameDataFunction::getCurrentWorldId(thisPtr), 2);
-            break;
-
-        case 181:
-            Client::setScenario(GameDataFunction::getCurrentWorldId(thisPtr), 3);
-            break;
-
-
-    //Metro
-        case 37:
-            Client::setScenario(GameDataFunction::getCurrentWorldId(thisPtr), 2);
-            break;
-
-        case 95:
-            Client::setScenario(GameDataFunction::getCurrentWorldId(thisPtr), 3);
-            break;
-
-
-    //Seaside
-        case 437:
-            Client::setScenario(GameDataFunction::getCurrentWorldId(thisPtr), 2);
-            break;
-
-
-    //Snow
-        case 1020:
-            Client::setScenario(GameDataFunction::getCurrentWorldId(thisPtr), 2);
-            break;
-
-
-    //Luncheon
-        case 292:
-            Client::setScenario(GameDataFunction::getCurrentWorldId(thisPtr), 2);
-            break;
-
-        case 290:
-            Client::setScenario(GameDataFunction::getCurrentWorldId(thisPtr), 3);
-            break;
-
-
-    //Ruined
-        case 795:
-            Client::setScenario(GameDataFunction::getCurrentWorldId(thisPtr), 2);
-            break;
-
-
-    //Bowser
-        case 332:
-            Client::setScenario(GameDataFunction::getCurrentWorldId(thisPtr), 2);
-            break;
-
-    }
-    */
 }
 
 void sendItemPacket(GameDataFile thisPtr, ShopItem::ItemInfo* info, bool flag) {
@@ -641,32 +585,33 @@ void onStageChange(GameDataFile *file,const ChangeStageInfo* stageInfo, int para
 {
     //Client::setMessage(1, stageInfo->changeStageId.cstr());
     // Add Wooded shop moon warp
-    if (!al::isEqualString(stageInfo->changeStageId.cstr(), "obj846") &&
-        !al::isEqualString(stageInfo->changeStageId.cstr(), "obj1084")) {
+    if (!(al::isEqualString(stageInfo->changeStageId.cstr(), "obj846") ||
+        al::isEqualString(stageInfo->changeStageId.cstr(), "obj1084"))) {
         if (isPartOf(stageInfo->changeStageName.cstr(), "WorldHomeStage")) {
             if (Client::setScenario(stageInfo->changeStageName.cstr(), stageInfo->scenarioNo)) {
-                //if (isPartOf(stageInfo->changeStageName.cstr(), "Sand")) {
-                //    Client::setScenario(GameDataFunction::getWorldIndexHat(), 2);
-                //    // Client::setScenario(GameDataFunction::getWorldIndexWaterfall(), 3);
-                //}
-                //if (isPartOf(stageInfo->changeStageName.cstr(), "City")) {
-                //    Client::setScenario(GameDataFunction::getWorldIndexClash(), 2);
-                //}
-                
+                //Client::setMessage(2, "attempting send to correct scenario");
                 Client::sendCorrectScenario(stageInfo);
+
             } else {
-                
+                //Client::setMessage(2, "setScenario false");
                 file->changeNextStage(stageInfo, param2);
             }
         } else {
             // Non world transitions
+            //Client::setMessage(2, "non world transition");
             file->changeNextStage(stageInfo, param2);
         }
     } else {
         // Catch cap and cascade shop moons
+        //Client::setMessage(2, "Shop moon stageID caught");
         file->changeNextStage(stageInfo, param2);
     }
     
+}
+
+void setShineLabel(al::IUseLayout* layout, const char* elementLabel)
+{
+    al::setPaneStringFormat(layout, elementLabel, Client::getShineReplacementText());
 }
 
 const char16_t* getShopItemMessage(al::IUseMessageSystem const* messageSystem, char const* fileName, char const* key) 
@@ -687,7 +632,7 @@ const char16_t* getShopItemMessage(al::IUseMessageSystem const* messageSystem, c
 bool isBuyItems(ShopItem::ItemInfo* itemInfo) {
     // Add a collected outfits, gifts, stickers based implementation similar to shinechecks
     
-    return Client::hasItem(itemInfo);
+    return false;
 }
 
 //isExistInHackDictionary for capture tracking
@@ -702,14 +647,26 @@ void onAddHack(GameDataHolderWriter writer,const char* hackName)
     }
 }
 
+void canEndHack(al::LiveActor* actor)
+{
+    if (actor != nullptr)
+    {
+        PlayerHackKeeper::endHackStartDemo(actor);
+    }
+}
+
 void onStartHack(PlayerHackKeeper* keeper, al::HitSensor* hitSensor1, al::HitSensor* hitSensor2, al::LiveActor* actor) 
 {
     keeper->startHack(hitSensor1, hitSensor2, actor);
 }
 
+bool growOnPlant(GrowFlowerPot* thisPtr) {
+    rs::setGrowFlowerTime(thisPtr, thisPtr->mPlacementId, 3600000);
+    return al::isActionEnd(thisPtr);
+}
+
 // _ZN16HakoniwaSequence15exeBootLoadDataEv = 0x50F29C - 0x50F304
-void onNewGameDemoStart(al::LiveActor* thisPtr, al::ActorInitInfo const& info, sead::SafeStringBase<char> const& str,
-                        char const* name) {
+void onNewGameDemoStart(char* name, bool unkBool) {
     for (int i = 0; i < 18; i++) {
         Client::setScenario(i, 1);
     }
@@ -736,7 +693,8 @@ void onNewGameDemoStart(al::LiveActor* thisPtr, al::ActorInitInfo const& info, s
 
     Client::setCheckIndex(-1);
 
-    al::initActorWithArchiveName(thisPtr, info, str, name);
+    //al::initActorWithArchiveName(thisPtr, info, str, name);
+    al::createSceneHeap(name, unkBool);
     return;
 }
 
@@ -761,6 +719,12 @@ void onCreditsStart(al::Scene* thisPtr, const al::SceneInitInfo info) {
     return;
 }
 
+bool skipHackCutscene(DemoStateHackFirst* thisPtr, IUsePlayerHack** param_1, al::SensorMsg* param_2,
+    al::HitSensor* param_3, al::HitSensor* param_4)
+{
+    return false;
+}
+
 void stageInitHook(al::ActorInitInfo *info, StageScene *curScene, al::PlacementInfo const *placement, al::LayoutInitInfo const *lytInfo, al::ActorFactory const *factory, al::SceneMsgCtrl *sceneMsgCtrl, al::GameDataHolderBase *dataHolder) {
 
     al::initActorInitInfo(info, curScene, placement, lytInfo, factory, sceneMsgCtrl,
@@ -778,6 +742,14 @@ void stageInitHook(al::ActorInitInfo *info, StageScene *curScene, al::PlacementI
     }
 
     Client::sendGameInfPacket(info->mActorSceneInfo.mSceneObjHolder);
+    Client::sendChangeStagePacket(info->mActorSceneInfo.mSceneObjHolder);
+    int worldId = GameDataFunction::getCurrentWorldId(info->mActorSceneInfo.mSceneObjHolder);
+    int worldScenario =
+        GameDataFunction::getWorldScenarioNo(info->mActorSceneInfo.mSceneObjHolder, worldId);
+    if (worldScenario > Client::getScenario(worldId))
+    {
+        Client::setScenario(worldId, worldScenario);
+    }
 
 }
 
