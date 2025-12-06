@@ -69,6 +69,9 @@ Client::Client() {
     collectedSouvenirs.fill(0);
     collectedCaptures.fill(0);
 
+    shineTextReplacements.fill({0, 0});
+    shineItemNames.fill(sead::FixedSafeString<40>());
+
     shopCapTextReplacements.fill({254, 255, 255, 255});
     shopClothTextReplacements.fill({254, 255, 255, 255});
     shopStickerTextReplacements.fill({254, 255, 255, 255});
@@ -406,6 +409,9 @@ void Client::readFunc() {
                 break;
             case PacketType::APINFO:
                 addApInfo((ApInfo*)curPacket);
+                break;
+            case PacketType::SHINEREPLACE:
+                updateShineReplace((ShineReplacePacket*)curPacket);
                 break;
             case PacketType::SHOPREPLACE:
                 updateShopReplace((ShopReplacePacket*)curPacket);
@@ -1340,6 +1346,21 @@ void Client::sendStage(GameDataHolderWriter writer, const ChangeStageInfo* stage
     }
 }
 
+void Client::sendChangeStagePacket(GameDataHolderAccessor accessor) {
+    if (!sInstance) {
+        Logger::log("Client Null!\n");
+        return;
+    }
+
+    sead::ScopedCurrentHeapSetter setter(sInstance->mHeap);
+
+    ChangeStagePacket* packet = new ChangeStagePacket();
+    int worldId = accessor.mData->mWorldList->tryFindWorldIndexByStageName(GameDataFunction::getCurrentStageName(accessor));
+    strcpy(packet->changeStage, GameDataFunction::getMainStageName(accessor, worldId));
+
+    sInstance->mSocket->queuePacket(packet);
+}
+
 void Client::setScenario(int worldID, int scenario)
 {
     if (!sInstance) {
@@ -1361,9 +1382,22 @@ bool Client::setScenario(const char* worldName, int scenario) {
     GameDataHolderAccessor accessor(sInstance->mCurStageScene);
 
     int worldID = accessor.mData->mWorldList->tryFindWorldIndexByStageName(worldName);
-    if (accessor.mData->mWorldList->getMoonRockScenarioNo(worldID) <= scenario && scenario >= 1) {
-        setScenario(worldID, scenario);
-        return true;
+    if (scenario == -1)
+    {
+        //setMessage(3, "ChangeStageInfo failed to init");
+    }
+
+    // Exclude revisitable scenarios like festival
+    if (!(al::isEqualString(worldName, "CityWorldHomeStage") && scenario == 3)) {
+        if (scenario != getScenario(worldID) &&
+            scenario <= accessor.mData->mWorldList->getMoonRockScenarioNo(worldID) &&
+            !GameDataFunction::isUnlockedWorld(accessor, worldID)) {
+            if (getScenario(worldID) < scenario) {
+                setMessage(1, "Scenario Updated");
+                setScenario(worldID, scenario);
+            }
+            return true;
+        }
     }
     return false;
 }
@@ -1405,20 +1439,19 @@ void Client::sendCorrectScenario(const ChangeStageInfo* stageInfo)
     }
 
     GameDataHolderAccessor accessor(sInstance->mCurStageScene);
-
-    /*char str[12] = {'S', 'c', 'e', 'n', 'a', 'r', 'i', 'o', ' ', ' ', ' '};
-    str[9] = static_cast<char>(
-        48 + sInstance->worldScenarios[accessor.mData->mWorldList->tryFindWorldIndexByStageName(
-                                   stageInfo->changeStageName.cstr())]);
-
-    sInstance->apChatLine1 = str;
-    
-    char str2[12] = {'W', 'o', 'r', 'l', 'd', 'I', 'D', ' ', ' ', ' '};
-    str2[9] = static_cast<char>(
-        48 + accessor.mData->mWorldList->tryFindWorldIndexByStageName(stageInfo->changeStageName.cstr()));
-    sInstance->apChatLine2 = str2;*/
-
     // try changing isReturn (param_4)
+    /*if (stageInfo->isReturn)
+    {
+        setMessage(1, "isReturn: True");
+        
+    } else {
+        setMessage(1, "isReturn: False");
+    }
+    sead::FixedSafeString<40> str;
+    str = "";
+    str.append("subScenario type: ");
+    str.append(static_cast<char>(48 + static_cast<unsigned int>(stageInfo->subType)));
+    setMessage(2, str.cstr());*/
     ChangeStageInfo info(accessor.mData, stageInfo->changeStageId.cstr(),
                          stageInfo->changeStageName.cstr(),
                          false,
@@ -1483,13 +1516,59 @@ void Client::receiveCheck(Check* packet)
 
     struct ShopItem::ItemInfo* infoPtr;
     GameDataHolderAccessor accessor(sInstance->mCurStageScene);
+    bool updateIndex = false;
+    sead::FixedSafeString<40> indexMessage;
+    indexMessage = "";
+    indexMessage.append("Received item index ");
+    int index = packet->index;
+    int trim = index;
+    if (index >= 1000)
+    {
+        indexMessage.append(static_cast<char>(48 + trim / 1000));
+        trim = trim % 1000;
+    }
+    if (index >= 100) {
+        indexMessage.append(static_cast<char>(48 + trim / 100));
+        trim = trim % 100;
+    }
+    if (index >= 10) {
+        indexMessage.append(static_cast<char>(48 + trim / 10)); 
+        trim = trim % 10;
+    }
+    if (index >= 0) {
+        indexMessage.append(static_cast<char>(48 + trim));
+    }
+    //setMessage(1, indexMessage.cstr());
+    indexMessage = "";
+    indexMessage.append("Current item index ");
+    index = getCheckIndex();
+    trim = index;
+    if (index >= 1000)
+    {
+        indexMessage.append(static_cast<char>(48 + trim / 1000));
+        trim = trim % 1000;
+    }
+    if (index >= 100) {
+        indexMessage.append(static_cast<char>(48 + trim / 100));
+        trim = trim % 100;
+    }
+    if (index >= 10) {
+        indexMessage.append(static_cast<char>(48 + trim / 10)); 
+        trim = trim % 10;
+    }
+    if (index >= 0) {
+        indexMessage.append(static_cast<char>(48 + trim));
+    }
+    //setMessage(2, indexMessage.cstr());
 
     switch (itemType)
     { 
     case -2:
-        if (packet->index < getCheckIndex())
+        //setMessage(3, "Coins Received");
+        if (getCheckIndex() < packet->index)
         {
             GameDataFunction::addCoin(accessor, packet->amount);
+            updateIndex = true;
         }
         break;
     case -1:
@@ -1503,14 +1582,20 @@ void Client::receiveCheck(Check* packet)
         info.mType = static_cast<ShopItem::ItemType>(itemType);
         infoPtr = &info;
         accessor.mData->mGameDataFile->buyItem(infoPtr, false);
-        GameDataFunction::wearCostume(accessor, info.mName);
+        if (getCheckIndex() < packet->index) {
+            GameDataFunction::wearCostume(accessor, info.mName);
+            updateIndex = true;
+        }
         break;
     case 1:
         strcpy(info.mName, costumeNames[packet->locationId]);
         info.mType = static_cast<ShopItem::ItemType>(itemType);
         infoPtr = &info;
         accessor.mData->mGameDataFile->buyItem(infoPtr, false);
-        GameDataFunction::wearCap(accessor, info.mName);
+        if (getCheckIndex() < packet->index) {
+            GameDataFunction::wearCap(accessor, info.mName);
+            updateIndex = true;
+        }
         break;
     case 2:
         strcpy(info.mName, souvenirNames[packet->locationId]);
@@ -1524,9 +1609,14 @@ void Client::receiveCheck(Check* packet)
         infoPtr = &info;
         accessor.mData->mGameDataFile->buyItem(infoPtr, false);
         break;
+
+    case 5:
+        addCapture(captureListNames[packet->locationId]);
+        GameDataFunction::addHackDictionary(accessor, captureListNames[packet->locationId]);
+        break;
     }
 
-    if (getCheckIndex() < packet->index) {
+    if (updateIndex) {
         setCheckIndex(packet->index);
     }
 
@@ -1563,6 +1653,15 @@ void Client::addShine(int uid)
 
 
     sInstance->collectedShines[uid / 32] = shines;
+}
+
+void Client::setRecentShine(Shine* curShine)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+    sInstance->recentShine = curShine;
 }
 
 bool Client::hasShine(int uid)
@@ -1936,8 +2035,17 @@ void Client::startShineCount() {
         return;
     }
     sInstance->mCurStageScene->mSceneLayout->startShineCountAnim(false);
+    startShineChipCount();
+}
+
+void Client::startShineChipCount() {
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
     sInstance->mCurStageScene->mSceneLayout->updateCounterParts();  // updates shine chip layout to (maybe) prevent softlocks
 }
+
 
 void Client::setMessage(int num, const char* msg)
 {
@@ -1966,117 +2074,242 @@ void Client::addApInfo(ApInfo* packet)
         return;
     }
 
-    sead::WFixedSafeString<40> info1;
-    sead::WFixedSafeString<40> info2;
-    sead::WFixedSafeString<40> info3;
-    info1 = info1.cEmptyString;
-    info2 = info2.cEmptyString;
-    info3 = info3.cEmptyString;
-
-    for (int i = 0; i < 40; i++)
-    {
-        if (packet->info1[i] == '\0') {
-            break;
-        }
-        info1.append(static_cast<char16>(packet->info1[i]));
-    }
-
-    for (int i = 0; i < 40; i++)
-    {
-        if (packet->info2[i] == '\0') {
-            break;
-        }
-        info2.append(static_cast<char16>(packet->info2[i]));
-    }
-
-    for (int i = 0; i < 40; i++)
-    {
-        if (packet->info3[i] == '\0') {
-            break;
-        }
-        info3.append(static_cast<char16>(packet->info3[i]));
-    }
-
     int type = static_cast<int>(packet->infoType);
-    //setMessage(2, "AP Info Entered");
 
-
-    if (type == 0)
+    if (type < 3) 
     {
-        //setMessage(1, "Game Info Entered");
-        //if (!info1.isEmpty()) 
-        //{
+        sead::WFixedSafeString<40> info1;
+        sead::WFixedSafeString<40> info2;
+        sead::WFixedSafeString<40> info3;
+        info1 = info1.cEmptyString;
+        info2 = info2.cEmptyString;
+        info3 = info3.cEmptyString;
+
+        for (int i = 0; i < 40; i++) {
+            if (packet->info1[i] == '\0') {
+                break;
+            }
+            info1.append(static_cast<char16>(packet->info1[i]));
+        }
+
+        for (int i = 0; i < 40; i++) {
+            if (packet->info2[i] == '\0') {
+                break;
+            }
+            info2.append(static_cast<char16>(packet->info2[i]));
+        }
+
+        for (int i = 0; i < 40; i++) {
+            if (packet->info3[i] == '\0') {
+                break;
+            }
+            info3.append(static_cast<char16>(packet->info3[i]));
+        }
+
+        // setMessage(2, "AP Info Entered");
+
+        if (type == 0) {
+            // setMessage(1, "Game Info Entered");
+            // if (!info1.isEmpty())
+            //{
             sInstance->apGameNames[packet->index1] =
                 sInstance->apGameNames[packet->index1].cEmptyString;
             sInstance->apGameNames[packet->index1].append(info1.cstr());
             sInstance->numApGames++;
-        //}
-        //if (!info2.isEmpty()) 
-        //{
+            //}
+            // if (!info2.isEmpty())
+            //{
             sInstance->apGameNames[packet->index2] =
                 sInstance->apGameNames[packet->index2].cEmptyString;
             sInstance->apGameNames[packet->index2].append(info2.cstr());
             sInstance->numApGames++;
             //}
-        //if (!info3.isEmpty()) 
-        //{
+            // if (!info3.isEmpty())
+            //{
             sInstance->apGameNames[packet->index3] =
                 sInstance->apGameNames[packet->index3].cEmptyString;
             sInstance->apGameNames[packet->index3].append(info3.cstr());
             sInstance->numApGames++;
             //}
-    } 
-        
-    if (type == 1)
-    {
-        //if (!info1.isEmpty())
-        //{
+        }
+
+        if (type == 1) {
+            // if (!info1.isEmpty())
+            //{
             sInstance->apSlotNames[packet->index1] =
                 sInstance->apSlotNames[packet->index1].cEmptyString;
             sInstance->apSlotNames[packet->index1].append(info1.cstr());
             sInstance->numApSlots++;
-        //}
-        //if (!info2.isEmpty()) 
-        //{
+            //}
+            // if (!info2.isEmpty())
+            //{
             sInstance->apSlotNames[packet->index2] =
                 sInstance->apSlotNames[packet->index2].cEmptyString;
             sInstance->apSlotNames[packet->index2].append(info2.cstr());
-                sInstance->numApSlots++;
-        //}
-        //if (!info3.isEmpty()) 
-        //{
+            sInstance->numApSlots++;
+            //}
+            // if (!info3.isEmpty())
+            //{
             sInstance->apSlotNames[packet->index3] =
                 sInstance->apSlotNames[packet->index3].cEmptyString;
             sInstance->apSlotNames[packet->index3].append(info3.cstr());
-                sInstance->numApSlots++;
-        //}
-    }
-      
-    if (type == 2)
-    {
-        //if (!info1.isEmpty())
-        //{
+            sInstance->numApSlots++;
+            //}
+        }
+
+        if (type == 2) {
+            // if (!info1.isEmpty())
+            //{
             sInstance->apItemNames[packet->index1] =
                 sInstance->apItemNames[packet->index1].cEmptyString;
             sInstance->apItemNames[packet->index1].append(info1.cstr());
             sInstance->numApItems++;
-        //}
-        //if (!info2.isEmpty()) 
-        //{
+            //}
+            // if (!info2.isEmpty())
+            //{
             sInstance->apItemNames[packet->index2] =
                 sInstance->apItemNames[packet->index2].cEmptyString;
             sInstance->apItemNames[packet->index2].append(info2.cstr());
             sInstance->numApItems++;
-        //}
-        //if (!info3.isEmpty())
-        //{
+            //}
+            // if (!info3.isEmpty())
+            //{
             sInstance->apItemNames[packet->index3] =
                 sInstance->apItemNames[packet->index3].cEmptyString;
             sInstance->apItemNames[packet->index3].append(info3.cstr());
             sInstance->numApItems++;
-        //}
+            //}
+        }
+    } 
+    else 
+    {
+        if (type == 3) {
+            sInstance->shineItemNames[packet->index1] =
+                sInstance->shineItemNames[packet->index1].cEmptyString;
+            sInstance->shineItemNames[packet->index1].append(packet->info1);
+
+            if (packet->index1 < 99) {
+                sInstance->shineItemNames[packet->index2] =
+                    sInstance->shineItemNames[packet->index2].cEmptyString;
+                sInstance->shineItemNames[packet->index2].append(packet->info2);
+
+                sInstance->shineItemNames[packet->index3] =
+                    sInstance->shineItemNames[packet->index3].cEmptyString;
+                sInstance->shineItemNames[packet->index3].append(packet->info3);
+            }
+
+        }
     }
 
+}
+
+void Client::updateShineReplace(ShineReplacePacket* packet)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+
+    sInstance->shineTextReplacements[0] = {packet->itemType0, packet->itemNameIndex0};
+    sInstance->shineTextReplacements[1] = {packet->itemType1, packet->itemNameIndex1};
+    sInstance->shineTextReplacements[2] = {packet->itemType2, packet->itemNameIndex2};
+    sInstance->shineTextReplacements[3] = {packet->itemType3, packet->itemNameIndex3};
+    sInstance->shineTextReplacements[4] = {packet->itemType4, packet->itemNameIndex4};
+    sInstance->shineTextReplacements[5] = {packet->itemType5, packet->itemNameIndex5};
+    sInstance->shineTextReplacements[6] = {packet->itemType6, packet->itemNameIndex6};
+    sInstance->shineTextReplacements[7] = {packet->itemType7, packet->itemNameIndex7};
+    sInstance->shineTextReplacements[8] = {packet->itemType8, packet->itemNameIndex8};
+    sInstance->shineTextReplacements[9] = {packet->itemType9, packet->itemNameIndex9};
+    sInstance->shineTextReplacements[10] = {packet->itemType10, packet->itemNameIndex10};
+    sInstance->shineTextReplacements[11] = {packet->itemType11, packet->itemNameIndex11};
+    sInstance->shineTextReplacements[12] = {packet->itemType12, packet->itemNameIndex12};
+    sInstance->shineTextReplacements[13] = {packet->itemType13, packet->itemNameIndex13};
+    sInstance->shineTextReplacements[14] = {packet->itemType14, packet->itemNameIndex14};
+    sInstance->shineTextReplacements[15] = {packet->itemType15, packet->itemNameIndex15};
+    sInstance->shineTextReplacements[16] = {packet->itemType16, packet->itemNameIndex16};
+    sInstance->shineTextReplacements[17] = {packet->itemType17, packet->itemNameIndex17};
+    sInstance->shineTextReplacements[18] = {packet->itemType18, packet->itemNameIndex18};
+    sInstance->shineTextReplacements[19] = {packet->itemType19, packet->itemNameIndex19};
+    sInstance->shineTextReplacements[20] = {packet->itemType20, packet->itemNameIndex20};
+    sInstance->shineTextReplacements[21] = {packet->itemType21, packet->itemNameIndex21};
+    sInstance->shineTextReplacements[22] = {packet->itemType22, packet->itemNameIndex22};
+    sInstance->shineTextReplacements[23] = {packet->itemType23, packet->itemNameIndex23};
+    sInstance->shineTextReplacements[24] = {packet->itemType24, packet->itemNameIndex24};
+    sInstance->shineTextReplacements[25] = {packet->itemType25, packet->itemNameIndex25};
+    sInstance->shineTextReplacements[26] = {packet->itemType26, packet->itemNameIndex26};
+    sInstance->shineTextReplacements[27] = {packet->itemType27, packet->itemNameIndex27};
+    sInstance->shineTextReplacements[28] = {packet->itemType28, packet->itemNameIndex28};
+    sInstance->shineTextReplacements[29] = {packet->itemType29, packet->itemNameIndex29};
+    sInstance->shineTextReplacements[30] = {packet->itemType30, packet->itemNameIndex30};
+    sInstance->shineTextReplacements[31] = {packet->itemType31, packet->itemNameIndex31};
+    sInstance->shineTextReplacements[32] = {packet->itemType32, packet->itemNameIndex32};
+    sInstance->shineTextReplacements[33] = {packet->itemType33, packet->itemNameIndex33};
+    sInstance->shineTextReplacements[34] = {packet->itemType34, packet->itemNameIndex34};
+    sInstance->shineTextReplacements[35] = {packet->itemType35, packet->itemNameIndex35};
+    sInstance->shineTextReplacements[36] = {packet->itemType36, packet->itemNameIndex36};
+    sInstance->shineTextReplacements[37] = {packet->itemType37, packet->itemNameIndex37};
+    sInstance->shineTextReplacements[38] = {packet->itemType38, packet->itemNameIndex38};
+    sInstance->shineTextReplacements[39] = {packet->itemType39, packet->itemNameIndex39};
+    sInstance->shineTextReplacements[40] = {packet->itemType40, packet->itemNameIndex40};
+    sInstance->shineTextReplacements[41] = {packet->itemType41, packet->itemNameIndex41};
+    sInstance->shineTextReplacements[42] = {packet->itemType42, packet->itemNameIndex42};
+    sInstance->shineTextReplacements[43] = {packet->itemType43, packet->itemNameIndex43};
+    sInstance->shineTextReplacements[44] = {packet->itemType44, packet->itemNameIndex44};
+    sInstance->shineTextReplacements[45] = {packet->itemType45, packet->itemNameIndex45};
+    sInstance->shineTextReplacements[46] = {packet->itemType46, packet->itemNameIndex46};
+    sInstance->shineTextReplacements[47] = {packet->itemType47, packet->itemNameIndex47};
+    sInstance->shineTextReplacements[48] = {packet->itemType48, packet->itemNameIndex48};
+    sInstance->shineTextReplacements[49] = {packet->itemType49, packet->itemNameIndex49};
+    sInstance->shineTextReplacements[50] = {packet->itemType50, packet->itemNameIndex50};
+    sInstance->shineTextReplacements[51] = {packet->itemType51, packet->itemNameIndex51};
+    sInstance->shineTextReplacements[52] = {packet->itemType52, packet->itemNameIndex52};
+    sInstance->shineTextReplacements[53] = {packet->itemType53, packet->itemNameIndex53};
+    sInstance->shineTextReplacements[54] = {packet->itemType54, packet->itemNameIndex54};
+    sInstance->shineTextReplacements[55] = {packet->itemType55, packet->itemNameIndex55};
+    sInstance->shineTextReplacements[56] = {packet->itemType56, packet->itemNameIndex56};
+    sInstance->shineTextReplacements[57] = {packet->itemType57, packet->itemNameIndex57};
+    sInstance->shineTextReplacements[58] = {packet->itemType58, packet->itemNameIndex58};
+    sInstance->shineTextReplacements[59] = {packet->itemType59, packet->itemNameIndex59};
+    sInstance->shineTextReplacements[60] = {packet->itemType60, packet->itemNameIndex60};
+    sInstance->shineTextReplacements[61] = {packet->itemType61, packet->itemNameIndex61};
+    sInstance->shineTextReplacements[62] = {packet->itemType62, packet->itemNameIndex62};
+    sInstance->shineTextReplacements[63] = {packet->itemType63, packet->itemNameIndex63};
+    sInstance->shineTextReplacements[64] = {packet->itemType64, packet->itemNameIndex64};
+    sInstance->shineTextReplacements[65] = {packet->itemType65, packet->itemNameIndex65};
+    sInstance->shineTextReplacements[66] = {packet->itemType66, packet->itemNameIndex66};
+    sInstance->shineTextReplacements[67] = {packet->itemType67, packet->itemNameIndex67};
+    sInstance->shineTextReplacements[68] = {packet->itemType68, packet->itemNameIndex68};
+    sInstance->shineTextReplacements[69] = {packet->itemType69, packet->itemNameIndex69};
+    sInstance->shineTextReplacements[70] = {packet->itemType70, packet->itemNameIndex70};
+    sInstance->shineTextReplacements[71] = {packet->itemType71, packet->itemNameIndex71};
+    sInstance->shineTextReplacements[72] = {packet->itemType72, packet->itemNameIndex72};
+    sInstance->shineTextReplacements[73] = {packet->itemType73, packet->itemNameIndex73};
+    sInstance->shineTextReplacements[74] = {packet->itemType74, packet->itemNameIndex74};
+    sInstance->shineTextReplacements[75] = {packet->itemType75, packet->itemNameIndex75};
+    sInstance->shineTextReplacements[76] = {packet->itemType76, packet->itemNameIndex76};
+    sInstance->shineTextReplacements[77] = {packet->itemType77, packet->itemNameIndex77};
+    sInstance->shineTextReplacements[78] = {packet->itemType78, packet->itemNameIndex78};
+    sInstance->shineTextReplacements[79] = {packet->itemType79, packet->itemNameIndex79};
+    sInstance->shineTextReplacements[80] = {packet->itemType80, packet->itemNameIndex80};
+    sInstance->shineTextReplacements[81] = {packet->itemType81, packet->itemNameIndex81};
+    sInstance->shineTextReplacements[82] = {packet->itemType82, packet->itemNameIndex82};
+    sInstance->shineTextReplacements[83] = {packet->itemType83, packet->itemNameIndex83};
+    sInstance->shineTextReplacements[84] = {packet->itemType84, packet->itemNameIndex84};
+    sInstance->shineTextReplacements[85] = {packet->itemType85, packet->itemNameIndex85};
+    sInstance->shineTextReplacements[86] = {packet->itemType86, packet->itemNameIndex86};
+    sInstance->shineTextReplacements[87] = {packet->itemType87, packet->itemNameIndex87};
+    sInstance->shineTextReplacements[88] = {packet->itemType88, packet->itemNameIndex88};
+    sInstance->shineTextReplacements[89] = {packet->itemType89, packet->itemNameIndex89};
+    sInstance->shineTextReplacements[90] = {packet->itemType90, packet->itemNameIndex90};
+    sInstance->shineTextReplacements[91] = {packet->itemType91, packet->itemNameIndex91};
+    sInstance->shineTextReplacements[92] = {packet->itemType92, packet->itemNameIndex92};
+    sInstance->shineTextReplacements[93] = {packet->itemType93, packet->itemNameIndex93};
+    sInstance->shineTextReplacements[94] = {packet->itemType94, packet->itemNameIndex94};
+    sInstance->shineTextReplacements[95] = {packet->itemType95, packet->itemNameIndex95};
+    sInstance->shineTextReplacements[96] = {packet->itemType96, packet->itemNameIndex96};
+    sInstance->shineTextReplacements[97] = {packet->itemType97, packet->itemNameIndex97};
+    sInstance->shineTextReplacements[98] = {packet->itemType98, packet->itemNameIndex98};
+    sInstance->shineTextReplacements[99] = {packet->itemType99, packet->itemNameIndex99};
 }
 
 void Client::updateShopReplace(ShopReplacePacket* packet)
@@ -2501,6 +2734,53 @@ void Client::updateShopReplace(ShopReplacePacket* packet)
 
 }
 
+const char* Client::getShineReplacementText() 
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return "";
+    }
+
+    GameDataHolderAccessor accessor(sInstance->mCurStageScene);
+
+    GameDataFile::HintInfo* info =
+        &accessor.mData->mGameDataFile->mShineHintList[sInstance->recentShine->mShineIdx];
+
+    shineReplaceText curReplaceText =
+        sInstance->shineTextReplacements[info->mHintIdx];
+
+    sead::FixedSafeString<40> indexMessage;
+    indexMessage = "";
+    indexMessage.append("Shine hint id ");
+    int index = sInstance->recentShine->mShineIdx;
+    int trim = index;
+    if (index >= 1000) {
+        indexMessage.append(static_cast<char>(48 + trim / 1000));
+        trim = trim % 1000;
+    }
+    if (index >= 100) {
+        indexMessage.append(static_cast<char>(48 + trim / 100));
+        trim = trim % 100;
+    }
+    if (index >= 10) {
+        indexMessage.append(static_cast<char>(48 + trim / 10));
+        trim = trim % 10;
+    }
+    if (index >= 0) {
+        indexMessage.append(static_cast<char>(48 + trim));
+    }
+    //setMessage(1, indexMessage.cstr());
+
+    if (curReplaceText.shineItemNameIndex == 255)
+    {
+        setMessage(2, "Invalid shine item name index");
+        return sInstance->recentShine->curShineInfo->mShineLabel.cstr();
+    } else {
+        return sInstance->shineItemNames[curReplaceText.shineItemNameIndex].cstr();
+    }
+    
+}
+
 const char16_t* Client::getShopReplacementText(const char* fileName, const char* key) 
 {
     if (!sInstance) {
@@ -2515,32 +2795,30 @@ const char16_t* Client::getShopReplacementText(const char* fileName, const char*
     convert = "";
     convert.append(key);
     if (convert.calcLength() != convert.removeSuffix("_Explain")) {
-        key = convert.cstr();
         isExplain = true;
     }
     shopReplaceText curItem = {255,255,255,255};
-    
 
     if (strcmp("ItemCap", fileName) == 0)
     {
-        curItem = sInstance->shopCapTextReplacements[getIndexCostumeList(key)];
+        curItem = sInstance->shopCapTextReplacements[getIndexCostumeList(convert.cstr()) - 1];
     }
     else if (strcmp("ItemCloth", fileName) == 0) 
     {
-        curItem = sInstance->shopClothTextReplacements[getIndexCostumeList(key)];
+        curItem = sInstance->shopClothTextReplacements[getIndexCostumeList(convert.cstr()) - 1];
     }
     else if (strcmp("ItemSticker", fileName) == 0) 
     {
-        curItem = sInstance->shopStickerTextReplacements[getIndexStickerList(key)];
+        curItem = sInstance->shopStickerTextReplacements[getIndexStickerList(convert.cstr())];
     }
     else if (strcmp("ItemGift", fileName) == 0) 
     {
-        curItem = sInstance->shopGiftTextReplacements[getIndexSouvenirList(key)];
+        curItem = sInstance->shopGiftTextReplacements[getIndexSouvenirList(convert.cstr())];
     }
     else if (strcmp("ItemMoon", fileName) == 0) 
     {
         // Find out key for each kingdom as still is unknown
-        curItem = sInstance->shopMoonTextReplacements[getIndexMoonItemList(key)];
+        curItem = sInstance->shopMoonTextReplacements[getIndexMoonItemList(convert.cstr())];
     } else {
         // Not included items like Life Up Hearts
         return u"";
@@ -2548,7 +2826,7 @@ const char16_t* Client::getShopReplacementText(const char* fileName, const char*
 
     if (curItem.gameIndex == 254)
     {
-        setMessage(1, "No Item Data Received.");
+        //setMessage(1, "No Item Data Received.");
     }
 
     if (isExplain)
