@@ -75,7 +75,7 @@ bool saveReadHook(int* padRumbleInt, al::ByamlIter const& saveByml, char const* 
 // GameDataFile::tryReadByamlData line 198
 void saveFileWriteHook(al::ByamlWriter* saveByaml)
 {
-    for (int i = 0; i < 18; i++) {
+    for (int i = 0; i < 17; i++) {
         sead::FixedSafeString<18> label;
         label = "World";
         if (i / 10 > 0) {
@@ -156,7 +156,7 @@ bool saveFileReadHook(al::ByamlIter *saveByaml, bool* firstNetworkBool, char con
 {
     int data = 0;
 
-    for (int i = 0; i < 18; i++) {
+    for (int i = 0; i < 17; i++) {
         sead::FixedSafeString<18> label;
         label = "World";
         if (i / 10 > 0) {
@@ -229,9 +229,9 @@ bool saveFileReadHook(al::ByamlIter *saveByaml, bool* firstNetworkBool, char con
         }
     }
 
-    /*if (saveByaml->tryGetIntByKey(&data, "CheckIndex")) {
+    if (saveByaml->tryGetIntByKey(&data, "CheckIndex")) {
         Client::setCheckIndex(data);
-    }*/
+    }
 
     return saveByaml->tryGetBoolByKey(firstNetworkBool, firstNetworkKey);
 }
