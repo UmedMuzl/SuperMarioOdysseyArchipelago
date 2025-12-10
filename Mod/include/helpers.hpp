@@ -44,6 +44,8 @@ const char* tryConvertName(const char* className);
 void killMainPlayer(al::LiveActor* actor);
 void killMainPlayer(PlayerActorHakoniwa* mainPlayer);
 
+const char* intToCstr(int number);
+
 __attribute__((used)) static const char* costumeNames[] = {
     "Mario",
     "MarioTailCoat",
