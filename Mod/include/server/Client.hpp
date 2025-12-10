@@ -213,6 +213,7 @@ class Client {
         static bool getCapturesFlag() { return sInstance ? sInstance->captures : false; }
 
         static const char* getShineReplacementText();
+        static int getShineColor(Shine* curShine);
         static const char16_t* getShopReplacementText(const char* fileName, const char* key);
 
         static void setStageInfo(GameDataHolderAccessor holder);
@@ -264,6 +265,7 @@ class Client {
         void updateChatMessages(ArchipelagoChatMessage *packet);
         void addApInfo(ApInfo *packet);
         void updateShineReplace(ShineReplacePacket *packet);
+        void updateShineColor(ShineColor* packet);
         void updateShopReplace(ShopReplacePacket *packet);
         void updateSlotData(SlotData* packet);
         void updateWorlds(UnlockWorld *packet);
@@ -336,6 +338,9 @@ class Client {
         Shine* recentShine = nullptr;
         sead::SafeArray<shineReplaceText, 100> shineTextReplacements;
         sead::SafeArray<sead::FixedSafeString<40>, 100> shineItemNames;
+
+        // Moon Color Replacement
+        sead::SafeArray<u8, 1170> shineColors;
 
 
         // Shop Text Replacement Handling
