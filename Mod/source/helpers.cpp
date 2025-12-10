@@ -174,6 +174,26 @@ const char *tryConvertName(const char *className) {
     return className;
 }
 
+const char* intToCstr(int number)
+{
+    sead::FixedSafeString<40> numberStr;
+    numberStr = "";
+    int trim = number;
+    int magnitude = 1;
+    while (number % (magnitude * 10) != number)
+    {
+        magnitude *= 10;
+    }
+    while (magnitude > 0)
+    {
+        numberStr.append(static_cast<char>(48 + trim / magnitude));
+        trim %= magnitude;
+        magnitude /= 10;
+    }
+    
+    return numberStr.cstr();
+}
+
 // Unity Classes
 
 float VisualUtils::SmoothMove(Transform moveTransform, Transform targetTransform, float timeDelta, float closingSpeed, float maxAngularSpeed)

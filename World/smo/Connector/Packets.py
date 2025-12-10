@@ -1,5 +1,6 @@
 from enum import Enum
 from ctypes import c_short as short, c_ushort as ushort, c_int, c_byte as sbyte, c_ubyte as byte, c_byte, c_ubyte
+from math import trunc
 from typing import Any
 
 class PacketType(Enum):
@@ -26,6 +27,10 @@ class PacketType(Enum):
     ShineChecks : short = 21
     ApInfo : short = 22
     ShopReplace : short = 23
+    ShineReplace : short = 24
+    ShineColor : short = 25
+    UDPInit : short = 26
+    HolePunch : short = 27
     Shine : short = -2
 
 class ConnectionType(Enum):
@@ -106,7 +111,7 @@ class CheckPacket:
         data += self.stage.encode()
         while len(data) < 12 + self.OBJ_ID_SIZE + self.STAGE_NAME_SIZE:
             data += b"\x00"
-        data += self.amount.to_bytes(4, "little")
+        data += self.amount.to_bytes(4, "little", signed=True)
         if len(data) != self.SIZE:
             raise f"CheckPacket failed to serialize. bytearray is incorrect size {self.SIZE}."
         return data
@@ -504,11 +509,14 @@ class ChangeStagePacket:
     sub_scenario_type : byte
     SIZE : short = 0x42
 
-    def __init__(self, stage : str, stage_id : str = "", scenario : int = -1, sub_scenario_type : int = 0):
-        self.stage = stage
-        self.stage_id = stage_id
-        self.scenario = c_byte(int(scenario))
-        self.sub_scenario_type = c_ubyte(sub_scenario_type)
+    def __init__(self, packet_bytes = None , stage : str = "", stage_id : str = "", scenario : int = -1, sub_scenario_type : int = 0):
+        if packet_bytes:
+            self.deserialize(packet_bytes)
+        else:
+            self.stage = stage
+            self.stage_id = stage_id
+            self.scenario = c_byte(int(scenario))
+            self.sub_scenario_type = c_ubyte(sub_scenario_type)
 
     def serialize(self) -> bytearray:
         data : bytearray = bytearray()
@@ -561,6 +569,11 @@ class ApInfoPacket:
         data += self.index1.to_bytes(2,"little")
         data += self.index2.to_bytes(2,"little")
         data += self.index3.to_bytes(2,"little")
+        # print(self.info_type)
+        # print(self.index1)
+        # print(self.index2)
+        # print(self.index3)
+        # print(self.info)
 
         for i in range(3):
             if i < len(self.info):
@@ -634,6 +647,78 @@ class ShopReplace:
             self.info.append([data[offset], data[offset+1], data[offset+2], data[offset+3]])
             offset += 4
 
+
+class ShineReplace:
+    info : dict[str | list[int]] = []
+
+    SIZE : short = 200
+
+    def __init__(self, info : dict[str | list[int]]):
+        self.info = info
+
+    def serialize(self) -> bytearray:
+        data : bytearray = bytearray()
+
+        for i in range(100):
+            if i < len(self.info):
+                data += self.info[str(i)][0].to_bytes(1,"little", signed=True)
+                data += self.info[str(i)][1].to_bytes(1,"little", signed=False)
+
+            else:
+                filler = 127
+                data += filler.to_bytes(1,"little", signed=True)
+                filler = 255
+                data += filler.to_bytes(1,"little", signed=False)
+
+        if len(data) != self.SIZE:
+            raise f"ShineReplace failed to serialize. bytearray is incorrect size {self.SIZE}."
+        return data
+
+    def deserialize(self, data : bytes | bytearray) -> None:
+        if data is bytes:
+            data = bytearray(data)
+        offset : int = 0
+        for i in range(100):
+            self.info[str(i)] = [data[offset], data[offset+1]]
+            offset += 2
+
+class ShineColor:
+    info : list[list[int]] = []
+
+    SIZE : short = 51*3
+
+    def __init__(self, info : list[list[int]]):
+        self.info = info
+
+    def serialize(self) -> bytearray:
+        data : bytearray = bytearray()
+
+        for i in range(51):
+            if i < len(self.info):
+                data += self.info[i][0].to_bytes(2,"little")
+                data += self.info[i][1].to_bytes(1,"little")
+
+            else:
+                filler = 0
+                data += filler.to_bytes(2,"little")
+                data += filler.to_bytes(1,"little")
+
+        if len(data) != self.SIZE:
+            print(len(data))
+            raise f"ShineColor failed to serialize. bytearray is incorrect size {self.SIZE}."
+        return data
+
+    def deserialize(self, data : bytes | bytearray) -> None:
+        if data is bytes:
+            data = bytearray(data)
+        offset : int = 0
+        self.info = []
+        print(int.from_bytes(data[offset:offset+2], "little"))
+        print(int.from_bytes(data[offset:offset+2], "little", signed=True))
+        for i in range(83):
+            self.info.append([int.from_bytes(data[offset:offset+2],"little", signed=True), data[offset+3]])
+            offset += 3
+
 class DeathLinkPacket:
     SIZE : short = 0x0
 
@@ -695,12 +780,12 @@ class InitPacket:
 
 class PacketHeader:
     GUID_SIZE : int = 16
-    guid : str
+    guid : bytearray
     packet_type : PacketType
     packet_size : short
     SIZE : short = 16 + 4
 
-    def __init__(self, header_bytes : bytearray = None, guid : str = None,  packet_type : PacketType = PacketType.Init):
+    def __init__(self, header_bytes : bytearray = None, guid : bytearray = None,  packet_type : PacketType = PacketType.Init):
         if header_bytes:
             self.deserialize(header_bytes)
         else:
@@ -709,7 +794,8 @@ class PacketHeader:
 
     def serialize(self) -> bytearray:
         data: bytearray = bytearray()
-        data += self.guid.encode("utf-16")
+        data += self.guid
+
         while len(data) < self.GUID_SIZE:
             data += b"\x00"
         int_value: int = self.packet_type.value
@@ -724,7 +810,7 @@ class PacketHeader:
         if data is bytes:
             data = bytearray(data)
         offset = 0
-        self.guid = data[offset:self.GUID_SIZE].decode("utf-16", "ignore")
+        self.guid = data[offset:self.GUID_SIZE]
         offset += self.GUID_SIZE
         self.packet_type = PacketType(int.from_bytes(data[offset:offset + 2], "little"))
         offset += 2
@@ -735,7 +821,7 @@ class Packet:
     packet : Any
     max_size : int = 256 # max size without header
 
-    def __init__(self, guid : str, header_bytes : bytearray = None, packet_type : PacketType = PacketType.Connect, packet_data : list = None):
+    def __init__(self, guid : bytearray, header_bytes : bytearray = None, packet_type : PacketType = PacketType.Connect, packet_data : list = None):
         if header_bytes:
             self.header = PacketHeader(header_bytes=header_bytes)
         else:
@@ -774,6 +860,10 @@ class Packet:
                     self.packet = ApInfoPacket(info_type=packet_data[0], index1=packet_data[1], index2=packet_data[2], index3=packet_data[3], info=packet_data[4])
                 case PacketType.ShopReplace:
                     self.packet = ShopReplace(info_type=packet_data[0], info=packet_data[1])
+                case PacketType.ShineReplace:
+                    self.packet = ShineReplace(info=packet_data[0])
+                case PacketType.ShineColor:
+                    self.packet = ShineColor(info=packet_data[0])
 
     def serialize(self) -> bytearray:
         self.header.packet_size = self.packet.SIZE
@@ -786,8 +876,6 @@ class Packet:
         match self.header.packet_type:
             case PacketType.Connect:
                 self.packet = ConnectPacket()
-            case PacketType.ChangeStage:
-                print("Client sending ChangeStagePacket Deprecated")
             # case PacketType.Command:
             #     self.packet = CommandP()
             case PacketType.Check:
@@ -810,3 +898,5 @@ class Packet:
                 self.packet = ProgressPacket(packet_bytes=data)
             case PacketType.ShineChecks:
                 self.packet = ShineChecksPacket(packet_bytes=data)
+            case PacketType.ChangeStage:
+                self.packet = ChangeStagePacket(packet_bytes=data)

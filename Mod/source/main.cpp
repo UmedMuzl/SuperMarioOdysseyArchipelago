@@ -614,6 +614,22 @@ void setShineLabel(al::IUseLayout* layout, const char* elementLabel)
     al::setPaneStringFormat(layout, elementLabel, Client::getShineReplacementText());
 }
 
+void setShineColor(Shine* thisPtr, char* stageName, int color, bool isSetMtpColor)
+{
+    // Get color here using shine unique id
+    //Client::setMessage(1, "Set custom shine color");
+    int storedColor = Client::getShineColor(thisPtr);
+    rs::setStageShineAnimFrame((al::LiveActor*)thisPtr, stageName, storedColor, isSetMtpColor);
+}
+
+void setShineColorTest(Shine* thisPtr, char* stageName, int color, bool isSetMtpColor)
+{
+    // Get color here using shine unique id
+    //Client::setMessage(1, "Set custom other shine color");
+    int storedColor = Client::getShineColor(thisPtr);
+    rs::setStageShineAnimFrame(thisPtr->mModelShine, stageName, storedColor, isSetMtpColor);
+}
+
 const char16_t* getShopItemMessage(al::IUseMessageSystem const* messageSystem, char const* fileName, char const* key) 
 {
     const char16_t* msg =  Client::getShopReplacementText(fileName, key);
