@@ -4,14 +4,14 @@ import typing
 from copy import deepcopy
 
 import Utils
-from NetUtils import decode, encode, NetworkPlayer, NetworkItem, JSONtoTextParser, JSONMessagePart, ClientStatus
+from NetUtils import encode, NetworkPlayer, NetworkItem, JSONtoTextParser, JSONMessagePart, ClientStatus
 from MultiServer import Endpoint
 from CommonClient import get_base_parser, gui_enabled, logger, CommonContext, ClientCommandProcessor
 from typing import List, Any
-from .Packets import PacketHeader, PacketType, Packet
+from .Packets import PacketHeader, PacketType, Packet, ItemType
 
 from .Data import inverse_shop_items, shop_items, get_item_type, worlds, world_alias, valid_warps, inverse_worlds, \
-    multi_moon_locations
+    multi_moon_locations, world_prefixes
 from .Player import SMOPlayer
 
 import traceback
@@ -91,7 +91,7 @@ class SMOContext(CommonContext):
         self.server_msgs: List[Any] = []
         self.server_comm_task = None
         self.proxy_msgs : List[Packet] = []
-        self.proxy_guid : str = "None"
+        self.proxy_guid : bytearray = bytearray()
         self.player_data : SMOPlayer = SMOPlayer()
         self.player = None
         self.slot_data : dict = {}
@@ -149,7 +149,7 @@ class SMOContext(CommonContext):
         Forwards Slot Data from Archipelago Lobby connection to SMO
         :return:
         """
-        print(self.slot_data)
+        #print(self.slot_data)
         self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.SlotData,
               packet_data=[self.slot_data["counts"]["cascade"],
                            self.slot_data["counts"]["sand"],
@@ -161,38 +161,40 @@ class SMOContext(CommonContext):
                            self.slot_data["counts"]["ruined"],
                            self.slot_data["counts"]["bowser"], self.slot_data["counts"]["dark"],
                            self.slot_data["counts"]["darker"],
-                           self.slot_data["regionals"], self.slot_data["captures"]]))
+                           self.slot_data["regionals"], self.slot_data["capture_sanity"]]))
+
+
 
         # Games
         for i in range(0, len(self.slot_data["shop_games"]), 3):
             if i + 3 < len(self.slot_data["shop_games"]):
-                print(self.slot_data["shop_games"][i:i + 3])
+        #        print(self.slot_data["shop_games"][i:i + 3])
                 self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.ApInfo,
                                               packet_data=[0, i, i+1, i+2, self.slot_data["shop_games"][i:i + 3]]))
             else:
-                print(self.slot_data["shop_games"][i:i + 3])
+        #        print(self.slot_data["shop_games"][i:i + 3])
                 self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.ApInfo,
                                               packet_data=[0, i, i+1, i+2, self.slot_data["shop_games"][
                                                               i:len(self.slot_data["shop_games"])]]))
         # Players
         for i in range(0, len(self.slot_data["shop_players"]), 3):
             if i + 3 < len(self.slot_data["shop_players"]):
-                print(self.slot_data["shop_players"][i:i + 3])
+                #print(self.slot_data["shop_players"][i:i + 3])
                 self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.ApInfo,
                                               packet_data=[1, i, i+1, i+2, self.slot_data["shop_players"][i:i + 3]]))
             else:
-                print(self.slot_data["shop_players"][i:i + 3])
+                #print(self.slot_data["shop_players"][i:i + 3])
                 self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.ApInfo,
                                               packet_data=[1, i, i+1, i+2, self.slot_data["shop_players"][
                                                               i:len(self.slot_data["shop_players"])]]))
         # Items
         for i in range(0, len(self.slot_data["shop_ap_items"]), 3):
             if i + 3 < len(self.slot_data["shop_ap_items"]):
-                print(self.slot_data["shop_ap_items"][i:i + 3])
+                #print(self.slot_data["shop_ap_items"][i:i + 3])
                 self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.ApInfo,
                                               packet_data=[2, i, i+1, i+2, self.slot_data["shop_ap_items"][i:i + 3]]))
             else:
-                print(self.slot_data["shop_ap_items"][i:i + 3])
+                #print(self.slot_data["shop_ap_items"][i:i + 3])
                 self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.ApInfo,
                                               packet_data=[2, i, i+1, i+2, self.slot_data["shop_ap_items"][
                                                               i:len(self.slot_data["shop_ap_items"])]]))
@@ -210,7 +212,7 @@ class SMOContext(CommonContext):
                 items.append([254,254,254,254])
 
         self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.ShopReplace, packet_data=[0, items]))
-        print(len(items), items)
+        #print(len(items), items)
 
         items = []
         for i in range(2539, 2582):
@@ -219,7 +221,7 @@ class SMOContext(CommonContext):
             else:
                 items.append([254,254,254,254])
         self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.ShopReplace, packet_data=[1, items]))
-        print(len(items), items)
+        #print(len(items), items)
 
         items = []
         for i in range(2582, 2599):
@@ -238,13 +240,47 @@ class SMOContext(CommonContext):
         self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.ShopReplace, packet_data=[3, items]))
 
         items = []
-        for i in range(0, 2582):
+        for i in range(0, 2499):
             if str(i) in self.slot_data["shop_replace_data"]["moons"]:
                 items.append(self.slot_data["shop_replace_data"]["moons"][str(i)])
-            else:
-                items.append([254,254,254,254])
         self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.ShopReplace, packet_data=[4, items]))
 
+        # Colors
+        print(self.slot_data["shine_colors"])
+        data = [[]]
+        for shine_uid in range(0, 1168):
+            if len(data[-1]) == 51:
+                data.append([])
+            if shine_uid > 1167:
+                break
+            if str(shine_uid) in self.slot_data["shine_colors"]:
+                data[-1].append([shine_uid, self.slot_data["shine_colors"][str(shine_uid)]])
+        print(data)
+        for i in data:
+            self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.ShineColor,
+                                          packet_data=[i]))
+            print(self.proxy_msgs[-1].packet.info)
+
+    def forward_shine_data(self):
+        world_id = world_prefixes.index(self.player_data.current_home_stage)
+        self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.ShineReplace,
+                                     packet_data=[self.slot_data["shine_replace_data"][str(world_id)]]))
+        # Items
+        print(self.slot_data["shine_replace_data"][str(world_id)])
+        for i in range(0, len(self.slot_data["shine_items"][str(world_id)]), 3):
+            if i + 3 < len(self.slot_data["shine_items"][str(world_id)]):
+                print(self.slot_data["shine_items"][str(world_id)][i:i + 3])
+                self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.ApInfo,
+                                             packet_data=[3, i, i + 1, i + 2,
+                                                          self.slot_data["shine_items"][str(world_id)][
+                                                          i:i + 3]]))
+            else:
+                print(self.slot_data["shine_items"][str(world_id)][i:i + 3])
+                self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.ApInfo,
+                                             packet_data=[3, i, i + 1, i + 2,
+                                                          self.slot_data["shine_items"][str(world_id)][
+                                                          i:len(
+                                                              self.slot_data["shine_items"][str(world_id)])]]))
 
     def on_deathlink(self, data: typing.Dict[str, typing.Any]) -> None:
         if self.death_link_enabled:
@@ -323,42 +359,50 @@ class SMOContext(CommonContext):
 
                     packet = None
                     item_type = get_item_type(net_item.item)
+                    index = args["index"]
                     match item_type:
                         # Moons
                         case -1:
                             next_moon : int = self.player_data.get_next_moon(net_item.item)
                             if next_moon > -1:
                                 packet = Packet(guid=self.proxy_guid, packet_type=PacketType.Check,
-                                    packet_data=[next_moon, item_type, 0, "", "", 0])
+                                    packet_data=[next_moon, ItemType.Moon, index, "", "", 0])
                             else:
                                 logger.info(f"Received nonexistent moon. This is either caused by a bug or the use of commands to give"
                                             f" this slot more of a type of moon than can possibly exist.")
                         # Regional Coins
                         case 4:
                             pass
+                        # Captures
+                        case 5:
+                            packet = Packet(guid=self.proxy_guid, packet_type=PacketType.Check,
+                                            packet_data=[net_item.item - 3701, ItemType.Capture, index, "", "", 0])
                         # Filler
                         case -2:
-                            packet = Packet(guid=self.proxy_guid, packet_type=PacketType.Check,
-                                packet_data=[-1, item_type, args["index"], "", "", 50])
+                            if str(net_item.location) in self.slot_data["coin_values"][str(net_item.player)]:
+                                packet = Packet(guid=self.proxy_guid, packet_type=PacketType.Check,
+                                    packet_data=[net_item.item, ItemType.Coins, index, "", "", self.slot_data["coin_values"][str(net_item.player)][str(net_item.location)]])
+                            else:
+                                print(net_item.player, "location id", print(net_item.location))
                         # Flag items
                         case -4:
                             pass
 
                         case 0:
                             packet = Packet(guid=self.proxy_guid, packet_type=PacketType.Check,
-                                packet_data=[net_item.item - 2538, item_type, -1, "", "", 0])
+                                packet_data=[net_item.item - 2538, ItemType.Clothes, index, "", "", 0])
 
                         case 1:
                             packet = Packet(guid=self.proxy_guid, packet_type=PacketType.Check,
-                                packet_data=[net_item.item - 2500 if net_item.item < 2539 else 2538, item_type, -1, "", "", 0])
+                                packet_data=[(net_item.item - 2500) if net_item.item < 2539 else (net_item.item - 2538), ItemType.Cap, index, "", "", 0])
 
                         case 2:
                             packet = Packet(guid=self.proxy_guid, packet_type=PacketType.Check,
-                                packet_data=[net_item.item - 2599, item_type, -1, "", "", 0])
+                                packet_data=[net_item.item - 2599, ItemType.Souvenir, index, "", "", 0])
 
                         case 3:
                             packet = Packet(guid=self.proxy_guid, packet_type=PacketType.Check,
-                                packet_data=[net_item.item - 2582, item_type, -1, "", "", 0])
+                                packet_data=[net_item.item - 2582, ItemType.Sticker, index, "", "", 0])
 
                         # case _:
                         #     internal_name = inverse_shop_items[net_item.item].removesuffix("Cap").removesuffix("Clothes")
@@ -368,7 +412,13 @@ class SMOContext(CommonContext):
                         #     packet = Packet(guid=self.proxy_guid, packet_type=PacketType.Item,
                         #                     packet_data=[internal_name, get_item_type(net_item.item)])
                     if packet:
-                        self.proxy_msgs.append(packet)
+                        if packet.header.packet_type == PacketType.Check:
+                            if packet.packet.location_id < 0:
+                                logger.info("Invalid Location ID in packet.")
+                            else:
+                                self.proxy_msgs.append(packet)
+                        else:
+                            self.proxy_msgs.append(packet)
 
                 self.server_msgs.append(args)
 
@@ -377,21 +427,22 @@ class SMOContext(CommonContext):
                 self.room_info = args
 
             case "Retrieved":
-                if f"{self.player.name}_scenarios" in args["keys"] and args["keys"][f"{self.player.name}_scenarios"] is dict:
-                    for key in self.player_data.world_scenarios.keys():
-                        if self.player_data.world_scenarios[key] <= args["keys"][f"{self.player.name}_scenarios"][key]:
-                            self.player_data.world_scenarios[key] = args["keys"][f"{self.player.name}_scenarios"][key]
-                    for world in self.player_data.world_scenarios.keys():
-                        #self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.Progress,
-                        #                             packet_data=[inverse_worlds[world], self.player_data.world_scenarios[world]]))
-                        pass
-
-                    self.server_msgs.append({"cmd": "Set", "key": f"{self.player.name}_scenarios",
-                                             "operations": [
-                                                 {"operation": "replace", "value": self.player_data.world_scenarios}]})
-                else:
-                    self.server_msgs.append({"cmd" : "Set", "key" : f"{self.player.name}_scenarios",
-                                            "operations" : [{ "operation" : "replace", "value" : self.player_data.world_scenarios}]})
+                pass
+                # if f"{self.player.name}_scenarios" in args["keys"] and args["keys"][f"{self.player.name}_scenarios"] is dict:
+                #     for key in self.player_data.world_scenarios.keys():
+                #         if self.player_data.world_scenarios[key] <= args["keys"][f"{self.player.name}_scenarios"][key]:
+                #             self.player_data.world_scenarios[key] = args["keys"][f"{self.player.name}_scenarios"][key]
+                #     #for world in self.player_data.world_scenarios.keys():
+                #         #self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.Progress,
+                #         #                             packet_data=[inverse_worlds[world], self.player_data.world_scenarios[world]]))
+                #         #pass
+                #
+                #     self.server_msgs.append({"cmd": "Set", "key": f"{self.player.name}_scenarios",
+                #                              "operations": [
+                #                                  {"operation": "replace", "value": self.player_data.world_scenarios}]})
+                # else:
+                #     self.server_msgs.append({"cmd" : "Set", "key" : f"{self.player.name}_scenarios",
+                #                             "operations" : [{ "operation" : "replace", "value" : self.player_data.world_scenarios}]})
 
             case _:
                 if cmd != "PrintJSON":
@@ -452,8 +503,8 @@ async def handle_proxy(reader : asyncio.StreamReader, writer : asyncio.StreamWri
         while True:
             data : bytearray = bytearray(await reader.read(PacketHeader.SIZE))
             packet = Packet(guid=ctx.proxy_guid, header_bytes=data)
-            if  ctx.proxy_guid == "None":
-                if packet.header.guid != "None":
+            if len(ctx.proxy_guid) == 0:
+                if len(packet.header.guid) != 0:
                     ctx.proxy_guid = packet.header.guid
                     if len(ctx.proxy_msgs) > 0:
                         for queued_packet in ctx.proxy_msgs:
@@ -463,6 +514,7 @@ async def handle_proxy(reader : asyncio.StreamReader, writer : asyncio.StreamWri
             packet_size : int = packet.header.packet_size.value
             data = bytearray(await reader.read(packet_size))
             packet.deserialize(data)
+
             if packet.header.packet_type != PacketType.Unknown:
                 ctx.disconnect_timer = 30
                 # Prevent appending server message before connected to server.
@@ -485,50 +537,19 @@ async def handle_proxy(reader : asyncio.StreamReader, writer : asyncio.StreamWri
                             break
                     if len(ctx.slot_data) > 0 and needs_slot_data:
                         ctx.forward_slot_data()
+                        ctx.forward_shine_data()
 
                 case PacketType.Disconnect:
                     ctx.game_connected = False
                     break
-                # case PacketType.Shine:
-                #     shine_id : int = packet.packet.id.value
-                #     print(f"Got {shine_id}")
-                #     if shine_id in multi_moon_locations:
-                #         ctx.multi_moon_anim = True
-                #     ctx.server_msgs.append({"cmd": "LocationChecks", "locations" : [shine_id]})
-                #     if ctx.player_data.check_goal(shine_id):
-                #         ctx.server_msgs.append({"cmd" : "StatusUpdate", "status" : ClientStatus.CLIENT_GOAL})
-                #         print("Goal achieved")
-                #
-                # case PacketType.ShineChecks:
-                #     shine_checks : list[int] = []
-                #     shine: int = 1
-                #     for i in range(len(packet.packet.checks)):
-                #         b = 1
-                #         while b < 0x80000000:
-                #             if (packet.packet.checks[i].value() & b) == b:
-                #                 shine_checks.append(shine)
-                #             b = b * 2
-                #             shine = shine + 1
-                #     print(shine_checks)
-                #     print(shine)
-                #     ctx.server_msgs.append({"cmd": "LocationChecks", "locations": shine_checks})
-                #
-                # case PacketType.Item:
-                #     item_type : int = packet.packet.item_type.value
-                #     item_name = packet.packet.name
-                #     item_name += "Cap" if item_type == 1 else "Clothes" if item_type == 0 else ""
-                #     print(f"Got {item_name}")
-                #     item_id: int = shop_items[item_name]
-                #     ctx.server_msgs.append({"cmd": "LocationChecks", "locations": [item_id]})
-                # case PacketType.RegionalCollect:
-                #     pass
-                #     # shine_id: int = packet.packet.id.value
-                # case PacketType.Progress:
-                #     pass
-                #     # world = inverse_worlds[packet.packet.world_id.value]
-                #     # ctx.player_data.world_scenarios[world] = packet.packet.scenario.value
-                #     # ctx.server_msgs.append({"cmd" : "Set", "key" : f"{ctx.player.name}_scenarios" , "operations": [{"operation" : "replace", "value" :
-                #     #     ctx.player_data.world_scenarios}]})
+
+                case PacketType.ChangeStage:
+                    stage : str = packet.packet.stage
+                    if stage[0:stage.index("World")] != ctx.player_data.current_home_stage:
+                        ctx.player_data.current_home_stage = stage[0:stage.index("World")]
+                        print(f"Player Changed Home Stage to {ctx.player_data.current_home_stage}")
+                        if ctx.is_connected():
+                            ctx.forward_shine_data()
 
                 case PacketType.Check:
                     print(packet.packet.location_id, packet.packet.item_type)
@@ -550,7 +571,8 @@ async def handle_proxy(reader : asyncio.StreamReader, writer : asyncio.StreamWri
                             ctx.server_msgs.append({"cmd": "LocationChecks", "locations": [location_id]})
                         case 1:
                             print(f"Got Cap {location_id}")
-                            location_id = packet.packet.location_id + 2500 if packet.packet.location_id < 39 else 2538
+                            location_id = (packet.packet.location_id + 2500) if packet.packet.location_id < 39 else (2538 + packet.packet.location_id)
+                            print(f"Got adjusted Cap {location_id}")
                             ctx.server_msgs.append({"cmd": "LocationChecks", "locations": [location_id]})
                         case 2:
                             print(f"Got Souvenir {location_id}")
@@ -560,20 +582,41 @@ async def handle_proxy(reader : asyncio.StreamReader, writer : asyncio.StreamWri
                             print(f"Got Sticker {location_id}")
                             location_id = packet.packet.location_id + 2582
                             ctx.server_msgs.append({"cmd": "LocationChecks", "locations": [location_id]})
-                        # Add Regional Coin and Capture
+                        case 5:
+                            print(f"Got Capture {location_id}")
+                            location_id = packet.packet.location_id + 3701
+                            ctx.server_msgs.append({"cmd": "LocationChecks", "locations": [location_id]})
+                        # Add Regional Coin
 
                 case PacketType.DeathLink:
                     if ctx.death_link_enabled:
                         await ctx.send_death()
 
             if len(ctx.proxy_msgs) > 0 and ctx.game_connected:
+                # num_bytes = 0
+                # packets = 0
+                # for i in ctx.proxy_msgs:
+                #     num_bytes += 20
+                #     num_bytes += i.packet.SIZE
+                #     if num_bytes < 4096:
+                #         packets += 1
+
+
+                #print(num_bytes)
+                #print(packets)
                 for i in range(len(ctx.proxy_msgs)):
                     response : Packet = ctx.proxy_msgs.pop(0)
                     b = response.serialize()
+                    # if response.header.packet_type == PacketType.ShineColor:
+                    #     print("This one", b[20:])
                     writer.write(b)
                     await writer.drain()
-                    if response.header.packet_type == PacketType.ApInfo:
-                        print("This one", b[20:])
+
+
+                    # for message in ctx.proxy_msgs:
+                    #     print(message.header.packet_type)
+                #await asyncio.sleep(0.25)
+
             if not ctx.game_connected and not ctx.awaiting_connection:
                 break
     except Exception as e:
