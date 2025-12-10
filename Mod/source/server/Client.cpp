@@ -71,13 +71,13 @@ Client::Client() {
 
     shineTextReplacements.fill({0, 0});
     shineItemNames.fill(sead::FixedSafeString<40>());
+    shineColors.fill(0);
 
     shopCapTextReplacements.fill({254, 255, 255, 255});
     shopClothTextReplacements.fill({254, 255, 255, 255});
     shopStickerTextReplacements.fill({254, 255, 255, 255});
     shopGiftTextReplacements.fill({254, 255, 255, 255});
     shopMoonTextReplacements.fill({254, 255, 255, 255});
-
 
     apGameNames.fill(sead::WFixedSafeString<40>());
     apSlotNames.fill(sead::WFixedSafeString<40>());
@@ -412,6 +412,9 @@ void Client::readFunc() {
                 break;
             case PacketType::SHINEREPLACE:
                 updateShineReplace((ShineReplacePacket*)curPacket);
+                break;
+            case PacketType::SHINECOLOR:
+                updateShineColor((ShineColor*)curPacket);
                 break;
             case PacketType::SHOPREPLACE:
                 updateShopReplace((ShopReplacePacket*)curPacket);
@@ -2112,6 +2115,10 @@ void Client::addApInfo(ApInfo* packet)
             // setMessage(1, "Game Info Entered");
             // if (!info1.isEmpty())
             //{
+            /*if (packet->index1 == 0)
+            {
+                setMessage(1, packet->info1);
+            }*/
             sInstance->apGameNames[packet->index1] =
                 sInstance->apGameNames[packet->index1].cEmptyString;
             sInstance->apGameNames[packet->index1].append(info1.cstr());
@@ -2310,6 +2317,99 @@ void Client::updateShineReplace(ShineReplacePacket* packet)
     sInstance->shineTextReplacements[97] = {packet->itemType97, packet->itemNameIndex97};
     sInstance->shineTextReplacements[98] = {packet->itemType98, packet->itemNameIndex98};
     sInstance->shineTextReplacements[99] = {packet->itemType99, packet->itemNameIndex99};
+}
+
+void Client::updateShineColor(ShineColor* packet)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+    //setMessage(1, "Entering udpateShineColor");
+    sInstance->shineColors[static_cast<int>(packet->shineUid0)] = packet->color0;
+    sInstance->shineColors[static_cast<int>(packet->shineUid1)] = packet->color1;
+    sInstance->shineColors[static_cast<int>(packet->shineUid2)] = packet->color2;
+    sInstance->shineColors[static_cast<int>(packet->shineUid3)] = packet->color3;
+    sInstance->shineColors[static_cast<int>(packet->shineUid4)] = packet->color4;
+    sInstance->shineColors[static_cast<int>(packet->shineUid5)] = packet->color5;
+    sInstance->shineColors[static_cast<int>(packet->shineUid6)] = packet->color6;
+    sInstance->shineColors[static_cast<int>(packet->shineUid7)] = packet->color7;
+    sInstance->shineColors[static_cast<int>(packet->shineUid8)] = packet->color8;
+    sInstance->shineColors[static_cast<int>(packet->shineUid9)] = packet->color9;
+    sInstance->shineColors[static_cast<int>(packet->shineUid10)] = packet->color10;
+    sInstance->shineColors[static_cast<int>(packet->shineUid11)] = packet->color11;
+    sInstance->shineColors[static_cast<int>(packet->shineUid12)] = packet->color12;
+    sInstance->shineColors[static_cast<int>(packet->shineUid13)] = packet->color13;
+    sInstance->shineColors[static_cast<int>(packet->shineUid14)] = packet->color14;
+    sInstance->shineColors[static_cast<int>(packet->shineUid15)] = packet->color15;
+    sInstance->shineColors[static_cast<int>(packet->shineUid16)] = packet->color16;
+    sInstance->shineColors[static_cast<int>(packet->shineUid17)] = packet->color17;
+    sInstance->shineColors[static_cast<int>(packet->shineUid18)] = packet->color18;
+    sInstance->shineColors[static_cast<int>(packet->shineUid19)] = packet->color19;
+    sInstance->shineColors[static_cast<int>(packet->shineUid20)] = packet->color20;
+    sInstance->shineColors[static_cast<int>(packet->shineUid21)] = packet->color21;
+    sInstance->shineColors[static_cast<int>(packet->shineUid22)] = packet->color22;
+    sInstance->shineColors[static_cast<int>(packet->shineUid23)] = packet->color23;
+    sInstance->shineColors[static_cast<int>(packet->shineUid24)] = packet->color24;
+    sInstance->shineColors[static_cast<int>(packet->shineUid25)] = packet->color25;
+    sInstance->shineColors[static_cast<int>(packet->shineUid26)] = packet->color26;
+    sInstance->shineColors[static_cast<int>(packet->shineUid27)] = packet->color27;
+    sInstance->shineColors[static_cast<int>(packet->shineUid28)] = packet->color28;
+    sInstance->shineColors[static_cast<int>(packet->shineUid29)] = packet->color29;
+    sInstance->shineColors[static_cast<int>(packet->shineUid30)] = packet->color30;
+    sInstance->shineColors[static_cast<int>(packet->shineUid31)] = packet->color31;
+    sInstance->shineColors[static_cast<int>(packet->shineUid32)] = packet->color32;
+    sInstance->shineColors[static_cast<int>(packet->shineUid33)] = packet->color33;
+    sInstance->shineColors[static_cast<int>(packet->shineUid34)] = packet->color34;
+    sInstance->shineColors[static_cast<int>(packet->shineUid35)] = packet->color35;
+    sInstance->shineColors[static_cast<int>(packet->shineUid36)] = packet->color36;
+    sInstance->shineColors[static_cast<int>(packet->shineUid37)] = packet->color37;
+    sInstance->shineColors[static_cast<int>(packet->shineUid38)] = packet->color38;
+    sInstance->shineColors[static_cast<int>(packet->shineUid39)] = packet->color39;
+    sInstance->shineColors[static_cast<int>(packet->shineUid40)] = packet->color40;
+    sInstance->shineColors[static_cast<int>(packet->shineUid41)] = packet->color41;
+    sInstance->shineColors[static_cast<int>(packet->shineUid42)] = packet->color42;
+    sInstance->shineColors[static_cast<int>(packet->shineUid43)] = packet->color43;
+    sInstance->shineColors[static_cast<int>(packet->shineUid44)] = packet->color44;
+    sInstance->shineColors[static_cast<int>(packet->shineUid45)] = packet->color45;
+    sInstance->shineColors[static_cast<int>(packet->shineUid46)] = packet->color46;
+    sInstance->shineColors[static_cast<int>(packet->shineUid47)] = packet->color47;
+    sInstance->shineColors[static_cast<int>(packet->shineUid48)] = packet->color48;
+    sInstance->shineColors[static_cast<int>(packet->shineUid49)] = packet->color49;
+    sInstance->shineColors[static_cast<int>(packet->shineUid50)] = packet->color50;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid51)] = packet->color51;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid52)] = packet->color52;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid53)] = packet->color53;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid54)] = packet->color54;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid55)] = packet->color55;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid56)] = packet->color56;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid57)] = packet->color57;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid58)] = packet->color58;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid59)] = packet->color59;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid60)] = packet->color60;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid61)] = packet->color61;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid62)] = packet->color62;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid63)] = packet->color63;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid64)] = packet->color64;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid65)] = packet->color65;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid66)] = packet->color66;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid67)] = packet->color67;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid68)] = packet->color68;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid69)] = packet->color69;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid70)] = packet->color70;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid71)] = packet->color71;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid72)] = packet->color72;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid73)] = packet->color73;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid74)] = packet->color74;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid75)] = packet->color75;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid76)] = packet->color76;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid77)] = packet->color77;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid78)] = packet->color78;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid79)] = packet->color79;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid80)] = packet->color80;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid81)] = packet->color81;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid82)] = packet->color82;
+    //sInstance->shineColors[static_cast<int>(packet->shineUid83)] = packet->color83;
 }
 
 void Client::updateShopReplace(ShopReplacePacket* packet)
@@ -2743,33 +2843,51 @@ const char* Client::getShineReplacementText()
 
     GameDataHolderAccessor accessor(sInstance->mCurStageScene);
 
+    Shine* curShine = sInstance->recentShine;
+
     GameDataFile::HintInfo* info =
-        &accessor.mData->mGameDataFile->mShineHintList[sInstance->recentShine->mShineIdx];
+        &accessor.mData->mGameDataFile->mShineHintList[curShine->mShineIdx];
 
-    shineReplaceText curReplaceText =
-        sInstance->shineTextReplacements[info->mHintIdx];
+    shineReplaceText curReplaceText;
 
-    sead::FixedSafeString<40> indexMessage;
-    indexMessage = "";
-    indexMessage.append("Shine hint id ");
-    int index = sInstance->recentShine->mShineIdx;
-    int trim = index;
-    if (index >= 1000) {
-        indexMessage.append(static_cast<char>(48 + trim / 1000));
-        trim = trim % 1000;
+    if (info->mUniqueID == 0) {
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "CapWorldHomeStage") == 0) {
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "WaterfallWorldHomeStage") == 0) {
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "SandWorldHomeStage") == 0) {
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "LakeWorldHomeStage") == 0) {
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "ForestWorldHomeStage") == 0) {
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "CloudWorldHomeStage") == 0) {
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "ClashWorldHomeStage") == 0) {
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "CityWorldHomeStage") == 0) {
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "SnowWorldHomeStage") == 0) {
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "SeaWorldHomeStage") == 0) {
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "LavaWorldHomeStage") == 0) {
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "BossRaidWorldHomeStage") == 0) {
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "SkyWorldHomeStage") == 0) {
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "MoonWorldHomeStage") == 0) {
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "PeachWorldHomeStage") == 0) {
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "Special1WorldHomeStage") == 0) {
+        }
+    } else {
+        curReplaceText = sInstance->shineTextReplacements[info->mHintIdx];
     }
-    if (index >= 100) {
-        indexMessage.append(static_cast<char>(48 + trim / 100));
-        trim = trim % 100;
-    }
-    if (index >= 10) {
-        indexMessage.append(static_cast<char>(48 + trim / 10));
-        trim = trim % 10;
-    }
-    if (index >= 0) {
-        indexMessage.append(static_cast<char>(48 + trim));
-    }
-    //setMessage(1, indexMessage.cstr());
+
+    //setMessage(1, intToCstr(info->mHintIdx));
 
     if (curReplaceText.shineItemNameIndex == 255)
     {
@@ -2779,6 +2897,88 @@ const char* Client::getShineReplacementText()
         return sInstance->shineItemNames[curReplaceText.shineItemNameIndex].cstr();
     }
     
+}
+
+int Client::getShineColor(Shine* curShine)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return 99;
+    }
+
+    GameDataHolderAccessor accessor(sInstance->mCurStageScene);
+
+    GameDataFile::HintInfo* info =
+        &accessor.mData->mGameDataFile->mShineHintList[curShine->mShineIdx];
+
+    
+    // Hint arts Uid is 0 on the moon object in the other world.
+    // Stage name in the shine info is still the kingdom the hint art comes from.
+    if (info->mUniqueID == 0) {
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "CapWorldHomeStage") == 0) {
+            return static_cast<int>(sInstance->shineColors[1086]);
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "WaterfallWorldHomeStage") == 0) {
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "SandWorldHomeStage") == 0) {
+            return static_cast<int>(sInstance->shineColors[1096]);
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "LakeWorldHomeStage") == 0) {
+            return static_cast<int>(sInstance->shineColors[1094]);
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "ForestWorldHomeStage") == 0) {
+            return static_cast<int>(sInstance->shineColors[1089]);
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "CloudWorldHomeStage") == 0) {
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "ClashWorldHomeStage") == 0) {
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "CityWorldHomeStage") == 0) {
+            return static_cast<int>(sInstance->shineColors[1088]);
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "SnowWorldHomeStage") == 0) {
+            return static_cast<int>(sInstance->shineColors[1087]);
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "SeaWorldHomeStage") == 0) {
+            return static_cast<int>(sInstance->shineColors[1095]);
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "LavaWorldHomeStage") == 0) {
+            return static_cast<int>(sInstance->shineColors[1090]);
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "BossRaidWorldHomeStage") == 0) {
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "SkyWorldHomeStage") == 0) {
+            return static_cast<int>(sInstance->shineColors[1091]);
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "MoonWorldHomeStage") == 0) {
+            return static_cast<int>(sInstance->shineColors[1165]);
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "PeachWorldHomeStage") == 0) {
+            return static_cast<int>(sInstance->shineColors[1152]);
+        }
+        if (strcmp(curShine->curShineInfo->stageName.cstr(), "Special1WorldHomeStage") == 0) {
+            // Add conditions for other Dark Side hint arts
+            return static_cast<int>(sInstance->shineColors[1123]);
+        }
+    } else {
+        /*sead::FixedSafeString<40> shineData;
+        shineData = "";
+        shineData.append("Uid: ");
+        shineData.append(intToCstr(info->mUniqueID));
+        shineData.append(" Color: ");
+        shineData.append(intToCstr(sInstance->shineColors[info->mUniqueID]));
+
+        setMessage(1, shineData.cstr());
+        shineData = "";
+        shineData.append("Uid: ");
+        shineData.append(intToCstr(1145));
+        shineData.append(" Color: ");
+        shineData.append(intToCstr(sInstance->shineColors[1145]));
+
+        setMessage(2, shineData.cstr());*/
+        return static_cast<int>(sInstance->shineColors[info->mUniqueID]);
+    }
+    return 99;
 }
 
 const char16_t* Client::getShopReplacementText(const char* fileName, const char* key) 
