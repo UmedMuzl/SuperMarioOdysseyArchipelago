@@ -1221,6 +1221,26 @@ moon_list = {
     ]
 }
 
+world_prefixes = [
+    "Cap",
+    "Waterfall",
+    "Sand",
+    "Forest",
+    "Lake",
+    "Cloud",
+    "Clash",
+    "City",
+    "Sea",
+    "Snow",
+    "Lava",
+    "BossRaid",
+    "Sky",
+    "Moon",
+    "Peach",
+    "Special1",
+    "Special2"
+]
+
 worlds = {
     "Cap": 0,
     "Cascade": 1,
@@ -2920,7 +2940,12 @@ def get_item_type(item : int) -> int:
          The in-game item type enum value corresponding to the item name.
     """
 
-    if 2599 > item > 2581:
+    # Moons
+    if item < 2500:
+        return -1
+    elif 3700 < item < 9000:
+        return 5
+    elif 2599 > item > 2581:
         return 3
     elif 2625 > item > 2598:
         return 2
@@ -2928,12 +2953,10 @@ def get_item_type(item : int) -> int:
         return 1
     elif 2581 > item > 2538:
         return 0
-    # Moons
-    elif item < 2500:
-        return -1
+
 
     # Filler
-    elif item in inverse_filler_items:
+    elif item > 9990:
         return -2
     # Regional Coin
     else:
