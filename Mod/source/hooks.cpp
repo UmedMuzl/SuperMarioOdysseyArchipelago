@@ -86,66 +86,6 @@ void saveFileWriteHook(al::ByamlWriter* saveByaml)
         saveByaml->addInt(label.cstr(), Client::getScenario(i));
     }
 
-    for (int i = 0; i < 25; i++)
-    {
-        sead::FixedSafeString<15> label;
-        label = "ShineChecks";
-        if (i / 10 > 0)
-        {
-            label.append(static_cast<char>(48 + i / 10));
-        }
-        label.append(static_cast<char>(48 + i % 10));
-        saveByaml->addInt(label.cstr(), Client::getShineChecks(i));
-    }
-
-    for (int i = 0; i < 12; i++)
-    {
-        sead::FixedSafeString<16> label;
-        label = "OutfitChecks";
-        if (i / 10 > 0)
-        {
-            label.append(static_cast<char>(48 + i / 10));
-        }
-        label.append(static_cast<char>(48 + i % 10));
-        saveByaml->addInt(label.cstr(), Client::getOutfitChecks(i));
-    }
-
-    for (int i = 0; i < 4; i++)
-    {
-        sead::FixedSafeString<17> label;
-        label = "StickerChecks";
-        if (i / 10 > 0)
-        {
-            label.append(static_cast<char>(48 + i / 10));
-        }
-        label.append(static_cast<char>(48 + i % 10));
-        saveByaml->addInt(label.cstr(), Client::getStickerChecks(i));
-    }
-
-    for (int i = 0; i < 5; i++)
-    {
-        sead::FixedSafeString<18> label;
-        label = "SouvenirChecks";
-        if (i / 10 > 0)
-        {
-            label.append(static_cast<char>(48 + i / 10));
-        }
-        label.append(static_cast<char>(48 + i % 10));
-        saveByaml->addInt(label.cstr(), Client::getSouvenirChecks(i));
-    }
-
-    for (int i = 0; i < 8; i++)
-    {
-        sead::FixedSafeString<19> label;
-        label = "CaptureChecks";
-        if (i / 10 > 0)
-        {
-            label.append(static_cast<char>(48 + i / 10));
-        }
-        label.append(static_cast<char>(48 + i % 10));
-        saveByaml->addInt(label.cstr(), Client::getCaptureChecks(i));
-    }
-
     saveByaml->addInt("CheckIndex", Client::getCheckIndex());
 
     saveByaml->pop();
@@ -166,30 +106,6 @@ bool saveFileReadHook(al::ByamlIter *saveByaml, bool* firstNetworkBool, char con
         label.append("Scenario");
         if (saveByaml->tryGetIntByKey(&data, label.cstr())) {
             Client::setScenario(i, data);
-        }
-    }
-
-    /*for (int i = 0; i < 25; i++) {
-        sead::FixedSafeString<15> label;
-        label = "ShineChecks";
-        if (i / 10 > 0) {
-            label.append(static_cast<char>(48 + i / 10));
-        }
-        label.append(static_cast<char>(48 + i % 10));
-        if (saveByaml->tryGetIntByKey(&data, label.cstr())) {
-            Client::setShineChecks(i, data);
-        }
-    }*/
-
-    for (int i = 0; i < 8; i++) {
-        sead::FixedSafeString<19> label;
-        label = "CaptureChecks";
-        if (i / 10 > 0) {
-            label.append(static_cast<char>(48 + i / 10));
-        }
-        label.append(static_cast<char>(48 + i % 10));
-        if (saveByaml->tryGetIntByKey(&data, label.cstr())) {
-            Client::setCaptureChecks(i, data);
         }
     }
 
