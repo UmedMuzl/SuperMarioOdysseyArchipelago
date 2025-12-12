@@ -483,7 +483,46 @@ void sendShinePacket(GameDataHolderAccessor thisPtr, Shine* curShine) {
             Client::sendCheckPacket(1152, -1);
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "Special1WorldHomeStage") == 0) {
-            Client::sendCheckPacket(1123, -1);
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(thisPtr),
+                       "WaterfallWorldHomeStage") == 0) {
+                Client::sendCheckPacket(1132, -1);
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(thisPtr),
+                       "LakeWorldHomeStage") == 0) {
+                Client::sendCheckPacket(1128, -1);
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(thisPtr),
+                       "CloudWorldHomeStage") == 0) {
+                Client::sendCheckPacket(1124, -1);
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(thisPtr),
+                       "ClashWorldHomeStage") == 0) {
+                Client::sendCheckPacket(1126, -1);
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(thisPtr),
+                       "CityWorldHomeStage") == 0) {
+                Client::sendCheckPacket(1130, -1);
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(thisPtr),
+                       "SnowWorldHomeStage") == 0) {
+                Client::sendCheckPacket(1129, -1);
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(thisPtr),
+                       "SeaWorldHomeStage") == 0) {
+                Client::sendCheckPacket(1127, -1);
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(thisPtr),
+                       "LavaWorldHomeStage") == 0) {
+                Client::sendCheckPacket(1123, -1);
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(thisPtr),
+                       "BossRaidWorldHomeStage") == 0) {
+                Client::sendCheckPacket(1125, -1);
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(thisPtr),
+                       "PeachWorldHomeStage") == 0) {
+                Client::sendCheckPacket(1131, -1);
+            }
         }
     } else {
         Client::sendCheckPacket(curHintInfo->mUniqueID, -1);
