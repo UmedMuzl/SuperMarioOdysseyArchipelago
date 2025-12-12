@@ -264,6 +264,7 @@ class Client {
         void updateFiller(FillerCollect *packet);
         void updateChatMessages(ArchipelagoChatMessage *packet);
         void addApInfo(ApInfo *packet);
+        void updateShineChecks(ShineChecks* packet);
         void updateShineReplace(ShineReplacePacket *packet);
         void updateShineColor(ShineColor* packet);
         void updateShopReplace(ShopReplacePacket *packet);
