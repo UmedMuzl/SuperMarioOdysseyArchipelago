@@ -68,6 +68,7 @@ void updatePlayerInfo(GameDataHolderAccessor holder, PlayerActorBase* playerBase
             if (hackName != nullptr && !Client::hasCapture(hackName) && isRecordCapture) {
                 if (!(al::isEqualString(hackName, "ElectricWire") && Client::getScenario(0) < 2
                     && GameDataFunction::getCurrentWorldId(holder) == 0)) {
+                    //Client::setMessage(1, hackNamehackName);
                     if (!playerBase->getPlayerHackKeeper()->isActiveHackStartDemo()) {
                         bool tryEscape = false;
                         int nonKillCaptures[7] = {10, 13, 24, 25, 28, 29, 37};
@@ -102,7 +103,7 @@ void updatePlayerInfo(GameDataHolderAccessor holder, PlayerActorBase* playerBase
     if (gameInfSendTimer >= 60) {
         // Check and prevent crashed home softlock
         if (GameDataFunction::isBossAttackedHome(holder)) {
-            Client::setMessage(1, GameDataFunction::getCurrentStageName(holder));
+            //Client::setMessage(1, GameDataFunction::getCurrentStageName(holder));
             if (strcmp(GameDataFunction::getCurrentStageName(holder), "BossRaidWorldHomeStage") ==
                 0) {
 
@@ -655,7 +656,7 @@ bool isBuyItems(ShopItem::ItemInfo* itemInfo) {
 void onAddHack(GameDataHolderWriter writer,const char* hackName)
 {
     if (Client::getCapturesFlag()) {
-        //Client::setMessage(1, hackName);
+        //Client::setMessage(2, hackName);
         Client::sendCheckPacket(getIndexCaptureList(hackName), 5);
         isRecordCapture = true;
     } else {
