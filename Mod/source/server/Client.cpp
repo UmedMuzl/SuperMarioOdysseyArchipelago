@@ -1686,6 +1686,7 @@ bool Client::hasShine(int uid)
         i = i << 1;
         index += 1;
     }
+    return false;
 }
 
 int Client::getShineChecks(int index)
@@ -2016,6 +2017,7 @@ bool Client::hasCapture(const char* capture) {
         i = i << 1;
         curIndex += 1;
     }
+    return false;
 }
 
 int Client::getCaptureChecks(int index) {
