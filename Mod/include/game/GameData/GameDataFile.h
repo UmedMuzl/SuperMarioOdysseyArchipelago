@@ -371,6 +371,20 @@ class GameDataFile
             return nullptr;
         }
         
+        HintInfo* findShineByHintIdx(int worldId, int shineHintIdx) {
+            int index = 0;
+            for (int x = 0; x < 0x400; x++) {
+                GameDataFile::HintInfo* curInfo = &mShineHintList[x];
+                if (curInfo->mWorldIndex == worldId) {
+                    if (index == shineHintIdx) {
+                        return curInfo;
+                    }
+                    index += 1;
+                }
+            }
+            return nullptr;
+        }
+
         // end custom methods
         
         ShineInfo **mShineInfoArray;
