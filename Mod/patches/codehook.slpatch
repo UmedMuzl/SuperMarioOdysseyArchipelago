@@ -51,6 +51,10 @@ B59E28 B seadPrintHook // sead::system::print
 4de664 BL setShineLabel
 
 // StageSceneStateGetShineGrand::exeDemoGetStart(StageSceneStateGetShineGrand *this)
+// Color
+//4dd420 BL setShineColor
+
+// Label
 4dd680 MOV X0, #0
 4dd6a8 BL setShineLabel
 
@@ -100,11 +104,11 @@ B59E28 B seadPrintHook // sead::system::print
 // Color
 1cdce4 BL setShineColor
 1cdd2c MOV X0, X19
-1cdd3c BL setShineColorTest
+1cdd3c BL setShineModelColor
 
 1cddcc BL setShineColor
 1cde14 MOV X0, X19
-1cde24 BL setShineColorTest
+1cde24 BL setShineModelColor
 
 // Shine::isGot() (Breaks wooded story moon 1)
 //1D06CC BL isGrabShine
@@ -208,6 +212,13 @@ B59E28 B seadPrintHook // sead::system::print
 
 // FUN_71003126ec(LiveActor *param_1)
 312734 BL getUnlockShineNumByWorldId
+
+// GameDataFunction::calcWorldNumForShineList(LayoutActor *param_1)
+52b154 MOV x0, #17
+
+// FUN_7100206d78
+206E00 BL isGotShineByHintIdx
+
 
 // PlayerHackKeeper::recordHack
 4496AC BL onAddHack
