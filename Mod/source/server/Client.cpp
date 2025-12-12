@@ -1396,7 +1396,7 @@ bool Client::setScenario(const char* worldName, int scenario) {
             scenario <= accessor.mData->mWorldList->getMoonRockScenarioNo(worldID) &&
             !GameDataFunction::isUnlockedWorld(accessor, worldID)) {
             if (getScenario(worldID) < scenario) {
-                setMessage(1, "Scenario Updated");
+                //setMessage(1, "Scenario Updated");
                 setScenario(worldID, scenario);
             }
             return true;
@@ -1645,7 +1645,7 @@ void Client::addShine(int uid)
 
     int index = (uid / 32) * 32;
     int i = 1;
-    while (i < 0x80000000) {
+    while (i > 0) {
         if (index == uid) {
             shines = shines | i;
             break;
@@ -1678,7 +1678,7 @@ bool Client::hasShine(int uid)
 
     int index = (uid / 32) * 32;
     int i = 1;
-    while (i < 0x80000000) {
+    while (i > 0) {
         if (index == uid) {
             shines = shines & i;
             return (shines == i);
@@ -1721,7 +1721,7 @@ void Client::addOutfit(const ShopItem::ItemInfo *info)
 
     int curIndex = (index / 8) * 8;
     int i = 1;
-    while (i < 0x80) {
+    while (i < 0x100) {
         if (curIndex == index) {
             outfits = outfits | i;
             break;
@@ -1751,7 +1751,7 @@ bool Client::hasOutfit(const ShopItem::ItemInfo *info)
 
     int curIndex = (index / 8) * 8;
     int i = 1;
-    while (i < 0x80) {
+    while (i < 0x100) {
         if (curIndex == index) {
             outfits = outfits & i;
             return (outfits == i);
@@ -1793,7 +1793,7 @@ void Client::addSticker(const ShopItem::ItemInfo *info)
 
     int curIndex = (index / 8) * 8;
     int i = 1;
-    while (i < 0x80) {
+    while (i < 0x100) {
         if (curIndex == index) {
             stickers = stickers | i;
             break;
@@ -1823,7 +1823,7 @@ bool Client::hasSticker(const ShopItem::ItemInfo *info)
 
     int curIndex = (index / 8) * 8;
     int i = 1;
-    while (i < 0x80) {
+    while (i < 0x100) {
         if (curIndex == index) {
             stickers = stickers & i;
             return (stickers == i);
@@ -1864,7 +1864,7 @@ void Client::addSouvenir(const ShopItem::ItemInfo *info)
 
     int curIndex = (index / 8) * 8;
     int i = 1;
-    while (i < 0x80) {
+    while (i < 0x100) {
         if (curIndex == index) {
             souvenirs = souvenirs | i;
             break;
@@ -1894,7 +1894,7 @@ bool Client::hasSouvenir(const ShopItem::ItemInfo *info)
 
     int curIndex = (index / 8) * 8;
     int i = 1;
-    while (i < 0x80) {
+    while (i < 0x100) {
         if (curIndex == index) {
             souvenirs = souvenirs & i;
             return (souvenirs == i);
@@ -1974,7 +1974,7 @@ void Client::addCapture(const char *capture)
 
     int curIndex = (index / 8) * 8;
     int i = 1;
-    while (i < 0x80) {
+    while (i < 0x100) {
         if (curIndex == index) {
             checkedCaptures = checkedCaptures | i;
             break;
@@ -1996,6 +1996,11 @@ bool Client::hasCapture(const char* capture) {
     int index = getIndexCaptureList(capture);
     if (index == -1)
     {
+        sead::FixedSafeString<40> str;
+        str = "";
+        str.append(capture);
+        str.append(" not in captures list.");
+        setMessage(1, str.cstr());
         return false;
     }
 
@@ -2003,7 +2008,7 @@ bool Client::hasCapture(const char* capture) {
 
     int curIndex = (index / 8) * 8;
     int i = 1;
-    while (i < 0x80) {
+    while (i < 0x100) {
         if (curIndex == index) {
             checkedCaptures = checkedCaptures & i;
             return (checkedCaptures == i);
