@@ -2857,36 +2857,69 @@ const char* Client::getShineReplacementText()
 
     if (info->mUniqueID == 0) {
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "CapWorldHomeStage") == 0) {
-        }
-        if (strcmp(curShine->curShineInfo->stageName.cstr(), "WaterfallWorldHomeStage") == 0) {
+            curReplaceText = sInstance->shineTextReplacements[98];
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "SandWorldHomeStage") == 0) {
+            curReplaceText = sInstance->shineTextReplacements[98];
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "LakeWorldHomeStage") == 0) {
+            curReplaceText = sInstance->shineTextReplacements[98];
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "ForestWorldHomeStage") == 0) {
-        }
-        if (strcmp(curShine->curShineInfo->stageName.cstr(), "CloudWorldHomeStage") == 0) {
-        }
-        if (strcmp(curShine->curShineInfo->stageName.cstr(), "ClashWorldHomeStage") == 0) {
+            curReplaceText = sInstance->shineTextReplacements[98];
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "CityWorldHomeStage") == 0) {
+            curReplaceText = sInstance->shineTextReplacements[98];
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "SnowWorldHomeStage") == 0) {
+            curReplaceText = sInstance->shineTextReplacements[98];
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "SeaWorldHomeStage") == 0) {
+            curReplaceText = sInstance->shineTextReplacements[98];
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "LavaWorldHomeStage") == 0) {
-        }
-        if (strcmp(curShine->curShineInfo->stageName.cstr(), "BossRaidWorldHomeStage") == 0) {
+            curReplaceText = sInstance->shineTextReplacements[98];
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "SkyWorldHomeStage") == 0) {
+            curReplaceText = sInstance->shineTextReplacements[99];
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "MoonWorldHomeStage") == 0) {
+            curReplaceText = sInstance->shineTextReplacements[98];
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "PeachWorldHomeStage") == 0) {
+            curReplaceText = sInstance->shineTextReplacements[98];
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "Special1WorldHomeStage") == 0) {
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(accessor), "WaterfallWorldHomeStage") == 0) {
+                curReplaceText = sInstance->shineTextReplacements[99];
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(accessor), "LakeWorldHomeStage") == 0) {
+                curReplaceText = sInstance->shineTextReplacements[99];
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(accessor), "CloudWorldHomeStage") == 0) {
+                curReplaceText = sInstance->shineTextReplacements[99];
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(accessor), "ClashWorldHomeStage") == 0) {
+                curReplaceText = sInstance->shineTextReplacements[99];
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(accessor), "CityWorldHomeStage") == 0) {
+                curReplaceText = sInstance->shineTextReplacements[99];
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(accessor), "SnowWorldHomeStage") == 0) {
+                curReplaceText = sInstance->shineTextReplacements[99];
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(accessor), "SeaWorldHomeStage") == 0) {
+                curReplaceText = sInstance->shineTextReplacements[99];
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(accessor), "LavaWorldHomeStage") == 0) {
+                curReplaceText = sInstance->shineTextReplacements[99];
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(accessor), "BossRaidWorldHomeStage") == 0) {
+                curReplaceText = sInstance->shineTextReplacements[99];
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(accessor), "PeachWorldHomeStage") == 0) {
+                curReplaceText = sInstance->shineTextReplacements[99];
+            }
         }
     } else {
         curReplaceText = sInstance->shineTextReplacements[info->mHintIdx];
@@ -2923,8 +2956,6 @@ int Client::getShineColor(Shine* curShine)
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "CapWorldHomeStage") == 0) {
             return static_cast<int>(sInstance->shineColors[1086]);
         }
-        if (strcmp(curShine->curShineInfo->stageName.cstr(), "WaterfallWorldHomeStage") == 0) {
-        }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "SandWorldHomeStage") == 0) {
             return static_cast<int>(sInstance->shineColors[1096]);
         }
@@ -2933,10 +2964,6 @@ int Client::getShineColor(Shine* curShine)
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "ForestWorldHomeStage") == 0) {
             return static_cast<int>(sInstance->shineColors[1089]);
-        }
-        if (strcmp(curShine->curShineInfo->stageName.cstr(), "CloudWorldHomeStage") == 0) {
-        }
-        if (strcmp(curShine->curShineInfo->stageName.cstr(), "ClashWorldHomeStage") == 0) {
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "CityWorldHomeStage") == 0) {
             return static_cast<int>(sInstance->shineColors[1088]);
@@ -2950,8 +2977,6 @@ int Client::getShineColor(Shine* curShine)
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "LavaWorldHomeStage") == 0) {
             return static_cast<int>(sInstance->shineColors[1090]);
         }
-        if (strcmp(curShine->curShineInfo->stageName.cstr(), "BossRaidWorldHomeStage") == 0) {
-        }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "SkyWorldHomeStage") == 0) {
             return static_cast<int>(sInstance->shineColors[1091]);
         }
@@ -2963,7 +2988,47 @@ int Client::getShineColor(Shine* curShine)
         }
         if (strcmp(curShine->curShineInfo->stageName.cstr(), "Special1WorldHomeStage") == 0) {
             // Add conditions for other Dark Side hint arts
-            return static_cast<int>(sInstance->shineColors[1123]);
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(accessor),
+                       "WaterfallWorldHomeStage") == 0) {
+                return static_cast<int>(sInstance->shineColors[1132]);
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(accessor),
+                       "LakeWorldHomeStage") == 0) {
+                return static_cast<int>(sInstance->shineColors[1128]);
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(accessor),
+                       "CloudWorldHomeStage") == 0) {
+                return static_cast<int>(sInstance->shineColors[1124]);
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(accessor),
+                       "ClashWorldHomeStage") == 0) {
+                return static_cast<int>(sInstance->shineColors[1126]);
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(accessor),
+                       "CityWorldHomeStage") == 0) {
+                return static_cast<int>(sInstance->shineColors[1130]);
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(accessor),
+                       "SnowWorldHomeStage") == 0) {
+                return static_cast<int>(sInstance->shineColors[1129]);
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(accessor),
+                       "SeaWorldHomeStage") == 0) {
+                return static_cast<int>(sInstance->shineColors[1127]);
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(accessor),
+                       "LavaWorldHomeStage") == 0) {
+                return static_cast<int>(sInstance->shineColors[1123]);
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(accessor),
+                       "BossRaidWorldHomeStage") == 0) {
+                return static_cast<int>(sInstance->shineColors[1125]);
+            }
+            if (strcmp(GameDataFunction::tryGetCurrentMainStageName(accessor),
+                       "PeachWorldHomeStage") == 0) {
+                return static_cast<int>(sInstance->shineColors[1131]);
+            }
+            
         }
     } else {
         /*sead::FixedSafeString<40> shineData;
