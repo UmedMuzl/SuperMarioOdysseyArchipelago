@@ -441,6 +441,33 @@ bool isGotShineRedirect(const Shine* curShine)
     return isGrabShine(accessor, curShine->mShineIdx);
 }
 
+bool isGotShineByHintIdx(GameDataHolderAccessor accessor, int worldId, int hintIdx)
+{
+    if (accessor.mData->mGameDataFile) {
+        GameDataFile::HintInfo* curHintInfo =
+            accessor.mData->mGameDataFile->findShineByHintIdx(worldId, hintIdx);
+        sead::FixedSafeString<60> str;
+        str = "";
+        str.append("World Id: ");
+        str.append(intToCstr(worldId));
+        str.append(" shineIdx: ");
+        str.append(intToCstr(hintIdx));
+        str.append(" Uid: ");
+        str.append(intToCstr(curHintInfo->mUniqueID));
+        str.append(" UnkBool: ");
+        str.append(intToCstr(curHintInfo->unkBool1));
+        str.append(" ???: ");
+        str.append(intToCstr(curHintInfo->unkInt));
+        str.append(" ???: ");
+        str.append(intToCstr(curHintInfo->unkInt2));
+        //Client::setMessage(1, str.cstr());
+        if (curHintInfo) {
+            return Client::hasShine(curHintInfo->mUniqueID);
+        }
+    }
+    return false;
+}
+
 void sendShinePacket(GameDataHolderAccessor thisPtr, Shine* curShine) {
 
     GameDataFile::HintInfo* curHintInfo =
@@ -662,7 +689,7 @@ void setShineColor(Shine* thisPtr, char* stageName, int color, bool isSetMtpColo
     rs::setStageShineAnimFrame((al::LiveActor*)thisPtr, stageName, storedColor, isSetMtpColor);
 }
 
-void setShineColorTest(Shine* thisPtr, char* stageName, int color, bool isSetMtpColor)
+void setShineModelColor(Shine* thisPtr, char* stageName, int color, bool isSetMtpColor) 
 {
     // Get color here using shine unique id
     //Client::setMessage(1, "Set custom other shine color");
@@ -798,7 +825,10 @@ void stageInitHook(al::ActorInitInfo *info, StageScene *curScene, al::PlacementI
     }
 
     Client::sendGameInfPacket(info->mActorSceneInfo.mSceneObjHolder);
-    Client::sendChangeStagePacket(info->mActorSceneInfo.mSceneObjHolder);
+    GameDataHolderAccessor accessor = GameDataHolderAccessor(info->mActorSceneInfo.mSceneObjHolder);
+    if (!GameDataFunction::isHomeShipStage(accessor.mData)) {
+        Client::sendChangeStagePacket(info->mActorSceneInfo.mSceneObjHolder);
+    }
     int worldId = GameDataFunction::getCurrentWorldId(info->mActorSceneInfo.mSceneObjHolder);
     int worldScenario =
         GameDataFunction::getWorldScenarioNo(info->mActorSceneInfo.mSceneObjHolder, worldId);
