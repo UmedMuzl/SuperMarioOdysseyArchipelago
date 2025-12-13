@@ -665,7 +665,6 @@ loc_Post_Cloud = {
 
 loc_Cloud_Captures = {
     "Picture Match Part (Goomba)": 3727,
-    "Picture Match Part (Mario)": 3751,
 }
 
 loc_Cloud_Postgame = {
@@ -758,15 +757,19 @@ sub_area_klepto = {
     "Extremely Hot Bath": 492
 }
 
-loc_Metro = {
+loc_Night_Metro = {
     "Metro Kingdom - New Donk City's Pest Problem": 37,
+    "Metro Kingdom - Swaying in the Breeze": 39,
+    "Metro Kingdom - Girder Sandwich": 54,
+    "Metro Kingdom - City Hall Lost & Found": 100,
+}
+
+loc_Metro = {
     "Metro Kingdom - Drummer on Board!": 42,
     "Metro Kingdom - Guitarist on Board!": 41,
     "Metro Kingdom - Bassist on Board!": 44,
     "Metro Kingdom - Trumpeter on Board!": 43,
     "Metro Kingdom - Inside an Iron Girder": 38,
-    "Metro Kingdom - Swaying in the Breeze": 39,
-    "Metro Kingdom - Girder Sandwich": 54,
     "Metro Kingdom - Glittering Above the Pool": 65,
     "Metro Kingdom - Dizzying Heights": 61,
     "Metro Kingdom - Secret Girder Tunnel!": 59,
@@ -787,7 +790,6 @@ loc_Metro = {
     "Metro Kingdom - Remotely Captured Car": 53,
     "Metro Kingdom - RC Car Pro!": 105,
     "Metro Kingdom - Taking Notes: In the Private Room": 102,
-    "Metro Kingdom - City Hall Lost & Found": 100,
     "Metro Kingdom - Pushing Through the Crowd": 1022,
     "Metro Kingdom - High Over the Crowd": 1023,
     "Metro Kingdom - Rewiring the Neighborhood": 122,
@@ -1707,6 +1709,10 @@ loc_Mushroom_Captures = {
     "Yoshi": 3752
 }
 
+loc_picture_match_mario = {
+    "Picture Match Part (Mario)": 3751,
+}
+
 loc_Mushroom_Shop = {
     "Mario 64 Cap": 2519,
     "Mario 64 Suit": 2557,
@@ -1941,6 +1947,7 @@ base_locations_table = {
     **loc_Cloud,
     **loc_Lost,
     **loc_Lost_Revisit,
+    **loc_Night_Metro,
     **loc_Metro,
     **loc_Metro_Post_Sand,
     **loc_Metro_Sewer_Access,
@@ -2025,7 +2032,7 @@ locations_list = [
     {**loc_Wooded, **loc_Wooded_Post_Story1, **loc_Wooded_Peace, **loc_Wooded_Post_Metro},
     loc_Cloud,
     {**loc_Lost, **loc_Lost_Revisit},
-    {**loc_Metro, **loc_Metro_Sewer_Access, **loc_Metro_Peace, **loc_Metro_Post_Sand},
+    {**loc_Night_Metro, **loc_Metro, **loc_Metro_Sewer_Access, **loc_Metro_Peace, **loc_Metro_Post_Sand},
     {**loc_Snow, **loc_Snow_Peace},
     {**loc_Seaside, **loc_Seaside_Peace},
     {**loc_Luncheon, **loc_Luncheon_Post_Spewart, **loc_Luncheon_Post_Cheese_Rocks, **loc_Luncheon_Peace, **loc_Luncheon_Post_Wooded},
@@ -2044,7 +2051,7 @@ full_moon_locations_list = [
     {**loc_Lake, **loc_Lake_Post_Seaside, **loc_Lake_Postgame},
     {**loc_Cloud, **loc_Cloud_Postgame},
     {**loc_Lost, **loc_Lost_Revisit, **loc_Lost_Postgame},
-    {**loc_Metro, **loc_Metro_Sewer_Access, **loc_Metro_Peace, **loc_Metro_Post_Sand, **loc_Metro_Postgame},
+    {**loc_Night_Metro, **loc_Metro, **loc_Metro_Sewer_Access, **loc_Metro_Peace, **loc_Metro_Post_Sand, **loc_Metro_Postgame},
     {**loc_Seaside, **loc_Seaside_Peace, **loc_Seaside_Postgame},
     {**loc_Snow, **loc_Snow_Peace, **loc_Snow_Postgame},
     {**loc_Luncheon, **loc_Luncheon_Post_Spewart, **loc_Luncheon_Post_Cheese_Rocks, **loc_Luncheon_Peace, **loc_Luncheon_Post_Wooded, **loc_Luncheon_Postgame},

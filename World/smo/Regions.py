@@ -21,8 +21,7 @@ from .Locations import SMOLocation, loc_Cap, loc_Cascade, loc_Cascade_Revisit, \
     loc_Metro_Captures_Postgame, loc_Seaside_Captures, loc_Snow_Captures, \
     loc_Snow_Captures_Peace, loc_Luncheon_Captures, loc_Luncheon_Captures_Post_Cheese_Rocks, \
     loc_Bowser_Captures, loc_Bowser_Captures_Post_Bombing, loc_Moon_Captures, \
-    loc_Moon_Cave_Captures, loc_Mushroom_Captures, loc_Cascade_Peace, loc_Moon_Outfit
-
+    loc_Moon_Cave_Captures, loc_Mushroom_Captures, loc_Cascade_Peace, loc_Moon_Outfit, loc_Night_Metro
 
 from .Logic import count_moons, total_moons
 
@@ -102,9 +101,12 @@ def create_regions(self, world, player):
     world.regions.append(regLost)
 
     # Metro
+    regNightMetro = Region("Night Metro", player, world, "Metro Kingdom")
     regMetro = Region("Metro", player, world, "Metro Kingdom")
     if self.options.goal > 5:
+        create_locs(regNightMetro, *loc_Night_Metro.keys())
         create_locs(regMetro, *loc_Metro.keys())
+    world.regions.append(regNightMetro)
     world.regions.append(regMetro)
     regMetroSewer = Region("Metro Sewer", player, world, "Metro Kingdom Story 1")
     if self.options.goal > 5:
@@ -416,9 +418,11 @@ def create_regions(self, world, player):
             lambda state: state.has("Bullet Bill", self.player) and state.has("Knucklotec's Fist", self.player))
         regWoodedStory1.connect(regWoodedPeace, "Wooded World Peace",
                                 lambda state: state.has("Uproot", self.player) and state.has("Sherm", self.player))
-        regMetro.connect(regMetroSewer, "Metro Sewer", lambda state: state.has("Sherm", player))
-        regMetroSewer.connect(regMetroPeace, "Metro World Peace",
-                              lambda state: state.has("Manhole", player))
+        regCloud.connect(regNightMetro, "Night Metro Enter",
+                         lambda state: count_moons(self, state, "Lost", player) >= self.moon_counts["lost"] and state.has("Spark Pylon", player))
+        regNightMetro.connect(regMetro, "Metro Enter", lambda state: state.has("Sherm", player))
+
+        regMetro.connect(regMetroSewer, "Metro Sewer", lambda state: state.has("Manhole", player))
         regSnow.connect(regSnowPeace, "Snow World Peace", lambda state: state.has("Shiverian Racer", player))
         regSeaside.connect(regSeasidePeace, "Seaside World Peace", lambda state: state.has("Gushen", player))
         regLuncheonCheese.connect(regMushroomLuncheon, "Luncheon Mushroom Painting", lambda state: state.has("Lava Bubble", player))
@@ -439,8 +443,11 @@ def create_regions(self, world, player):
         regCascade.connect(regCascadePeace)
         regSandUnderground.connect(regSandPeace, "Sand World Peace")
         regWoodedStory1.connect(regWoodedPeace, "Wooded World Peace")
+        regCloud.connect(regNightMetro, "Night Metro Enter",
+                         lambda state: count_moons(self, state, "Lost", player) >= self.moon_counts["lost"])
+
+        regNightMetro.connect(regMetro, "Metro Enter")
         regMetro.connect(regMetroSewer, "Metro Sewer")
-        regMetroSewer.connect(regMetroPeace, "Metro World Peace")
         regSnow.connect(regSnowPeace, "Snow World Peace")
         regSeaside.connect(regSeasidePeace, "Seaside World Peace")
         regLuncheonCheese.connect(regMushroomLuncheon)
@@ -472,8 +479,8 @@ def create_regions(self, world, player):
     regWooded.connect(regLost, "Lost Enter", lambda state: count_moons(self, state, "Lake", player) >= self.moon_counts["lake"] and count_moons(self, state, "Wooded", player) >= self.moon_counts["wooded"])
     regCloud.connect(regPostCloud)
     regLost.connect(regCloud, "Cloud Available", lambda state: count_moons(self, state, "Lost", player) >= self.moon_counts["lost"])
-    regCloud.connect(regMetro, "Metro Enter", lambda state: count_moons(self, state, "Lost", player) >= self.moon_counts["lost"])
 
+    regMetroSewer.connect(regMetroPeace, "Metro World Peace")
     regMetro.connect(regSnow, "Snow Enter", lambda state: count_moons(self, state, "Metro", player) >= self.moon_counts["metro"])
     regMetro.connect(regCascadeMetro)
     regMetro.connect(regWoodedMetro)
