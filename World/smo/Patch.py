@@ -44,14 +44,15 @@ class SMOProcedurePatch(APProcedurePatch):
         location_data = json.loads(self.get_file(location_file))
         player_names = json.loads(self.get_file(names_file))
 
-        if options["shop_sanity"] != 0:
-            pass
-            patch_data[
-                "atmosphere/contents/0100000000010000/romfs/LocalizedData/USen/MessageData/SystemMessage.szs"] = patch_shop_text(rom_fs, location_data, self.player, player_names)
+        # if options["shop_sanity"] != 0:
+        #     pass
+        #     patch_data[
+        #         "atmosphere/contents/0100000000010000/romfs/LocalizedData/USen/MessageData/SystemMessage.szs"] = patch_shop_text(rom_fs, location_data, self.player, player_names)
 
         patch_data["atmosphere/contents/0100000000010000/romfs/SystemData/ItemList.szs"] = patch_items(rom_fs, options)
 
         #patch_stages(rom_fs)
+        patch_shine_list(rom_fs)
 
         patch_dir = os.path.join(self.path[:self.path.rindex("/")], "atmosphere/contents/0100000000010000/romfs/")
         os.makedirs(os.path.join(patch_dir, "LocalizedData/USen/MessageData/"))
@@ -80,10 +81,8 @@ def write_patch(self, patch : SMOProcedurePatch) -> None:
     out = json.dumps(self.moon_counts)
     patch.write_file("moon_counts.json", out.encode())
 
-    data = {}
-    data["counts"] = self.options.counts.value
-    data["shop_sanity"] = self.options.shop_sanity.value
-    data["colors"] = self.options.colors.value
+    data = {"counts": self.options.counts.value, "shop_sanity": self.options.shop_sanity.value,
+            "colors": self.options.colors.value}
 
     out = json.dumps(data)
     patch.write_file("options.json", out.encode())
@@ -316,16 +315,20 @@ world_prefixes = [
     "Cap",
     "Waterfall",
     "Sand",
-    "Lake",
     "Forest",
+    "Lake",
+    "Cloud",
     "Clash",
     "City",
     "Sea",
     "Snow",
-    "Moon",
     "Lava",
+    "Attack",
     "Sky",
-    "Peach"
+    "Moon",
+    "Peach",
+    "Special1",
+    "Special2"
 ]
 
 def set_moon_counts(rom_fs : str, moon_counts : dict) -> bytes:
@@ -495,6 +498,39 @@ def read_warps_from_world(stage_file : sarc.SARC, file_name : str) -> dict:
 
     return warp_ids
 
+def read_hint_data(shine_info : sarc.SARC) -> None:
+    for kingdom in world_prefixes:
+        data = shine_info.get_file_data(f"ShineList_{kingdom}WorldHomeStage.byml")
+        root = byml.Byml(data.tobytes()).parse()
+        print(f"{kingdom}_location_to_id = " + "{")
+        for shine in root["ShineList"]:
+            print(f"{shine['UniqueId']} : {shine['HintIdx']},")
+        print("}")
+
+    # warp_ids = {}
+    # warp_objs = []
+    # if root:
+    #     for map_dict in root:
+    #         if not "AreaList" in map_dict:
+    #             break
+    #         for entry in map_dict["AreaList"]:
+    #             if entry["UnitConfigName"] == "ChangeStageArea":
+    #                 if "ChangeStageName" in entry and "ChangeStageId" in entry:
+    #                     if not entry["Id"] in warp_objs:
+    #                         warp_ids[(entry["Id"], entry["ChangeStageId"])] = entry["ChangeStageName"]
+    #                         warp_objs.append(entry["Id"])
+    #     for map_dict in root:
+    #         if not "PlayerStartInfoList" in map_dict:
+    #             break
+    #         for entry in map_dict["PlayerStartInfoList"]:
+    #             if entry["UnitConfigName"] == "DokanStageChange":
+    #                 if "ChangeStageName" in entry and "ChangeStageId" in entry:
+    #                     if not entry["Id"] in warp_objs:
+    #                         warp_ids[(entry["Id"], entry["ChangeStageId"])] = entry["ChangeStageName"]
+    #                         warp_objs.append(entry["Id"])
+    #
+    # return warp_ids
+
 
 def patch_shop_text(rom_fs : str, location_data : dict, player : int, names : dict) -> bytes:
     """ Generates a ByteStream for a .szs (SARC) archive to replace the English localized text for shops with the respective item at that location.
@@ -573,6 +609,21 @@ def patch_items(rom_fs, options : dict) -> bytes:
 
     compressed = yaz0.CompressYaz(save_item_list.get_bytes(), 6)
     return compressed
+
+def patch_shine_list(rom_fs: str) -> None:
+    """ Generates a ByteStream for a .szs (SARC) archive to change data in the Item List like shop prices and moon colors.
+            Return:
+                The bytes of the yaz0 compressed SARC archive.
+    """
+    if not os.path.exists(os.path.join(rom_fs, "SystemData/ShineInfo.szs")):
+        raise Exception("Super Mario Odyssey romfs is invalid: SystemData/ShineInfo.szs does not exist.")
+    shine_list = sarc.read_file_and_make_sarc(open(os.path.join(rom_fs, "SystemData/ShineInfo.szs"), "rb"))
+
+
+    # reapply shop item changes
+    # not needed when using mod file as base
+    read_hint_data(shine_list)
+
 
 def patch_stages(rom_fs : str) -> None:
     """ Generates a ByteStream for a .szs (SARC) archive to change stage object data.
