@@ -100,13 +100,10 @@ class Client {
         static void sendGameInfPacket(GameDataHolderAccessor holder);
         static void sendCostumeInfPacket(const char *body, const char *cap);
         static void sendChangeStagePacket(GameDataHolderAccessor accessor);
-        //static void sendShineCollectPacket(int shineId);
         static void sendItemCollectPacket(char* itemName, int itemType);
-        static void sendRegionalCollectPacket(GameDataHolderAccessor holder, al::PlacementId* placementId);
         static void sendCheckPacket(int locationId, int itemType);
         static void sendCheckPacket(int itemType, const char* objId, const char* stageName);
         static void sendDeathlinkPacket();
-        static void sendProgressWorldPacket(int worldID, int scenario);
         static void sendTagInfPacket();
         static void sendCaptureInfPacket(const PlayerActorHakoniwa *player);
         void resendInitPackets();
@@ -164,7 +161,6 @@ class Client {
         static bool hasShine(int uid);
         static int getShineChecks(int index);
         static void setShineChecks(int index, int checks);
-        static void sendShineChecksPacket();
 
         static void addOutfit(const ShopItem::ItemInfo* info);
         static bool hasOutfit(const ShopItem::ItemInfo* info);
@@ -259,18 +255,14 @@ class Client {
         void updateHackCapInfo(HackCapInf *packet);
         void updateGameInfo(GameInf *packet);
         void updateCostumeInfo(CostumeInf *packet);
-        //void updateShineInfo(ShineCollect *packet);
-        void updateItems(ItemCollect *packet);
-        void updateFiller(FillerCollect *packet);
         void updateChatMessages(ArchipelagoChatMessage *packet);
         void addApInfo(ApInfo *packet);
-        void updateShineChecks(ShineChecks* packet);
+        void updateSentShines(ShineChecks* packet);
         void updateShineReplace(ShineReplacePacket *packet);
         void updateShineColor(ShineColor* packet);
         void updateShopReplace(ShopReplacePacket *packet);
         void updateSlotData(SlotData* packet);
         void updateWorlds(UnlockWorld *packet);
-        void updateProgress(ProgressWorld *packet);
         void receiveCheck(Check* packet);
         void receiveDeath(Deathlink *packet);
         void updatePlayerConnect(PlayerConnect *packet);
@@ -320,8 +312,8 @@ class Client {
         bool apDeath = false;
         int checkIndex = -1;
 
-        // List of 23 ints to track which shine's have been grabbed
-        sead::SafeArray<int, 24> collectedShines;
+        // List of 37 ints to track which shine's have been grabbed
+        sead::SafeArray<int, 37> collectedShines;
 
         // List of 11 u8s for tracking which caps and clothes have been grabbed
         sead::SafeArray<u8, 11> collectedOutfits;
