@@ -13,6 +13,7 @@
 #include "game/Player/PlayerCostumeFunction.h"
 #include "game/Player/PlayerCostumeInfo.h"
 #include "game/Layouts/ShopLayoutInfo.h"
+#include "game/Layouts/CommonHorizontalList.h"
 #include "heap/seadHeap.h"
 #include "math/seadVector.h"
 #include "server/Client.hpp"
