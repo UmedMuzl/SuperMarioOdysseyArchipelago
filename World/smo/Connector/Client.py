@@ -278,16 +278,16 @@ class SMOContext(CommonContext):
         self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.ShineReplace,
                                      packet_data=[self.slot_data["shine_replace_data"][str(world_id)]]))
         # Items
-        print(self.slot_data["shine_replace_data"][str(world_id)])
+        #print(self.slot_data["shine_replace_data"][str(world_id)])
         for i in range(0, len(self.slot_data["shine_items"][str(world_id)]), 3):
             if i + 3 < len(self.slot_data["shine_items"][str(world_id)]):
-                print(self.slot_data["shine_items"][str(world_id)][i:i + 3])
+                #print(self.slot_data["shine_items"][str(world_id)][i:i + 3])
                 self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.ApInfo,
                                              packet_data=[3, i, i + 1, i + 2,
                                                           self.slot_data["shine_items"][str(world_id)][
                                                           i:i + 3]]))
             else:
-                print(self.slot_data["shine_items"][str(world_id)][i:i + 3])
+                #print(self.slot_data["shine_items"][str(world_id)][i:i + 3])
                 self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.ApInfo,
                                              packet_data=[3, i, i + 1, i + 2,
                                                           self.slot_data["shine_items"][str(world_id)][
