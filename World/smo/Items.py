@@ -364,6 +364,7 @@ cap_location_to_hint = {
     1034 : 27,
     950 : 28,
     951 : 29,
+    1152 : 98 # Mushroom Kingdom Art
 }
 cascade_location_to_hint = {
     205 : 0,
@@ -406,6 +407,8 @@ cascade_location_to_hint = {
     223 : 36,
     673 : 34,
     674 : 37,
+    1094 : 98, # Lake Kingdom Art
+    1132 : 99 # Dark Side Art 1
 }
 sand_location_to_hint = {
     497 : 0,
@@ -497,6 +500,8 @@ sand_location_to_hint = {
     574 : 83,
     35 : 85,
     36 : 88,
+    1089 : 98, # Wooded Kingdom Art
+    1091 : 99 # Bowser Kingdom Art
 }
 
 wooded_location_to_hint = {
@@ -576,6 +581,7 @@ wooded_location_to_hint = {
     201 : 65,
     882 : 44,
     883 : 64,
+    1165 : 98 # Moon Kingdom Art
 }
 
 lake_location_to_hint = {
@@ -621,6 +627,8 @@ lake_location_to_hint = {
     720 : 39,
     434 : 37,
     431 : 40,
+    1088 : 98, # Metro Kingdom Art
+    1128 : 99 # Dark Side Art 9
 }
 
 cloud_location_to_hint = {
@@ -633,6 +641,7 @@ cloud_location_to_hint = {
     983 : 5,
     914 : 6,
     915 : 7,
+    1124 : 99 # Dark Side Art 4
 }
 
 lost_location_to_hint = {
@@ -671,6 +680,8 @@ lost_location_to_hint = {
     400 : 33,
     491 : 31,
     492 : 34,
+    1087 : 98, # Snow Kingdom Art
+    1126 : 99 # Dark Side Art 7
 }
 
 metro_location_to_hint = {
@@ -755,6 +766,8 @@ metro_location_to_hint = {
     126 : 77,
     123 : 75,
     124 : 78,
+    1095 : 98, # Seaside Kingdom Art
+    1130 : 99 # Dark Side Art 2
 }
 
 seaside_location_to_hint = {
@@ -829,6 +842,8 @@ seaside_location_to_hint = {
     487 : 68,
     489 : 64,
     490 : 67,
+    1090 : 98, # Luncheon Kingdom Art
+    1127 : 99  # Dark Side Art 6
 }
 
 snow_location_to_hint = {
@@ -887,6 +902,7 @@ snow_location_to_hint = {
     997 : 47,
     31 : 33,
     32 : 46,
+    1129 : 99  # Dark Side Art 5
 }
 
 luncheon_location_to_hint = {
@@ -958,6 +974,7 @@ luncheon_location_to_hint = {
     311 : 65,
     1101 : 63,
     308 : 66,
+    1123 : 99  # Dark Side Art 8
 }
 
 ruined_location_to_hint = {
@@ -971,6 +988,7 @@ ruined_location_to_hint = {
     909 : 6,
     891 : 8,
     890 : 9,
+    1125 : 99  # Dark Side Art 10
 }
 
 bowser_location_to_hint = {
@@ -1036,6 +1054,7 @@ bowser_location_to_hint = {
     802 : 60,
     370 : 55,
     369 : 59,
+    1096 : 98 # Sand Kingdom Art
 }
 
 moon_location_to_hint = {
@@ -1077,6 +1096,7 @@ moon_location_to_hint = {
     604 : 37,
     601 : 36,
     602 : 32,
+    1086 : 98 # Cap Kingdom Art
 }
 
 mushroom_location_to_hint = {
@@ -1123,7 +1143,9 @@ mushroom_location_to_hint = {
     1152 : 20,
     978 : 41,
     1119 : 40,
+    1131 : 99  # Dark Side Art 3
 }
+
 dark_location_to_hint = {
     1055 : 23,
     1122 : 0,
