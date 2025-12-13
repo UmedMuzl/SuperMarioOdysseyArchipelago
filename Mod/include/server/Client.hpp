@@ -99,11 +99,11 @@ class Client {
         static void sendGameInfPacket(const PlayerActorHakoniwa *player, GameDataHolderAccessor holder);
         static void sendGameInfPacket(GameDataHolderAccessor holder);
         static void sendCostumeInfPacket(const char *body, const char *cap);
-        static void sendShineCollectPacket(int shineId);
+        static void sendChangeStagePacket(GameDataHolderAccessor accessor);
         static void sendItemCollectPacket(char* itemName, int itemType);
-        static void sendRegionalCollectPacket(GameDataHolderAccessor holder, al::PlacementId* placementId);
+        static void sendCheckPacket(int locationId, int itemType);
+        static void sendCheckPacket(int itemType, const char* objId, const char* stageName);
         static void sendDeathlinkPacket();
-        static void sendProgressWorldPacket(int worldID, int scenario);
         static void sendTagInfPacket();
         static void sendCaptureInfPacket(const PlayerActorHakoniwa *player);
         void resendInitPackets();
@@ -151,11 +151,47 @@ class Client {
             return nullptr;
         }
 
-        static void setScenario(int worldID, int scnenario);
+        static void setScenario(int worldID, int scenario);
+        static bool setScenario(const char* worldName, int scenario);
         static int getScenario(const char* worldName);
+        static int getScenario(int worldID);
         static void sendCorrectScenario(const ChangeStageInfo* info);
-        static void setMessage(int num, const char* msg);
 
+        static void addShine(int uid);
+        static bool hasShine(int uid);
+        static int getShineChecks(int index);
+        static void setShineChecks(int index, int checks);
+
+        static void addOutfit(const ShopItem::ItemInfo* info);
+        static bool hasOutfit(const ShopItem::ItemInfo* info);
+        static int getOutfitChecks(int index);
+        static void setOutfitChecks(int index, int checks);
+
+        static void addSticker(const ShopItem::ItemInfo* info);
+        static bool hasSticker(const ShopItem::ItemInfo* info);
+        static int getStickerChecks(int index);
+        static void setStickerChecks(int index, int checks);
+
+        static void addSouvenir(const ShopItem::ItemInfo* info);
+        static bool hasSouvenir(const ShopItem::ItemInfo* info);
+        static int getSouvenirChecks(int index);
+        static void setSouvenirChecks(int index, int checks);
+
+        static bool hasItem(const ShopItem::ItemInfo* info);
+        static void addItem(const ShopItem::ItemInfo* info);
+
+        static void addCapture(const char* capture);
+        static bool hasCapture(const char* capture);
+        static int getCaptureChecks(int index);
+        static void setCaptureChecks(int index, int checks);
+        static void addCaptureCheck(const char* capture);
+        static bool hasCaptureCheck(const char* capture);
+
+        static void setCheckIndex(int index);
+        static int getCheckIndex() { return sInstance ? sInstance->checkIndex : 0; };
+
+        static void setMessage(int num, const char* msg);
+        
         static Keyboard* getKeyboard();
 
         static const char* getCurrentIP();
@@ -167,10 +203,16 @@ class Client {
         static sead::FixedSafeString<0x4B> getAPChatMessage1() { return sInstance ? sInstance->apChatLine1 : sead::FixedSafeString<0x20>::cEmptyString;}
         static sead::FixedSafeString<0x4B> getAPChatMessage2() { return sInstance ? sInstance->apChatLine2 : sead::FixedSafeString<0x20>::cEmptyString;}
         static sead::FixedSafeString<0x4B> getAPChatMessage3() { return sInstance ? sInstance->apChatLine3 : sead::FixedSafeString<0x20>::cEmptyString;}
+        static void setRecentShine(Shine* curShine);
+        static Shine* getRecentShine() { return sInstance ? sInstance->recentShine : nullptr; }
 
-        static ushort getClashCount() { return sInstance ? sInstance->clashCount : 10; }
-        static ushort getRaidCount() { return sInstance ? sInstance->raidCount : 3; }
+        static int getWorldUnlockCount(int worldId); 
         static bool getRegionalsFlag() { return sInstance ? sInstance->regionals : false; }
+        static bool getCapturesFlag() { return sInstance ? sInstance->captures : false; }
+
+        static const char* getShineReplacementText();
+        static int getShineColor(Shine* curShine);
+        static const char16_t* getShopReplacementText(const char* fileName, const char* key);
 
         static void setStageInfo(GameDataHolderAccessor holder);
         static void sendStage(GameDataHolderWriter writer, const ChangeStageInfo* stageInfo);
@@ -179,6 +221,9 @@ class Client {
         static void setApDeath(bool value);
         static bool isDying() { return sInstance ? sInstance->dying : false; }
         static bool isApDeath() { return sInstance ? sInstance->apDeath : false; }
+
+        static void startShineCount();
+        static void startShineChipCount();
 
         static void setLastUsedIP(const char* ip);
 
@@ -212,13 +257,15 @@ class Client {
         void updateHackCapInfo(HackCapInf *packet);
         void updateGameInfo(GameInf *packet);
         void updateCostumeInfo(CostumeInf *packet);
-        void updateShineInfo(ShineCollect *packet);
-        void updateItems(ItemCollect *packet);
-        void updateFiller(FillerCollect *packet);
         void updateChatMessages(ArchipelagoChatMessage *packet);
-        void updateCounts(ShineCounts *packet);
+        void addApInfo(ApInfo *packet);
+        void updateSentShines(ShineChecks* packet);
+        void updateShineReplace(ShineReplacePacket *packet);
+        void updateShineColor(ShineColor* packet);
+        void updateShopReplace(ShopReplacePacket *packet);
+        void updateSlotData(SlotData* packet);
         void updateWorlds(UnlockWorld *packet);
-        void updateProgress(ProgressWorld *packet);
+        void receiveCheck(Check* packet);
         void receiveDeath(Deathlink *packet);
         void updatePlayerConnect(PlayerConnect *packet);
         void updateTagInfo(TagInf *packet);
@@ -258,10 +305,52 @@ class Client {
 
         ushort clashCount = 10;
         ushort raidCount = 3;
+        // shine pay counts
+        sead::SafeArray<int, 17> worldPayCounts;
         bool regionals = false;
+        bool captures = false;
         sead::SafeArray<int, 17> worldScenarios;
         bool dying = false;
         bool apDeath = false;
+        int checkIndex = -1;
+
+        // List of 37 ints to track which shine's have been grabbed
+        sead::SafeArray<int, 37> collectedShines;
+
+        // List of 11 u8s for tracking which caps and clothes have been grabbed
+        sead::SafeArray<u8, 11> collectedOutfits;
+
+        // List of 3 u8s for tracking which stickers have been grabbed
+        sead::SafeArray<u8, 3> collectedStickers;
+
+        // List of 4 u8s for tracking which souvenirs have been grabbed
+        sead::SafeArray<u8, 4> collectedSouvenirs;
+        
+        // List of 7 u8s for tracking which captures have been grabbed
+        sead::SafeArray<u8, 7> collectedCaptures;
+        sead::SafeArray<u8, 7> checkedCaptures;
+
+        // Moon Text Replacement Handling
+        Shine* recentShine = nullptr;
+        sead::SafeArray<shineReplaceText, 100> shineTextReplacements;
+        sead::SafeArray<sead::FixedSafeString<40>, 100> shineItemNames;
+
+        // Moon Color Replacement
+        sead::SafeArray<u8, 1170> shineColors;
+
+
+        // Shop Text Replacement Handling
+        sead::SafeArray<shopReplaceText, 44> shopCapTextReplacements;
+        sead::SafeArray<shopReplaceText, 44> shopClothTextReplacements;
+        sead::SafeArray<shopReplaceText, 17> shopStickerTextReplacements;
+        sead::SafeArray<shopReplaceText, 26> shopGiftTextReplacements;
+        sead::SafeArray<shopReplaceText, 13> shopMoonTextReplacements;
+        sead::SafeArray<sead::WFixedSafeString<40>, 144> apGameNames;
+        sead::SafeArray<sead::WFixedSafeString<40>, 144> apSlotNames;
+        sead::SafeArray<sead::WFixedSafeString<40>, 144> apItemNames;
+        int numApGames = 0;
+        int numApSlots = 0;
+        int numApItems = 0;
 
         // Backups for our last player/game packets, used for example to re-send them for newly connected clients
         PlayerInf lastPlayerInfPacket = PlayerInf();

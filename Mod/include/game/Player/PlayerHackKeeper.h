@@ -26,7 +26,7 @@ class PlayerHackKeeper
         void startHack(al::HitSensor *,al::HitSensor *,al::LiveActor *);
         void setupHack(al::HitSensor *,al::HitSensor *,al::LiveActor *);
         void endHack(HackEndParam const*);
-        void endHackStartDemo(al::LiveActor *);
+        static void endHackStartDemo(al::LiveActor *);
         void startHackStartDemo(al::LiveActor *);
         void startHackStartDemoPuppetable(al::LiveActor *);
         void addHackStartDemo(al::LiveActor *);

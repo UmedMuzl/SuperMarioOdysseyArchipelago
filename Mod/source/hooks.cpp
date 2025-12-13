@@ -23,6 +23,7 @@
 #include "math/seadVector.h"
 #include "rs/util/InputUtil.h"
 #include "sead/prim/seadSafeString.h"
+#include "sead/container/seadSafeArray.h"
 #include "server/hns/HideAndSeekMode.hpp"
 
 bool comboBtnHook(int port) {
@@ -71,8 +72,49 @@ bool saveReadHook(int* padRumbleInt, al::ByamlIter const& saveByml, char const* 
 
 // GameDataFile::tryWriteByByaml
 // 
-// DameDataFile::tryReadByamlData line 198
+// GameDataFile::tryReadByamlData line 198
+void saveFileWriteHook(al::ByamlWriter* saveByaml)
+{
+    for (int i = 0; i < 17; i++) {
+        sead::FixedSafeString<18> label;
+        label = "World";
+        if (i / 10 > 0) {
+            label.append(static_cast<char>(48 + i / 10));
+        }
+        label.append(static_cast<char>(48 + i % 10));
+        label.append("Scenario");
+        saveByaml->addInt(label.cstr(), Client::getScenario(i));
+    }
 
+    saveByaml->addInt("CheckIndex", Client::getCheckIndex());
+
+    saveByaml->pop();
+   
+}
+
+bool saveFileReadHook(al::ByamlIter *saveByaml, bool* firstNetworkBool, char const* firstNetworkKey)
+{
+    int data = 0;
+
+    for (int i = 0; i < 17; i++) {
+        sead::FixedSafeString<18> label;
+        label = "World";
+        if (i / 10 > 0) {
+            label.append(static_cast<char>(48 + i / 10));
+        }
+        label.append(static_cast<char>(48 + i % 10));
+        label.append("Scenario");
+        if (saveByaml->tryGetIntByKey(&data, label.cstr())) {
+            Client::setScenario(i, data);
+        }
+    }
+
+    if (saveByaml->tryGetIntByKey(&data, "CheckIndex")) {
+        Client::setCheckIndex(data);
+    }
+
+    return saveByaml->tryGetBoolByKey(firstNetworkBool, firstNetworkKey);
+}
 
 
 bool registerShineToList(Shine* shineActor) {

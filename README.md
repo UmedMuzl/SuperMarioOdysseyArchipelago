@@ -4,6 +4,7 @@ WARNING: This mod only works on version 1.0.0 of Super Mario Odyssey.
 
 ## Features
 - Randomize Power Moons
+- Randomize Captures
 - Supports all non-achievement (Toadette Moon) power moon locations.
 - Supports all outfits, stickers, and souvenirs.
 - Choose which kingdom is your win condition.
@@ -33,37 +34,6 @@ WARNING: This mod only works on version 1.0.0 of Super Mario Odyssey.
 ### Connecting to the Connector from Super Mario Odyssey.
 - When prompted, the `IP Address` you are connecting to is your computer's local ipv4 this is found by entering the `ipconfig` command into command prompt on Windows.
 - When prompted, the `Port` is `1027` by default which does not need to be changed.
-
-### Using Options that Generate a Patch
-- If a world is generated using options that require additional romFS patches (`shop_sanity`, `colors`, `counts`) then an `<seed><slot><slot_name>.apsmo` file will be generated.
-- To generate the patch files open the patch file with the `Open Patch` option in the Archipelago Launcher.
-- This requires you to have an extracted romfs for Super Mario Odyssey (methods for extracting romfs will not be covered here) which you will be prompted to select the directory of when opening a patch file for the first time.
-- If this directory is incorrect, it can be changed in `host.yaml`. Patch files will not generate if the romfs dump is invalid.
-- When changing any setting that generates a patch, make sure to replace the SMO mod with a fresh install to avoid confusion from changed mod files from previous generated patches.
-- Patch files will not generate properly if an `atmosphere` folder already exists in the same directory as the `.apsmo` patch file, so make sure to delete any previous `atmosphere` folder before opening a patch.
-<details>
-<summary>Switch</summary> 
-  
-- Place the generated `atmosphere` folder onto the root of your sd card and select `Replace the files in the destination` if prompted.
-
-</details>
-
-<details>
-<summary>Emulator</summary>
-  
-### Suyu (Yuzu forks)
-- Right Click on Super Mario Odyssey in the game menu and select `Open Mod Data Location`.
-- Place `romfs` folder in the `SMOAP` folder that opened and select `Replace the files in the destination` if prompted.
-</details>
-
-### Joining an Archipelago
-- Open the `Super Mario Odyssey Client` from the Archipelago Launcher.
-- If you generated an atmosphere patch using the `.apsmo` file via the `Open Patch` option in the Launcher, then a Client should have also been opened for you automatically.
-- Enter the IP Address of the Archipelago Lobby in the top most text edit.
-- When connecting it should prompt you to enter your slot name in the Client console.
-- Super Mario Odyssey will automatically connect to the Client when opened which should print `SMO Connected` in the Client console.
-- To manually chack if SMO is connected to the client, use the `/smo` command in the client console.
-
 
 Credits
 - [Sanae](https://github.com/sanae6) Author of original server code

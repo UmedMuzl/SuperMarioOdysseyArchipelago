@@ -8,6 +8,7 @@
 #include "al/sensor/SensorMsg.h"
 #include "game/Player/PlayerActorHakoniwa.h"
 #include "al/area/ChangeStageInfo.h"
+#include "game/Actors/Shine.h"
 
 namespace rs {
 
@@ -74,6 +75,8 @@ namespace rs {
 
     bool isActiveDemoTalk(al::Scene const *);
 
+    bool isActiveHackStartDemo(al::LiveActor const*);
+
     void recoveryPlayerOxygen(const al::LiveActor *);
 
     bool is2D(IUseDimension const *);
@@ -82,7 +85,17 @@ namespace rs {
 
     void calcPlayerFrontDir(sead::Vector3f* result, al::LiveActor const*);
 
+    bool isGotShine(const Shine*);
+
+    int getShineChipCount(al::IUseSceneObjHolder const*);
+
+    bool isExistShineChipWatcher(al::IUseSceneObjHolder const*);
+
     int getStageShineAnimFrame(al::LiveActor const*, char const*);
     const char* getStageShineArchiveName(al::LiveActor const*, char const*);
     const char* getStageShineEmptyArchiveName(al::LiveActor const*, char const*);
-}
+    void createSaveObjInfoWriteSaveData(al::ActorInitInfo const&);
+
+    void addGrowFlowerGrowLevel(al::LiveActor const*, al::PlacementId const*, unsigned int);
+    void setGrowFlowerTime(al::LiveActor const*, al::PlacementId const*, unsigned long);
+   }

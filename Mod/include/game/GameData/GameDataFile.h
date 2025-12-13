@@ -40,6 +40,7 @@ class PlayerHitPointData;
 
 class GameDataHolder;
 class ShineInfo;
+class CoinCollectInfo;
 
 class GameDataFile
 {
@@ -370,6 +371,20 @@ class GameDataFile
             return nullptr;
         }
         
+        HintInfo* findShineByHintIdx(int worldId, int shineHintIdx) {
+            int index = 0;
+            for (int x = 0; x < 0x400; x++) {
+                GameDataFile::HintInfo* curInfo = &mShineHintList[x];
+                if (curInfo->mWorldIndex == worldId) {
+                    if (index == shineHintIdx) {
+                        return curInfo;
+                    }
+                    index += 1;
+                }
+            }
+            return nullptr;
+        }
+
         // end custom methods
         
         ShineInfo **mShineInfoArray;
@@ -466,7 +481,7 @@ class GameDataFile
         sead::PtrArrayImpl sead__ptrarrayimpl9C8;
         sead::PtrArrayImpl sead__ptrarrayimpl9D8;
         void *qword9E8;
-        int mCurWorldID;
+        int mCurWorldID; // 0x9F0
         void *qword9F8;
         void *qwordA00;
         u16 wordA08;
@@ -477,8 +492,8 @@ class GameDataFile
         int dwordA24;
         int dwordA28;
         bool byteA2C;
-        ChangeStageInfo *mChangeStageInfo;
-        ChangeStageInfo *mChangeStageInfo2;
+        ChangeStageInfo *mChangeStageInfo; // 0xA2D
+        ChangeStageInfo *mChangeStageInfo2; // 0xA30
         void *qwordA40;
         void *qwordA48;
         void *qwordA50;

@@ -41,7 +41,7 @@ class Shine : public al::LiveActor , public IUseDimension {
         ShineType mModelType; // 0x1A0
         void * qword1A8;
         bool byte1B0;
-        void * qword1B8;
+        ChangeStageInfo* stageInfo; // 0x1B8
         int dword1C0;
         int dword1C4;
         sead::FixedSafeString<0x80> mShineLabel;
@@ -53,7 +53,7 @@ class Shine : public al::LiveActor , public IUseDimension {
         void *unkPtr1; // 0x280
         ActorDimensionKeeper *mDimensionKeeper; // 0x288
         int mShineIdx;                            // 0x290
-        bool mIsMainShine;
+        bool mIsMainShine; // 0x294
         void *qword298;
         void *qword2A0;
         void *qword2A8;
@@ -65,8 +65,8 @@ class Shine : public al::LiveActor , public IUseDimension {
         int dword2D0;
         bool mIsAddHeight;
         int dword2D8;
-        al::LiveActor *mModelEmpty;
-        al::LiveActor *mModelShine;
+        al::LiveActor *mModelEmpty; // 0x2E0
+        al::LiveActor *mModelShine; // 0x2E8
         int dword2F0;
         u16 word2F4;
         int dword2F8;
@@ -89,7 +89,7 @@ class Shine : public al::LiveActor , public IUseDimension {
         int dword360;
         int dword364;
         int dword368;
-        bool mIsPowerStar;
+        bool mIsPowerStar; // 0x36c
         bool mIsAppearDemoHeightHigh;
         void * qword370;
         u16 word378;

@@ -44,11 +44,15 @@ class SMOProcedurePatch(APProcedurePatch):
         location_data = json.loads(self.get_file(location_file))
         player_names = json.loads(self.get_file(names_file))
 
-        if options["shop_sanity"] != 0:
-            patch_data[
-                "atmosphere/contents/0100000000010000/romfs/LocalizedData/USen/MessageData/SystemMessage.szs"] = patch_shop_text(rom_fs, location_data, self.player, player_names)
+        # if options["shop_sanity"] != 0:
+        #     pass
+        #     patch_data[
+        #         "atmosphere/contents/0100000000010000/romfs/LocalizedData/USen/MessageData/SystemMessage.szs"] = patch_shop_text(rom_fs, location_data, self.player, player_names)
 
         patch_data["atmosphere/contents/0100000000010000/romfs/SystemData/ItemList.szs"] = patch_items(rom_fs, options)
+
+        #patch_stages(rom_fs)
+        patch_shine_list(rom_fs)
 
         patch_dir = os.path.join(self.path[:self.path.rindex("/")], "atmosphere/contents/0100000000010000/romfs/")
         os.makedirs(os.path.join(patch_dir, "LocalizedData/USen/MessageData/"))
@@ -77,10 +81,8 @@ def write_patch(self, patch : SMOProcedurePatch) -> None:
     out = json.dumps(self.moon_counts)
     patch.write_file("moon_counts.json", out.encode())
 
-    data = {}
-    data["counts"] = self.options.counts.value
-    data["shop_sanity"] = self.options.shop_sanity.value
-    data["colors"] = self.options.colors.value
+    data = {"counts": self.options.counts.value, "shop_sanity": self.options.shop_sanity.value,
+            "colors": self.options.colors.value}
 
     out = json.dumps(data)
     patch.write_file("options.json", out.encode())
@@ -313,16 +315,20 @@ world_prefixes = [
     "Cap",
     "Waterfall",
     "Sand",
-    "Lake",
     "Forest",
+    "Lake",
+    "Cloud",
     "Clash",
     "City",
     "Sea",
     "Snow",
-    "Moon",
     "Lava",
+    "Attack",
     "Sky",
-    "Peach"
+    "Moon",
+    "Peach",
+    "Special1",
+    "Special2"
 ]
 
 def set_moon_counts(rom_fs : str, moon_counts : dict) -> bytes:
@@ -464,6 +470,67 @@ def read_regionals_from_world(stage_file : sarc.SARC, file_name : str) -> dict:
 
     return regionals
 
+def read_warps_from_world(stage_file : sarc.SARC, file_name : str) -> dict:
+    data = stage_file.get_file_data(file_name.replace(".szs", ".byml"))
+    root = byml.Byml(data.tobytes()).parse()
+
+    warp_ids = {}
+    warp_objs = []
+    if root:
+        for map_dict in root:
+            if not "AreaList" in map_dict:
+                break
+            for entry in map_dict["AreaList"]:
+                if entry["UnitConfigName"] == "ChangeStageArea":
+                    if "ChangeStageName" in entry and "ChangeStageId" in entry:
+                        if not entry["Id"] in warp_objs:
+                            warp_ids[(entry["Id"], entry["ChangeStageId"])] = entry["ChangeStageName"]
+                            warp_objs.append(entry["Id"])
+        for map_dict in root:
+            if not "PlayerStartInfoList" in map_dict:
+                break
+            for entry in map_dict["PlayerStartInfoList"]:
+                if entry["UnitConfigName"] == "DokanStageChange":
+                    if "ChangeStageName" in entry and "ChangeStageId" in entry:
+                        if not entry["Id"] in warp_objs:
+                            warp_ids[(entry["Id"], entry["ChangeStageId"])] = entry["ChangeStageName"]
+                            warp_objs.append(entry["Id"])
+
+    return warp_ids
+
+def read_hint_data(shine_info : sarc.SARC) -> None:
+    for kingdom in world_prefixes:
+        data = shine_info.get_file_data(f"ShineList_{kingdom}WorldHomeStage.byml")
+        root = byml.Byml(data.tobytes()).parse()
+        print(f"{kingdom}_location_to_id = " + "{")
+        for shine in root["ShineList"]:
+            print(f"{shine['UniqueId']} : {shine['HintIdx']},")
+        print("}")
+
+    # warp_ids = {}
+    # warp_objs = []
+    # if root:
+    #     for map_dict in root:
+    #         if not "AreaList" in map_dict:
+    #             break
+    #         for entry in map_dict["AreaList"]:
+    #             if entry["UnitConfigName"] == "ChangeStageArea":
+    #                 if "ChangeStageName" in entry and "ChangeStageId" in entry:
+    #                     if not entry["Id"] in warp_objs:
+    #                         warp_ids[(entry["Id"], entry["ChangeStageId"])] = entry["ChangeStageName"]
+    #                         warp_objs.append(entry["Id"])
+    #     for map_dict in root:
+    #         if not "PlayerStartInfoList" in map_dict:
+    #             break
+    #         for entry in map_dict["PlayerStartInfoList"]:
+    #             if entry["UnitConfigName"] == "DokanStageChange":
+    #                 if "ChangeStageName" in entry and "ChangeStageId" in entry:
+    #                     if not entry["Id"] in warp_objs:
+    #                         warp_ids[(entry["Id"], entry["ChangeStageId"])] = entry["ChangeStageName"]
+    #                         warp_objs.append(entry["Id"])
+    #
+    # return warp_ids
+
 
 def patch_shop_text(rom_fs : str, location_data : dict, player : int, names : dict) -> bytes:
     """ Generates a ByteStream for a .szs (SARC) archive to replace the English localized text for shops with the respective item at that location.
@@ -479,20 +546,21 @@ def patch_shop_text(rom_fs : str, location_data : dict, player : int, names : di
         data = item_text.get_file_data(i + ".msbt")
         root = Msbt.Msbt(data.tobytes())
 
-        for item in file_to_items[i]:
+        for item in file_to_items[i].keys():
             internal_name = ("MarioColor" + item) if "Luigi" in item or "Wario" in item or "Waluigi" in item or "Classic" in item or "Gold" in item else ("Mario" + item) if i == "ItemCap" or i == "ItemCloth" else item
             if i == "ItemCap" or i == "ItemCloth":
-                internal_name = internal_name.replace(" Cap","").replace("Clothes", "")
+                internal_name = internal_name.replace(" Cap","").replace("Clothes", "").replace(" ", "")
             item_classification : ItemClassification
             if not "Skip" in item:
-                if item in location_data:
-                    item_classification = location_data[item][2]
-                    root.msbt["labels"][internal_name.replace(" ", "")]["message"] =  location_data[item][1].replace("_", " ")
+                location_item = file_to_items[i][item]
+                if location_item in location_data:
+                    item_classification = location_data[location_item][2]
+                    root.msbt["labels"][internal_name.replace(" ", "")]["message"] =  location_data[location_item][1].replace("_", " ")
                     root.msbt["labels"][internal_name.replace(" ", "")]["message"] += "\0"
-                    player_index = location_data[item][3]
+                    player_index = location_data[location_item][3]
                     item_player = names[str(player_index)]
-                    item_game = location_data[item][0]
-                    if item_game != "Super Mario Odyssey" and location_data[item][3] != player:
+                    item_game = location_data[location_item][0]
+                    if item_game != "Super Mario Odyssey" and location_data[location_item][3] != player:
                         root.msbt["labels"][internal_name.replace(" ", "") + "_Explain"]["message"] = \
                             ("Comes from the world of " + item_game.replace("_", " ") +  ".\nSeems to belong to " + item_player +
                             ".\n")
@@ -505,9 +573,9 @@ def patch_shop_text(rom_fs : str, location_data : dict, player : int, names : di
                             "message"] += "\0"
 
                     else:
-                        if location_data[item][1] in filler_item_table.keys():
+                        if location_data[location_item][1] in filler_item_table.keys():
                             root.msbt["labels"][internal_name.replace(" ", "") + "_Explain"][
-                                "message"] = filler_item_table[location_data[item][1]] + "\0"
+                                "message"] = filler_item_table[location_data[location_item][1]] + "\0"
                         else:
                             root.msbt["labels"][internal_name.replace(" ", "") + "_Explain"][
                                 "message"] = ("I may need this!" if item_classification == ItemClassification.progression_skip_balancing or item_classification ==
@@ -542,6 +610,21 @@ def patch_items(rom_fs, options : dict) -> bytes:
     compressed = yaz0.CompressYaz(save_item_list.get_bytes(), 6)
     return compressed
 
+def patch_shine_list(rom_fs: str) -> None:
+    """ Generates a ByteStream for a .szs (SARC) archive to change data in the Item List like shop prices and moon colors.
+            Return:
+                The bytes of the yaz0 compressed SARC archive.
+    """
+    if not os.path.exists(os.path.join(rom_fs, "SystemData/ShineInfo.szs")):
+        raise Exception("Super Mario Odyssey romfs is invalid: SystemData/ShineInfo.szs does not exist.")
+    shine_list = sarc.read_file_and_make_sarc(open(os.path.join(rom_fs, "SystemData/ShineInfo.szs"), "rb"))
+
+
+    # reapply shop item changes
+    # not needed when using mod file as base
+    read_hint_data(shine_list)
+
+
 def patch_stages(rom_fs : str) -> None:
     """ Generates a ByteStream for a .szs (SARC) archive to change stage object data.
             Return:
@@ -554,42 +637,51 @@ def patch_stages(rom_fs : str) -> None:
     dirs = os.listdir(stage_path)
 
     regional_coins = {}
+    stage_ids = {}
 
 
     for file_name in dirs:
-        for prefix in world_prefixes:
-            if file_name.startswith(prefix):
-                if "Map.szs" in file_name:
-                    stage = sarc.read_file_and_make_sarc(open(os.path.join(stage_path, file_name), "rb"))
-                    regional_coins[file_name.replace(".szs", "")] = {}
-                    regional_coins[file_name.replace(".szs", "")] = read_regionals_from_world(stage, file_name)
-                    break
+        # for prefix in world_prefixes:
+        #     if file_name.startswith(prefix):
+        #         if "Map.szs" in file_name:
+        #             stage = sarc.read_file_and_make_sarc(open(os.path.join(stage_path, file_name), "rb"))
+        #             regional_coins[file_name.replace(".szs", "")] = {}
+        #             regional_coins[file_name.replace(".szs", "")] = read_regionals_from_world(stage, file_name)
+        #             break
+        if "Map" in file_name and "Zone" not in file_name:
+            stage = sarc.read_file_and_make_sarc(open(os.path.join(stage_path, file_name), "rb"))
+            warps = read_warps_from_world(stage, file_name)
+            if len(warps) > 0:
+                stage_ids[file_name] = {}
+                stage_ids[file_name] = warps
+
 
     out_line : str = ""
 
-    for world in world_prefixes:
-        group_num = 0
-        out_line = "\t\t\t{"
-        out_line +=  "\"" + world + "WorldHomeStage\"" + ", "
-        out_line += "new Regionals {\n"
-        out_line += "\t\t\t\tobjGroupLookup = new Dictionary<string, int>() {\n"
-        for world_stage in regional_coins:
-            if world in world_stage:
-
-                if len(regional_coins[world_stage]) > 0:
-
-                    for group in regional_coins[world_stage]:
-                        group_num += 1
-                        coin_count = 0
-                        for coin in regional_coins[world_stage][group]:
-                            out_line += "\t\t\t\t\t{\"" + coin + "\", "
-                            out_line +=  str(group_num) + "},\n"
-                            coin_count += 1
-
-        out_line += "\t\t\t\t}}\n"
-
-        out_line += "\n\t\t\t},"
-        print(out_line)
+    # for world in world_prefixes:
+    #     group_num = 0
+    #     out_line = "\t\t\t{"
+    #     out_line +=  "\"" + world + "WorldHomeStage\"" + ", "
+    #     out_line += "new Regionals {\n"
+    #     out_line += "\t\t\t\tobjGroupLookup = new Dictionary<string, int>() {\n"
+    #     for world_stage in regional_coins:
+    #         if world in world_stage:
+    #
+    #             if len(regional_coins[world_stage]) > 0:
+    #
+    #                 for group in regional_coins[world_stage]:
+    #                     group_num += 1
+    #                     coin_count = 0
+    #                     for coin in regional_coins[world_stage][group]:
+    #                         out_line += "\t\t\t\t\t{\"" + coin + "\", "
+    #                         out_line +=  str(group_num) + "},\n"
+    #                         coin_count += 1
+    #
+    #     out_line += "\t\t\t\t}}\n"
+    #
+    #     out_line += "\n\t\t\t},"
+    #     print(out_line)
+    print(stage_ids)
 
 
 def make_output(patch_file : str):

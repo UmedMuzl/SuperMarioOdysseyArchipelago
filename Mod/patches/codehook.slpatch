@@ -20,6 +20,12 @@ B59E28 B seadPrintHook // sead::system::print
 
 // Main Stuff
 
+// HakoniwaStateDemoOpening::exeLoad(HakoniwaStateDemoOpening *this)
+512ae8 BL onNewGameDemoStart
+
+// WorldHeap
+5145c8 CMP W20, 500
+
 50E89C BL constructHook // HakoniwaSequence::init+1F4
 50EF2C: // HakoniwaSequence::init+884
     MOV X0, X19 // move HakoniwaSequence ptr to arg register
@@ -34,6 +40,23 @@ B59E28 B seadPrintHook // sead::system::print
 // Puppet Actor Setup
 4B5E30 B ProjectActorFactory // patches actor factory ctor with custom matching factory
 4CA0E4 BL initPuppetActors
+
+// Shine Label Replacement
+// StageSceneStateGetShine::exeDemoGet(StageSceneStateGetShine *this)
+4dc504 MOV X0, #0 // Always continue to setPaneStringFormat
+4dc52c BL setShineLabel
+
+// StageSceneStateGetShineMain::exeDemoGetStart(StageSceneStateGetShineMain *this)
+4de63c MOV X0, #0
+4de664 BL setShineLabel
+
+// StageSceneStateGetShineGrand::exeDemoGetStart(StageSceneStateGetShineGrand *this)
+// Color
+//4dd420 BL setShineColor
+
+// Label
+4dd680 MOV X0, #0
+4dd6a8 BL setShineLabel
 
 // Shine Syncing
 // 1CF470 BL shineHook
@@ -70,19 +93,153 @@ B59E28 B seadPrintHook // sead::system::print
 //1C0560 BL sendCollectPacket
 
 // Shine::exeGot
-1D2E8C LDR X8, [X19, 0x1A0]
-1d2e90 NOP
-1D2E94 CMP X8,#0x2
-1d2e98 B.eq 0x1D2D48+1A0
 1D2F08 BL onGrandShineStageChange
+
+// Shine::init
+
+// isGot
+1CD870 LDR X1, [X19, #0x290]
+1CD878 BL isGrabShine
+
+// Color
+1cdce4 BL setShineColor
+1cdd2c MOV X0, X19
+1cdd3c BL setShineModelColor
+
+1cddcc BL setShineColor
+1cde14 MOV X0, X19
+1cde24 BL setShineModelColor
+
+// Shine::isGot() (Breaks wooded story moon 1)
+//1D06CC BL isGrabShine
+
+// CageShineWatcher::init()
+227768 BL isGotShineRedirect
+
+// GrowFlowerPot::initAfterPlacement(GrowFlowerPot *this)
+28e87c BL isGotShineRedirect
+
+// GrowFlowerPot::exeImplant(GrowFlowerPot *this)
+28f6d8 BL growOnPlant
+
+// GameDataFunction::isGotShine(Shine*)
+1D06CC BL isGrabShine
+
+// rs::isGotShine(Shine*)
+1d06cc BL isGrabShine
+
+// SnowWorldSequenceFlagCheckObj::exeWait()
+325D00 BL isGrabShine
+325D1C BL isGrabShine
+325D38 BL isGrabShine
+325D54 BL isGrabShine
+
+// SessionMusicianLocalFunction::isAlreadySessionMember()
+3C2418 BL isGrabShine
+
+// Don't know if this is need I assume its for linked shines like chests
+// Doesn't work because const function
+// EventFlowNodeCheckGetLinkShine::getNextId()
+//1B57CC BL isGrabShine
+
+// TokimekiMayorNpc::init()
+3E930C BL isGrabShine
 
 // GameDataHolder::changeNextStage()
 52F71C BL onStageChange
+
+// GameDataFile::ChangeNextStageWithDemoWorldWarp()
+51DA40 BL onStageChange
 
 // Skip Shine Demo
 // PlayerActorHakoniwa::startDemoShineGet()
 //4220E4 NOP
 
+// GameDataFunction::findUnlockShineNum
+
+// FUN_7100202d20
+202dc8 BL getUnlockShineNumByAccessor
+
+// FUN_710030b934
+30b968 BL getUnlockShineNumByAccessor
+
+// FUN_710030d6ec
+30d720 BL getUnlockShineNumByAccessor
+
+// FUN_710030da68
+30db08 BL getUnlockShineNumByAccessor
+
+// FUN_71003cdc24
+3cdc58 BL getUnlockShineNumByAccessor
+
+// GameDataFile::findUnlockShineNumCurrentWorld
+
+// GameDataFunction::isUnlockedNextWorld
+52a0f0 BL getUnlockShineNumByGameDataFile
+
+// GameDataFunction::isCollectShineForNextWorldAndNotUnlockNextWorld
+52a190 BL getUnlockShineNumByGameDataFile
+
+// GameDataFunction::checkEnableUnlockWorldSpecial1
+52a748 BL getUnlockShineNumByGameDataFile
+
+// GameDataFunction::checkEnableUnlockWorldSpecial2
+52a820 BL getUnlockShineNumByGameDataFile
+
+// rs::checkGetEnoughShine
+5336e8 BL getUnlockShineNum
+
+// rs::checkGetEnoughShineInCurrentWorld
+533770 BL getUnlockShineNum
+
+// rs::checkNeedTalkPrevWorld
+533928 BL getUnlockShineNum
+
+// rs::isSequenceCollectShineBeforeGameClear
+533c0c BL getUnlockShineNum
+
+// rs::isSequenceCollectShineForRepairHome
+533ca0 BL getUnlockShineNum
+
+// rs::tryShowCapMsgMoonGetSpecial1(IUseSceneObjHolder *param_1)
+23cbf0 BL getUnlockShineNumByWorldId
+
+// rs::tryShowCapMsgMoonGetSpecial2(IUseSceneObjHolder *param_1)
+23ced8 BL getUnlockShineNumByWorldId
+
+// FUN_710030f1e0(LiveActor *param_1,int param_2)
+30f230 BL getUnlockShineNumByWorldId
+
+// FUN_71003126ec(LiveActor *param_1)
+312734 BL getUnlockShineNumByWorldId
+
+// GameDataFunction::calcWorldNumForShineList(LayoutActor *param_1)
+52b154 MOV X0, #17
+
+// FUN_7100206d78
+206E00 BL isGotShineByHintIdx
+
+// HackListLayout::updateHackPartsData(HackListLayout *this)
+//1ec724 MOV W9, #1
+//1eca20 BL hackListSetData
+
+// PlayerHackKeeper::recordHack
+4496AC BL onAddHack
+
+// rs::endHackStartDemo(IUsePlayerHack *param_1,LiveActor *param_2)
+56cc70 B canEndHack
+
+// startHack(Frog *this,SensorMsg *param_1,HitSensor *param_2,HitSensor *param_3)
+38C408 BL skipHackCutscene
+
+// rs::startHack
+//56ba9c BL onStartHack
+
+// ShopLayoutInfo::updateItemPartsData(CommonHorizontalList*, sead::PtrArray<ShopLayoutItemInfo>const*,
+//  al::LayoutActor const*, Shine const*, bool)
+2089C4 BL getShopItemMessage
+
+208A44 BL getShopItemMessage
 
 //rs::buyCap
 54CB9C BL sendItemPacket
@@ -115,6 +272,16 @@ B59E28 B seadPrintHook // sead::system::print
 //4440FC BL onCreateBodyCostumeInfo
 //44532C BL onCreateHeadCostumeInfo
 
+// Start New Game Edits
+// capmanhero init (possibly move to isNewGame or related functions)
+//3a85a4 BL onNewGameDemoStart
+
+// StaffRollScene::init
+4C54A4 BL onCreditsStart
+
+// HakoniwaSequence::exePlayStage
+50FED4 BL onUnlockLost
+
 // Amiibo Button Disabling
 577078: // rs::isHoldAmiiboMode
     MOV X0, #0
@@ -134,6 +301,12 @@ B59E28 B seadPrintHook // sead::system::print
     B saveWriteHook
 5168F8: GameConfigData::read+124
     BL saveReadHook
+
+// Individual Save file edits
+5279B8: GameDataFile::tryWriteByByaml+ED8
+    BL saveFileWriteHook
+51AB60: GameDataFile::tryReadByamlData+1C38
+    BL saveFileReadHook
 
 // WindowConfirm Edits
 99C758: // WindowConfirmWait:tryEnd+1C (Forces logic to ignore current nerve)

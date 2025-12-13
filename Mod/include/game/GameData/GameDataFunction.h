@@ -53,6 +53,8 @@ public:
 
     static char* getMainStageName(GameDataHolderAccessor, int);
 
+    static char* tryGetCurrentMainStageName(GameDataHolderAccessor);
+
     static char* getNextStageName(GameDataHolderAccessor);
 
     static s32 getCurrentShineNum(GameDataHolderAccessor);
@@ -75,12 +77,15 @@ public:
     // checks save file if shine is collected using the shines stage and obj ID
     static bool isGotShine(GameDataHolderAccessor, const char *stageName, const char *objID);
 
+
+
     // Gets Index for X Kingdom
     static s32 getWorldIndexHat(void);
     static s32 getWorldIndexWaterfall(void);
     static s32 getWorldIndexSand(void);
     static s32 getWorldIndexForest(void);
     static s32 getWorldIndexLake(void);
+    static s32 getWorldIndexCloud(void);
     static s32 getWorldIndexClash(void);
     static s32 getWorldIndexCity(void);
     static s32 getWorldIndexSea(void);
@@ -100,6 +105,8 @@ public:
     static bool isEnableCap(GameDataHolderAccessor);
     // enables cappy if not enabled already
     static void enableCap(GameDataHolderWriter);
+
+    static void addHackDictionary(GameDataHolderWriter, const char*);
 
     // kills the player
     static void killPlayer(GameDataHolderWriter);
