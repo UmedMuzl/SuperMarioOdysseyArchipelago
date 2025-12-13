@@ -31,7 +31,7 @@ WARNING: This mod only works on version 1.0.0 of Super Mario Odyssey.
 - Extract `SMO_Archipelago_Vx.x_Emu.zip` and Place `SMOAP` folder in the mods directory that opened.
 </details>
 
-Connecting to the Connector from Super Mario Odyssey.
+### Connecting to the Connector from Super Mario Odyssey.
 - When prompted, the `IP Address` you are connecting to is your computer's local ipv4 this is found by entering the `ipconfig` command into command prompt on Windows.
 - When prompted, the `Port` is `1027` by default which does not need to be changed.
 
