@@ -161,8 +161,8 @@ loc_Cascade_Postgame = {
     "Cascade Kingdom - Inside the Busted Fossil": 1167,
     "Cascade Kingdom - Caught Hopping at the Waterfall!": 217,
     "Cascade Kingdom - Taking Notes: Hurry Upward": 770,
-    "Cascade Kingdom - Across the Mysterious Clouds": 894,
-    "Cascade Kingdom - Cascade Kingdom Master Cup": 224,
+    "Cascade Kingdom - Across the Mysterious Clouds": 224,
+    "Cascade Kingdom - Cascade Kingdom Master Cup": 894,
     "Cascade Kingdom - Atop a Wall Among the Clouds": 223,
     "Cascade Kingdom - Across the Gusty Bridges": 673,
     "Cascade Kingdom - Flying Far Away from Gusty Bridges": 674
