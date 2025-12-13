@@ -29,14 +29,10 @@ enum PacketType : short {
     CAPTUREINF,
     CHANGESTAGE,
     CMD,
-    ITEMCOLL,
-    FILLERCOLL,
     APCHATMESSAGE,
     SLOTDATA,
     UNLOCKWORLD,
-    REGCOLL,
     DEATHLINK,
-    PROGRESS,
     SHINECHECKS,
     APINFO,
     SHOPREPLACE,
@@ -62,14 +58,10 @@ USED static const char *packetNames[] = {
     "Capture Info",
     "Change Stage",
     "Server Command",
-    "Item Collection",
-    "Filler Collection",
     "Archipelago Chat Message",
     "Shine Counts",
     "Unlock World",
-    "Regional Coin Collection",
     "Deathlink",
-    "World Scenario",
     "Shine Checks",
     "AP Info",
     "Shop Replace",
@@ -115,8 +107,6 @@ struct PACKED Packet {
 #include "packets/ServerCommand.h"
 #include "packets/Check.h"
 #include "packets/ShineColor.h"
-#include "packets/ItemCollect.h"
-#include "packets/FillerCollect.h"
 #include "packets/ArchipelagoChatMessage.h"
 #include "packets/ApInfo.h"
 #include "packets/ShopReplacePacket.h"
@@ -124,9 +114,7 @@ struct PACKED Packet {
 #include "packets/SlotData.h"
 #include "packets/ShineChecks.h"
 #include "packets/UnlockWorld.h"
-#include "packets/RegionalCollect.h"
 #include "packets/Deathlink.h"
-#include "packets/ProgressWorld.h"
 #include "packets/CaptureInf.h"
 #include "packets/HackCapInf.h"
 #include "packets/ChangeStagePacket.h"
