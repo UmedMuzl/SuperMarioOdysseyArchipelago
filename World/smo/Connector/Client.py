@@ -95,6 +95,7 @@ class SMOContext(CommonContext):
         self.player_data : SMOPlayer = SMOPlayer()
         self.player = None
         self.slot_data : dict = {}
+        #self.checked_locations : set
         self.ping_task = None
         self.awaiting_connection : bool = False
         self.disconnect_timer : int = 120
@@ -259,7 +260,18 @@ class SMOContext(CommonContext):
         for i in data:
             self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.ShineColor,
                                           packet_data=[i]))
-            print(self.proxy_msgs[-1].packet.info)
+            #print(self.proxy_msgs[-1].packet.info)
+
+        # Checked locations
+        data = [[]]
+        for loc in self.checked_locations:
+            if len(data[-1]) == 100:
+                data.append([])
+            if loc < 1167:
+                data[-1].append(loc)
+        for i in data:
+            self.proxy_msgs.append(Packet(guid=self.proxy_guid, packet_type=PacketType.ShineChecks,
+                                              packet_data=[i]))
 
     def forward_shine_data(self):
         world_id = world_prefixes.index(self.player_data.current_home_stage)
@@ -307,6 +319,7 @@ class SMOContext(CommonContext):
                     # Only put our player info in there as we actually need it
                     json["players"] = [me]
                     self.slot_data = json["slot_data"]
+                    #self.checked_locations = json["checked_locations"]
                 self.player = me
                 self.player_data.add_message(f"Connected to Archipelago as {me.name} playing Super Mario Odyssey")
                 # Send slot data to SMO
@@ -611,6 +624,8 @@ async def handle_proxy(reader : asyncio.StreamReader, writer : asyncio.StreamWri
                     #     print("This one", b[20:])
                     writer.write(b)
                     await writer.drain()
+                    if response.header.packet_type == PacketType.Connect:
+                        await asyncio.sleep(5.0)
 
 
                     # for message in ctx.proxy_msgs:
