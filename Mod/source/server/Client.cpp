@@ -395,11 +395,8 @@ void Client::readFunc() {
             case PacketType::CHECK:
                 receiveCheck((Check*)curPacket);
                 break;
-            case PacketType::ITEMCOLL:
-                updateItems((ItemCollect*)curPacket);
-                break;
-            case PacketType::FILLERCOLL:
-                updateFiller((FillerCollect*)curPacket);
+            case PacketType::SHINECHECKS:
+                updateSentShines((ShineChecks*)curPacket);
                 break;
             case PacketType::APCHATMESSAGE:
                 updateChatMessages((ArchipelagoChatMessage*)curPacket);
@@ -421,9 +418,6 @@ void Client::readFunc() {
                 break;
             case PacketType::UNLOCKWORLD:
                 updateWorlds((UnlockWorld*)curPacket);
-                break;
-            case PacketType::PROGRESS:
-                updateProgress((ProgressWorld*)curPacket);
                 break;
             case PacketType::DEATHLINK:
                 receiveDeath((Deathlink*)curPacket);
@@ -785,79 +779,6 @@ void Client::resendInitPackets() {
 }
 
 /**
- * @brief 
- * 
- * @param shineID 
- */
-//void Client::sendShineCollectPacket(int shineID) {
-//
-//    if (!sInstance) {
-//        Logger::log("Static Instance is Null!\n");
-//        return;
-//    }
-//
-//    sead::ScopedCurrentHeapSetter setter(sInstance->mHeap);
-//
-//    if(sInstance->lastCollectedShine != shineID) {
-//        ShineCollect *packet = new ShineCollect();
-//        packet->mUserID = sInstance->mUserID;
-//        packet->shineId = shineID;
-//
-//        sInstance->lastCollectedShine = shineID;
-//
-//        sInstance->mSocket->queuePacket(packet);
-//    }
-//}
-
-/**
- * @brief
- *
- * @param itemName
- */
-void Client::sendItemCollectPacket(char* itemName, int itemType) {
-    if (!sInstance) {
-        Logger::log("Static Instance is Null!\n");
-        return;
-    }
-
-  /*  if (!strcmp(itemName, "")) {
-        return;
-    }*/
-
-    sead::ScopedCurrentHeapSetter setter(sInstance->mHeap);
-
-    ItemCollect* packet = new ItemCollect(itemName, itemType);
-    packet->mUserID = sInstance->mUserID;
-
-    sInstance->mSocket->queuePacket(packet);
-}
-
-/**
- * @brief
- *
- * @param itemName
- */
-void Client::sendRegionalCollectPacket(GameDataHolderAccessor holder, al::PlacementId* placementId) {
-    if (!sInstance) {
-        Logger::log("Static Instance is Null!\n");
-        return;
-    }
-
-
-    sead::ScopedCurrentHeapSetter setter(sInstance->mHeap);
-
-    RegionalCollect* packet = new RegionalCollect();
-    
-    sead::FixedSafeString<0x20> placementString;
-    placementId->makeString(&placementString);
-    strcpy(packet->objId, placementString.cstr());
-    strcpy(packet->worldName, GameDataFunction::getCurrentStageName(holder));
-    packet->mUserID = sInstance->mUserID;
-
-    sInstance->mSocket->queuePacket(packet);
-}
-
-/**
  * @brief
  *
  * @param itemName
@@ -906,46 +827,6 @@ void Client::setApDeath(bool value)
     }
 
     sInstance->apDeath = value;
-}
-
-void Client::sendShineChecksPacket() {
-    if (!sInstance) {
-        Logger::log("Static Instance is Null!\n");
-        return;
-    }
-
-    sead::ScopedCurrentHeapSetter setter(sInstance->mHeap);
-
-    ShineChecks* packet = new ShineChecks();
-    packet->mUserID = sInstance->mUserID;
-
-    packet->checks1 = getShineChecks(1);
-    packet->checks2 = getShineChecks(2);
-    packet->checks3 = getShineChecks(3);
-    packet->checks4 = getShineChecks(4);
-    packet->checks5 = getShineChecks(5);
-    packet->checks6 = getShineChecks(6);
-    packet->checks7 = getShineChecks(7);
-    packet->checks8 = getShineChecks(8);
-    packet->checks9 = getShineChecks(9);
-    packet->checks10 = getShineChecks(10);
-    packet->checks11 = getShineChecks(11);
-    packet->checks12 = getShineChecks(12);
-    packet->checks13 = getShineChecks(13);
-    packet->checks14 = getShineChecks(14);
-    packet->checks15 = getShineChecks(15);
-    packet->checks16 = getShineChecks(16);
-    packet->checks17 = getShineChecks(17);
-    packet->checks18 = getShineChecks(18);
-    packet->checks19 = getShineChecks(19);
-    packet->checks20 = getShineChecks(20);
-    packet->checks21 = getShineChecks(21);
-    packet->checks22 = getShineChecks(22);
-    packet->checks23 = getShineChecks(23);
-    packet->checks24 = getShineChecks(24);
-    
-
-    sInstance->mSocket->queuePacket(packet);
 }
 
 /**
@@ -1371,7 +1252,6 @@ void Client::setScenario(int worldID, int scenario)
         return;
     }
 
-    sendProgressWorldPacket(worldID, scenario);
     sInstance->worldScenarios[worldID] = scenario;
 
 }
@@ -1623,6 +1503,115 @@ void Client::receiveCheck(Check* packet)
         setCheckIndex(packet->index);
     }
 
+}
+
+void Client::updateSentShines(ShineChecks* packet)
+{
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+
+    addShine(packet->shineUid0);
+    addShine(packet->shineUid1);
+    addShine(packet->shineUid2);
+    addShine(packet->shineUid3);
+    addShine(packet->shineUid4);
+    addShine(packet->shineUid5);
+    addShine(packet->shineUid6);
+    addShine(packet->shineUid7);
+    addShine(packet->shineUid8);
+    addShine(packet->shineUid9);
+    addShine(packet->shineUid10);
+    addShine(packet->shineUid11);
+    addShine(packet->shineUid12);
+    addShine(packet->shineUid13);
+    addShine(packet->shineUid14);
+    addShine(packet->shineUid15);
+    addShine(packet->shineUid16);
+    addShine(packet->shineUid17);
+    addShine(packet->shineUid18);
+    addShine(packet->shineUid19);
+    addShine(packet->shineUid20);
+    addShine(packet->shineUid21);
+    addShine(packet->shineUid22);
+    addShine(packet->shineUid23);
+    addShine(packet->shineUid24);
+    addShine(packet->shineUid25);
+    addShine(packet->shineUid26);
+    addShine(packet->shineUid27);
+    addShine(packet->shineUid28);
+    addShine(packet->shineUid29);
+    addShine(packet->shineUid30);
+    addShine(packet->shineUid31);
+    addShine(packet->shineUid32);
+    addShine(packet->shineUid33);
+    addShine(packet->shineUid34);
+    addShine(packet->shineUid35);
+    addShine(packet->shineUid36);
+    addShine(packet->shineUid37);
+    addShine(packet->shineUid38);
+    addShine(packet->shineUid39);
+    addShine(packet->shineUid40);
+    addShine(packet->shineUid41);
+    addShine(packet->shineUid42);
+    addShine(packet->shineUid43);
+    addShine(packet->shineUid44);
+    addShine(packet->shineUid45);
+    addShine(packet->shineUid46);
+    addShine(packet->shineUid47);
+    addShine(packet->shineUid48);
+    addShine(packet->shineUid49);
+    addShine(packet->shineUid50);
+    addShine(packet->shineUid51);
+    addShine(packet->shineUid52);
+    addShine(packet->shineUid53);
+    addShine(packet->shineUid54);
+    addShine(packet->shineUid55);
+    addShine(packet->shineUid56);
+    addShine(packet->shineUid57);
+    addShine(packet->shineUid58);
+    addShine(packet->shineUid59);
+    addShine(packet->shineUid60);
+    addShine(packet->shineUid61);
+    addShine(packet->shineUid62);
+    addShine(packet->shineUid63);
+    addShine(packet->shineUid64);
+    addShine(packet->shineUid65);
+    addShine(packet->shineUid66);
+    addShine(packet->shineUid67);
+    addShine(packet->shineUid68);
+    addShine(packet->shineUid69);
+    addShine(packet->shineUid70);
+    addShine(packet->shineUid71);
+    addShine(packet->shineUid72);
+    addShine(packet->shineUid73);
+    addShine(packet->shineUid74);
+    addShine(packet->shineUid75);
+    addShine(packet->shineUid76);
+    addShine(packet->shineUid77);
+    addShine(packet->shineUid78);
+    addShine(packet->shineUid79);
+    addShine(packet->shineUid80);
+    addShine(packet->shineUid81);
+    addShine(packet->shineUid82);
+    addShine(packet->shineUid83);
+    addShine(packet->shineUid84);
+    addShine(packet->shineUid85);
+    addShine(packet->shineUid86);
+    addShine(packet->shineUid87);
+    addShine(packet->shineUid88);
+    addShine(packet->shineUid89);
+    addShine(packet->shineUid90);
+    addShine(packet->shineUid91);
+    addShine(packet->shineUid92);
+    addShine(packet->shineUid93);
+    addShine(packet->shineUid94);
+    addShine(packet->shineUid95);
+    addShine(packet->shineUid96);
+    addShine(packet->shineUid97);
+    addShine(packet->shineUid98);
+    addShine(packet->shineUid99);
 }
 
 int Client::getWorldUnlockCount(int worldId) {
@@ -3308,85 +3297,6 @@ void Client::updateShines() {
  * @brief
  *
  */
-void Client::updateItems(ItemCollect *packet) {
-    if (!sInstance) {
-        Logger::log("Client Null!\n");
-        return;
-    }
-
-
-    struct ShopItem::ShopItemInfo amiiboData = {1, 1};
-    struct ShopItem::ShopItemInfo *amiibo = &amiiboData;
-    struct ShopItem::ItemInfo info = {1, {}, static_cast<ShopItem::ItemType>(packet->type), 1, amiibo, true};
-    strcpy(info.mName, packet->name);
-    info.mType = (ShopItem::ItemType)(packet->type);
-    struct ShopItem::ItemInfo* infoPtr = &info;
-    GameDataHolderAccessor accessor(sInstance->mCurStageScene);
-
-    accessor.mData->mGameDataFile->buyItem(infoPtr, false);
-    
-    if (isInCostumeList(packet->name))
-        switch (packet->type) {
-        case 0:
-            GameDataFunction::wearCostume(accessor, packet->name);
-            break;
-
-        case 1:
-            GameDataFunction::wearCap(accessor, packet->name);
-            break;
-
-        default:
-            break;
-        }
-
-}
-
-/**
- * @brief
- *
- */
-void Client::updateFiller(FillerCollect* packet) {
-    if (!sInstance) {
-        Logger::log("Client Null!\n");
-        return;
-    }
-
-    GameDataHolderAccessor accessor(sInstance->mCurStageScene);
-
-    switch (packet->type) {
-    case 4:
-        GameDataFunction::addCoin(accessor, 50);
-        break;
-    case 5:
-        GameDataFunction::addCoin(accessor, 100);
-        break;
-    case 6:
-        GameDataFunction::addCoin(accessor, 250);
-        break;
-    case 7:
-        GameDataFunction::addCoin(accessor, 500);
-        break;
-    case 8:
-        GameDataFunction::addCoin(accessor, 1000);
-        break;
-    case 9:
-        struct ShopItem::ShopItemInfo amiiboData = {1, 1};
-        struct ShopItem::ShopItemInfo* amiibo = &amiiboData;
-        struct ShopItem::ItemInfo info = {1, {}, (ShopItem::ItemType)0, 1, amiibo, true};
-        strcpy(info.mName, "LifeUpItem");
-        info.mType = (ShopItem::ItemType)(4);
-        struct ShopItem::ItemInfo* infoPtr = &info;
-        accessor.mData->mGameDataFile->buyItem(infoPtr, false);
-        break;
-
-    }
-
-}
-
-/**
- * @brief
- *
- */
 void Client::updateChatMessages(ArchipelagoChatMessage* packet)
 {
     if (!sInstance) {
@@ -3434,34 +3344,6 @@ void Client::updateWorlds(UnlockWorld* packet)
 
     GameDataHolderAccessor accessor(sInstance->mCurStageScene);
     GameDataFunction::unlockWorld(accessor, packet->worldID);
-}
-
-void Client::sendProgressWorldPacket(int worldID, int scenario)
-{
-    if (!sInstance)
-    {
-        Logger::log("Client Null!\n");
-        return;
-    }
-
-    sead::ScopedCurrentHeapSetter setter(sInstance->mHeap);
-
-    ProgressWorld* packet = new ProgressWorld();
-    packet->worldID = worldID;
-    packet->scenario = scenario;
-
-    sInstance->mSocket->queuePacket(packet);
-}
-
-void Client::updateProgress(ProgressWorld* packet)
-{
-    if (!sInstance) {
-        Logger::log("Client Null!\n");
-        return;
-    }
-
-    sInstance->worldScenarios[packet->worldID] = packet->scenario;
-    
 }
 
 /**
