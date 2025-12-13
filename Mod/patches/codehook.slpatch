@@ -214,11 +214,14 @@ B59E28 B seadPrintHook // sead::system::print
 312734 BL getUnlockShineNumByWorldId
 
 // GameDataFunction::calcWorldNumForShineList(LayoutActor *param_1)
-52b154 MOV x0, #17
+52b154 MOV X0, #17
 
 // FUN_7100206d78
 206E00 BL isGotShineByHintIdx
 
+// HackListLayout::updateHackPartsData(HackListLayout *this)
+//1ec724 MOV W9, #1
+//1eca20 BL hackListSetData
 
 // PlayerHackKeeper::recordHack
 4496AC BL onAddHack
