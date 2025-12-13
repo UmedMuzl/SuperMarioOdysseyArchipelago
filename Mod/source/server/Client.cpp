@@ -68,6 +68,7 @@ Client::Client() {
     collectedStickers.fill(0);
     collectedSouvenirs.fill(0);
     collectedCaptures.fill(0);
+    checkedCaptures.fill(0);
 
     shineTextReplacements.fill({0, 0});
     shineItemNames.fill(sead::FixedSafeString<40>());
@@ -2026,6 +2027,61 @@ void Client::setCaptureChecks(int index, int checks) {
 
     u8 u8Checks = static_cast<u8>(checks);
     sInstance->collectedCaptures[index] = u8Checks;
+}
+
+void Client::addCaptureCheck(const char* capture) {
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return;
+    }
+
+    int index = getIndexCaptureList(capture);
+
+    int checkedCaptures = sInstance->checkedCaptures[index / 8];
+
+    int curIndex = (index / 8) * 8;
+    int i = 1;
+    while (i < 0x100) {
+        if (curIndex == index) {
+            checkedCaptures = checkedCaptures | i;
+            break;
+        }
+        i = i << 1;
+        curIndex += 1;
+    }
+
+    sInstance->checkedCaptures[index / 8] = checkedCaptures;
+}
+
+bool Client::hasCaptureCheck(const char* capture) {
+    if (!sInstance) {
+        Logger::log("Static Instance is Null!\n");
+        return false;
+    }
+
+    int index = getIndexCaptureList(capture);
+    if (index == -1) {
+        sead::FixedSafeString<40> str;
+        str = "";
+        str.append(capture);
+        str.append(" not in captures list.");
+        setMessage(1, str.cstr());
+        return false;
+    }
+
+    u8 checkedCaptures = sInstance->checkedCaptures[index / 8];
+
+    int curIndex = (index / 8) * 8;
+    int i = 1;
+    while (i < 0x100) {
+        if (curIndex == index) {
+            checkedCaptures = checkedCaptures & i;
+            return (checkedCaptures == i);
+        }
+        i = i << 1;
+        curIndex += 1;
+    }
+    return false;
 }
 
 void Client::startShineCount() {

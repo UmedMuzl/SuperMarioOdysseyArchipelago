@@ -184,6 +184,8 @@ class Client {
         static bool hasCapture(const char* capture);
         static int getCaptureChecks(int index);
         static void setCaptureChecks(int index, int checks);
+        static void addCaptureCheck(const char* capture);
+        static bool hasCaptureCheck(const char* capture);
 
         static void setCheckIndex(int index);
         static int getCheckIndex() { return sInstance ? sInstance->checkIndex : 0; };
@@ -326,6 +328,7 @@ class Client {
         
         // List of 7 u8s for tracking which captures have been grabbed
         sead::SafeArray<u8, 7> collectedCaptures;
+        sead::SafeArray<u8, 7> checkedCaptures;
 
         // Moon Text Replacement Handling
         Shine* recentShine = nullptr;
