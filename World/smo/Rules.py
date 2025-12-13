@@ -1,6 +1,7 @@
 from worlds.generic.Rules import set_rule
 from .Options import SMOOptions
-from .Logic import  total_moons
+from .Logic import total_moons, count_moons
+
 
 def set_rules(self, options : SMOOptions) -> None:
     """ Sets the placement rules for Super Mario Odyssey.
@@ -54,6 +55,46 @@ def set_rules(self, options : SMOOptions) -> None:
 
 
     # Outfit Moons
+    if self.options.goal > 4:
+        set_rule(self.multiworld.get_location("Mechanic Cap", self.player),
+                 lambda state: state.has("Mechanic Cap", self.player) or
+                (count_moons(self, state, "Lake", self.player) >= self.moon_counts["lake"] and
+                count_moons(self, state, "Wooded", self.player) >= self.moon_counts["wooded"]))
+        set_rule(self.multiworld.get_location("Mechanic Outfit", self.player),
+                 lambda state: state.has("Mechanic Outfit", self.player) or
+                (count_moons(self, state, "Lake", self.player) >= self.moon_counts["lake"] and
+                count_moons(self, state, "Wooded", self.player) >= self.moon_counts["wooded"]))
+        set_rule(self.multiworld.get_location("Fashionable Cap", self.player),
+                 lambda state: state.has("Fashionable Cap", self.player) or
+                (count_moons(self, state, "Lake", self.player) >= self.moon_counts["lake"] and
+                count_moons(self, state, "Wooded", self.player) >= self.moon_counts["wooded"]))
+        set_rule(self.multiworld.get_location("Fashionable Outfit", self.player),
+                 lambda state: state.has("Fashionable Outfit", self.player) or
+                (count_moons(self, state, "Lake", self.player) >= self.moon_counts["lake"] and
+                count_moons(self, state, "Wooded", self.player) >= self.moon_counts["wooded"]))
+    if self.options.goal > 9:
+        set_rule(self.multiworld.get_location("Pirate Hat", self.player),
+             lambda state: state.has("Pirate Hat", self.player) or
+            (count_moons(self, state, "Seaside", self.player) >= self.moon_counts["seaside"] and
+            count_moons(self, state, "Snow", self.player) >= self.moon_counts["snow"]))
+        set_rule(self.multiworld.get_location("Pirate Outfit", self.player),
+                 lambda state: state.has("Pirate Outfit", self.player) or
+                (count_moons(self, state, "Seaside", self.player) >= self.moon_counts["seaside"] and
+                count_moons(self, state, "Snow", self.player) >= self.moon_counts["snow"]))
+        # set_rule(self.multiworld.get_location("Clown Hat", self.player),
+        #          lambda state: state.has("Clown Hat", self.player) or
+        #         (count_moons(self, state, "Snow", self.player) and
+        #         count_moons(self, state, "", self.player)))
+        # set_rule(self.multiworld.get_location("Clown Suit", self.player),
+        #          lambda state: state.has("Clown Suit", self.player) or
+        #         (count_moons(self, state, "", self.player) and
+        #         count_moons(self, state, "", self.player)))
+        # set_rule(self.multiworld.get_location("", self.player),
+        #          lambda state: state.has("", self.player) or
+        #         (count_moons(self, state, "", self.player) and
+        #         count_moons(self, state, "", self.player)))
+
+
     if self.options.goal > 14:
         set_rule(self.multiworld.get_location("Cascade Kingdom - Caveman Cave-Fan", self.player),
                  lambda state: state.has("Caveman Headwear", self.player) and state.has("Caveman Outfit", self.player))
