@@ -424,6 +424,12 @@ def set_rules(self, options : SMOOptions) -> None:
             set_rule(self.multiworld.get_location("Cloud Kingdom - Picture Match: Basically a Goomba", self.player),
                      lambda state: state.has("Picture Match Part (Goomba)", self.player))
 
+            # Lost
+            set_rule(self.multiworld.get_location("Lost Kingdom - Soaring Over the Forgotten Isle!", self.player),
+                     lambda state: state.has("Glydon", self.player))
+            set_rule(self.multiworld.get_location("Lost Kingdom - Twist ‘n' Turn-Up Treasure", self.player),
+                     lambda state: state.has("Tropical Wiggler", self.player))
+
             # Metro
             set_rule(self.multiworld.get_location("Metro Kingdom - Remotely Captured Car", self.player),
                      lambda state: state.has("RC Car", self.player))
