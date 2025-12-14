@@ -13,7 +13,6 @@ from .Regions import create_regions
 from BaseClasses import Item, ItemClassification
 from worlds.AutoWorld import World
 from worlds.LauncherComponents import (Component, components, Type as component_type, SuffixIdentifier, launch as launch_component)
-from .Patch import SMOProcedurePatch, make_output, write_patch
 from settings import Group, UserFolderPath
 from Utils import output_path
 
@@ -31,21 +30,21 @@ component = Component("Super Mario Odyssey Client", component_type=component_typ
                       game_name="Super Mario Odyssey", file_identifier=SuffixIdentifier(".apsmo"), func=launch_client)
 components.append(component)
 
-class SMOSettings(Group):
-    class SMORomFS(UserFolderPath):
-        """Folder location of your dumped Super Mario Odyssey RomFS."""
-        description = "Super Mario Odyssey RomFS"
-        copy_to = "SMO_RomFs"
-
-    romFS_folder: SMORomFS = SMORomFS(SMORomFS.copy_to)
+# class SMOSettings(Group):
+#     class SMORomFS(UserFolderPath):
+#         """Folder location of your dumped Super Mario Odyssey RomFS."""
+#         description = "Super Mario Odyssey RomFS"
+#         copy_to = "SMO_RomFs"
+#
+#     romFS_folder: SMORomFS = SMORomFS(SMORomFS.copy_to)
 
 
 class SMOWorld(World):
     """Super Mario Odyssey is a 3-D Platformer where Mario sets off across the world with his companion Cappy to save Princess Peach and Cappy's sister Tiara from Bowser's wedding plans."""
     game = "Super Mario Odyssey"
 
-    settings_key = "smo_settings"
-    settings : SMOSettings
+    #settings_key = "smo_settings"
+    #settings : SMOSettings
 
     options_dataclass = SMOOptions
     options: SMOOptions
