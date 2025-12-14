@@ -90,7 +90,7 @@ def create_regions(self, world, player):
 
     # Cloud
     regCloud = Region("Cloud", player, world, "Cloud Kingdom")
-    if self.options.goal > 9:
+    if self.options.goal > 5:
         create_locs(regCloud, *loc_Cloud.keys())
     world.regions.append(regCloud)
 
