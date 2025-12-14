@@ -17,7 +17,7 @@ riderModule.iml
 .idea/
 settings.json
 .vs/
-**/__pycache__/**
+**World/smo/__pycache__/**
 /cache/
 /data/
 /World/smo/sarc/__pycache__/
