@@ -20,23 +20,11 @@ from Utils import output_path
 def launch_client(*args: str):
     from .Connector.Client import launch
     print(len(args))
-    if len(args) > 0:
-        make_output(args[0])
-        launch_component(launch, name="SMOClient", args=args[1:])
-    else:
-        launch_component(launch, name="SMOClient", args=args)
+    launch_component(launch, name="SMOClient", args=args)
 
 component = Component("Super Mario Odyssey Client", component_type=component_type.CLIENT,
-                      game_name="Super Mario Odyssey", file_identifier=SuffixIdentifier(".apsmo"), func=launch_client)
+                      game_name="Super Mario Odyssey", func=launch_client)
 components.append(component)
-
-# class SMOSettings(Group):
-#     class SMORomFS(UserFolderPath):
-#         """Folder location of your dumped Super Mario Odyssey RomFS."""
-#         description = "Super Mario Odyssey RomFS"
-#         copy_to = "SMO_RomFs"
-#
-#     romFS_folder: SMORomFS = SMORomFS(SMORomFS.copy_to)
 
 
 class SMOWorld(World):
