@@ -13,7 +13,6 @@ from .Regions import create_regions
 from BaseClasses import Item, ItemClassification
 from worlds.AutoWorld import World
 from worlds.LauncherComponents import (Component, components, Type as component_type, SuffixIdentifier, launch as launch_component)
-from .Patch import SMOProcedurePatch, make_output, write_patch
 from settings import Group, UserFolderPath
 from Utils import output_path
 
