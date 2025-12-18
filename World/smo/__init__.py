@@ -551,7 +551,7 @@ class SMOWorld(World):
 
         match self.options.colors.value:
             case self.options.colors.option_off:
-                self.color_list = [0, 0, 5, 2, 7, 0, 0, 1, 8, 4, 6, 0, 3, 9, -1, 9, 9, 27]
+                self.color_list = [0, 0, 5, 7, 2, 0, 0, 1, 4, 8, 6, 0, 3, 9, -1, 9, 9, 27]
                 for location in self.get_locations():
                     for kingdom in range(17):
                         if location.name in full_moon_locations_list[kingdom]:
@@ -567,16 +567,23 @@ class SMOWorld(World):
                             self.shine_colors[self.location_name_to_id[location.name]] = self.color_list[kingdom]
 
             case self.options.colors.option_item:
-                self.color_list = [10, 0, 5, 2, 7, 11, 12, 1, 8, 4, 6, 13, 3, 9, -1, 14, 15, 27]
+                self.color_list = [0, 15, 5, 2, 7, 11, 14, 1, 8, 4, 6, 13, 17, 9, -1, 9, 9, 10, 12, 16, 18, 19]
                 for location in self.get_locations():
                     for kingdom in range(17):
                         if self.location_name_to_id[location.name] < 1168:
                             if location.item.game == self.game:
-                                if world_list[kingdom] in location.item.name:
+                                if location.item.name in capture_items:
+                                    self.shine_colors[self.location_name_to_id[location.name]] = self.color_list[18]
+                                elif location.item.name in stickers or location.item.name in souvenirs:
+                                    self.shine_colors[self.location_name_to_id[location.name]] = self.color_list[19]
+                                elif location.item.name in outfits:
+                                    self.shine_colors[self.location_name_to_id[location.name]] = self.color_list[20]
+                                elif world_list[kingdom] in location.item.name:
                                     self.shine_colors[self.location_name_to_id[location.name]] = self.color_list[kingdom]
                                     break
+
                             else:
-                                self.shine_colors[self.location_name_to_id[location.name]] = self.color_list[17]
+                                self.shine_colors[self.location_name_to_id[location.name]] = self.color_list[21]
                                 break
 
             case self.options.colors.option_classification:
@@ -584,17 +591,25 @@ class SMOWorld(World):
 
             case self.options.colors.option_item_random:
                 colors = list(range(30))
-                for i in range(18):
+                for i in range(22):
                     self.color_list.append(colors.pop(self.random.randint(0, len(colors) - 1)))
                 for location in self.get_locations():
                     for kingdom in range(17):
                         if self.location_name_to_id[location.name] < 1168:
                             if location.item.game == self.game:
-                                if world_list[kingdom] in location.item.name:
-                                    self.shine_colors[self.location_name_to_id[location.name]] = self.color_list[kingdom]
+                                if location.item.name in capture_items:
+                                    self.shine_colors[self.location_name_to_id[location.name]] = self.color_list[18]
+                                elif location.item.name in stickers or location.item.name in souvenirs:
+                                    self.shine_colors[self.location_name_to_id[location.name]] = self.color_list[19]
+                                elif location.item.name in outfits:
+                                    self.shine_colors[self.location_name_to_id[location.name]] = self.color_list[20]
+                                elif world_list[kingdom] in location.item.name:
+                                    self.shine_colors[self.location_name_to_id[location.name]] = self.color_list[
+                                        kingdom]
                                     break
+
                             else:
-                                self.shine_colors[self.location_name_to_id[location.name]] = self.color_list[17]
+                                self.shine_colors[self.location_name_to_id[location.name]] = self.color_list[21]
                                 break
 
             case self.options.colors.option_classification_random:
