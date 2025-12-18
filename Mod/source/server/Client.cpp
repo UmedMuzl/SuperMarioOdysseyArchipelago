@@ -1404,45 +1404,11 @@ void Client::receiveCheck(Check* packet)
     sead::FixedSafeString<40> indexMessage;
     indexMessage = "";
     indexMessage.append("Received item index ");
-    int index = packet->index;
-    int trim = index;
-    if (index >= 1000)
-    {
-        indexMessage.append(static_cast<char>(48 + trim / 1000));
-        trim = trim % 1000;
-    }
-    if (index >= 100) {
-        indexMessage.append(static_cast<char>(48 + trim / 100));
-        trim = trim % 100;
-    }
-    if (index >= 10) {
-        indexMessage.append(static_cast<char>(48 + trim / 10)); 
-        trim = trim % 10;
-    }
-    if (index >= 0) {
-        indexMessage.append(static_cast<char>(48 + trim));
-    }
+    indexMessage.append(intToCstr(packet->index));
     //setMessage(1, indexMessage.cstr());
     indexMessage = "";
     indexMessage.append("Current item index ");
-    index = getCheckIndex();
-    trim = index;
-    if (index >= 1000)
-    {
-        indexMessage.append(static_cast<char>(48 + trim / 1000));
-        trim = trim % 1000;
-    }
-    if (index >= 100) {
-        indexMessage.append(static_cast<char>(48 + trim / 100));
-        trim = trim % 100;
-    }
-    if (index >= 10) {
-        indexMessage.append(static_cast<char>(48 + trim / 10)); 
-        trim = trim % 10;
-    }
-    if (index >= 0) {
-        indexMessage.append(static_cast<char>(48 + trim));
-    }
+    indexMessage.append(intToCstr(getCheckIndex()));
     //setMessage(2, indexMessage.cstr());
 
     switch (itemType)
