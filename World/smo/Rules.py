@@ -269,6 +269,8 @@ def set_rules(self, options : SMOOptions) -> None:
         set_rule(self.multiworld.get_location("Cascade Kingdom - Multi Moon Atop the Falls", self.player),
                  lambda state: (state.has("Big Chain Chomp", self.player) or state.has("T-Rex", self.player)) and state.has(
             "Broode's Chain Chomp", self.player))
+        set_rule(self.multiworld.get_location("Broode's Chain Chomp", self.player),
+                 lambda state: state.has("Big Chain Chomp", self.player) or state.has("T-Rex", self.player))
         #set_rule(self.multiworld.get_location("Our First Power Moon", self.player),
         #         lambda state: state.has("Chain Chomp", self.player) or state.has("T-Rex", self.player))
         #set_rule(self.multiworld.get_location("Multi Moon Atop the Falls", self.player),
