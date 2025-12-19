@@ -849,12 +849,20 @@ void stageInitHook(al::ActorInitInfo *info, StageScene *curScene, al::PlacementI
 
     Client::sendGameInfPacket(info->mActorSceneInfo.mSceneObjHolder);
     GameDataHolderAccessor accessor = GameDataHolderAccessor(info->mActorSceneInfo.mSceneObjHolder);
+
     if (!GameDataFunction::isHomeShipStage(accessor.mData)) {
         Client::sendChangeStagePacket(info->mActorSceneInfo.mSceneObjHolder);
     }
     int worldId = GameDataFunction::getCurrentWorldId(info->mActorSceneInfo.mSceneObjHolder);
     int worldScenario =
         GameDataFunction::getWorldScenarioNo(info->mActorSceneInfo.mSceneObjHolder, worldId);
+
+    // Enable Cappy on load into Cap Intro
+    if (worldId == 0 && worldScenario < 2 && !GameDataFunction::isEnableCap(accessor))
+    {
+        GameDataFunction::enableCap(accessor);
+    }
+
     if (worldScenario > Client::getScenario(worldId))
     {
         Client::setScenario(worldId, worldScenario);
