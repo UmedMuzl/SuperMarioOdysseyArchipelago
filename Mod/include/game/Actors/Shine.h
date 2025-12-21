@@ -68,7 +68,7 @@ class Shine : public al::LiveActor , public IUseDimension {
         al::LiveActor *mModelEmpty; // 0x2E0
         al::LiveActor *mModelShine; // 0x2E8
         int dword2F0;
-        u16 word2F4;
+        u16 word2F4; // 2f5 is set true when shine is collected
         int dword2F8;
         bool mIsNoRotate;
         void * qword300;

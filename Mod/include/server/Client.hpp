@@ -312,7 +312,7 @@ class Client {
         sead::SafeArray<int, 17> worldScenarios;
         bool dying = false;
         bool apDeath = false;
-        int checkIndex = -1;
+        int checkIndex = 0;
 
         // List of 37 ints to track which shine's have been grabbed
         sead::SafeArray<int, 37> collectedShines;
@@ -336,7 +336,7 @@ class Client {
         sead::SafeArray<sead::FixedSafeString<40>, 100> shineItemNames;
 
         // Moon Color Replacement
-        sead::SafeArray<u8, 1170> shineColors;
+        sead::SafeArray<s8, 1170> shineColors;
 
 
         // Shop Text Replacement Handling
