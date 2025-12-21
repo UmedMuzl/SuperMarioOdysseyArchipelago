@@ -1,7 +1,7 @@
 import random
 import os
 from math import floor
-from typing import Mapping, Any
+from typing import Mapping, Any, TextIO
 from .Items import item_table, SMOItem, filler_item_table, outfits, shop_items, multi_moons, \
     moon_item_table, moon_types, story_moons, world_list, stickers, souvenirs, capture_items, \
     location_hint_list
@@ -218,12 +218,12 @@ class SMOWorld(World):
                 # some outfits for dark and darker goals not handled correctly
                 classification = ItemClassification.filler
             elif name in capture_items:
-                if self.options.goal < 15 and capture_items.index(name) < 48:
+                if self.options.goal < self.options.goal.option_dark and capture_items.index(name) < 48:
                     classification = ItemClassification.progression
                 else:
                     classification = ItemClassification.filler
             elif name in moon_types:
-                    classification = ItemClassification.progression
+                classification = ItemClassification.progression
 
         item: SMOItem
 
@@ -236,11 +236,11 @@ class SMOWorld(World):
         pool : list = []
 
         # Beat the Game
-        if self.options.goal > 14:
+        if self.options.goal > self.options.goal.option_moon:
             pool.append("Coins")
 
         # Beat Bowser in Cloud
-        if self.options.goal >= 9:
+        if self.options.goal >= self.options.goal.option_metro:
             pool.append("Coins")
 
         # Additively build pool
@@ -253,7 +253,7 @@ class SMOWorld(World):
                 continue
             else:
                 locations += [location.name]
-        # print(locations)
+        #print(locations)
 
         placement_counts = [
             0,
@@ -279,13 +279,13 @@ class SMOWorld(World):
             0,
             min(floor(self.moon_counts["cascade"] * self.options.extra_moons.value), self.max_counts["cascade"]),
             min(floor(self.moon_counts["sand"] * self.options.extra_moons.value), self.max_counts["sand"]),
-            min(floor(self.moon_counts["lake"] * self.options.extra_moons.value), self.max_counts["lake"]),
             min(floor(self.moon_counts["wooded"] * self.options.extra_moons.value), self.max_counts["wooded"]),
+            min(floor(self.moon_counts["lake"] * self.options.extra_moons.value), self.max_counts["lake"]),
             0,
             min(floor(self.moon_counts["lost"] * self.options.extra_moons.value), self.max_counts["lost"]),
             min(floor(self.moon_counts["metro"] * self.options.extra_moons.value), self.max_counts["metro"]),
-            min(floor(self.moon_counts["snow"] * self.options.extra_moons.value), self.max_counts["snow"]),
             min(floor(self.moon_counts["seaside"] * self.options.extra_moons.value), self.max_counts["seaside"]),
+            min(floor(self.moon_counts["snow"] * self.options.extra_moons.value), self.max_counts["snow"]),
             min(floor(self.moon_counts["luncheon"] * self.options.extra_moons.value), self.max_counts["luncheon"]),
             min(floor(self.moon_counts["ruined"] * self.options.extra_moons.value), self.max_counts["ruined"]),
             min(floor(self.moon_counts["bowser"] * self.options.extra_moons.value), self.max_counts["bowser"]),
@@ -294,14 +294,14 @@ class SMOWorld(World):
             0,
             0,
         ]
-        if self.options.goal == 16:
+        if self.options.goal == self.options.goal.option_dark:
             kingdoms : list = list(range(15))
             while sum(revised_counts[0:15]) < self.moon_counts["dark"]:
                 index = kingdoms[random.randint(0, len(kingdoms) - 1)]
                 revised_counts[index] += 1
                 if revised_counts[index] == self.max_checks[world_list[index].lower()]:
                     kingdoms.remove(index)
-        elif self.options.goal == 17:
+        elif self.options.goal == self.options.goal.option_darker:
             kingdoms: list = list(range(16))
             while sum(revised_counts[0:16]) < self.moon_counts["darker"]:
                 index = kingdoms[random.randint(0, len(kingdoms) - 1)]
@@ -345,6 +345,7 @@ class SMOWorld(World):
                             break
                     else:
                         item: str = "Coins"
+                        #print(location)
 
                     pool.append(item)
                     break
@@ -498,7 +499,7 @@ class SMOWorld(World):
                 self.coin_values[player] = {}
             for location in self.multiworld.get_locations(player):
                 if location.item.player == self.player:
-                    if location.item.name == "Coins":
+                    if location.item.game == self.game and location.item.name == "Coins":
                         rand_num = self.random.randint(0,99)
                         if rand_num < 44:
                             coin_amount = self.random.randint(50, 100)
@@ -663,6 +664,14 @@ class SMOWorld(World):
                     self.shop_players.index(self.multiworld.get_player_name(location.item.player)),
                     self.shop_ap_items.index(location.item.name.replace("_", " ")), location.item.classification.value]
 
+    def write_spoiler_header(self, spoiler_handle: TextIO) -> None:
+        if self.options.counts > 0:
+            text = f"{'Moon Requirements:':33}"
+            for key in self.moon_counts.keys():
+                if world_list.index(key.capitalize()) <= self.options.goal:
+                    text += f"\n{'':33}{(key.capitalize() + (' Kingdom: ' if world_list.index(key.capitalize()) < self.options.goal.option_dark else ' Side: '))}{str(self.moon_counts[key])}"
+            spoiler_handle.write(text)
+
     def generate_output(self, output_directory: str):
         pass
         # if self.options.colors.value or self.options.counts.value > 0 or self.options.shop_sanity.value > 0:
@@ -670,5 +679,4 @@ class SMOWorld(World):
         #     patch = SMOProcedurePatch(player=self.player, player_name=self.multiworld.get_player_name(self.player))
         #     write_patch(self, patch)
         #     patch.write(os.path.join(output_directory, f"{out_base}{patch.patch_file_ending}"))
-
 
