@@ -182,7 +182,14 @@ class SMOWorld(World):
                 "regionals" : False}
 
     def create_regions(self):
-        if self.options.counts > 0:
+        # Check if this is Universal Tracker generation using existing slot data
+        if hasattr(self.multiworld, "generation_is_fake"):
+            if hasattr(self.multiworld, "re_gen_passthrough"):
+                if "Super Mario Odyssey" in self.multiworld.re_gen_passthrough:
+                    passthrough = self.multiworld.re_gen_passthrough["Super Mario Odyssey"]
+                    # Use the moon counts from the original generation
+                    self.moon_counts = passthrough["MoonCounts"]
+        elif self.options.counts > 0:
             self.randomize_moon_amounts()
         create_regions(self, self.multiworld, self.player)
 
@@ -679,4 +686,33 @@ class SMOWorld(World):
         #     patch = SMOProcedurePatch(player=self.player, player_name=self.multiworld.get_player_name(self.player))
         #     write_patch(self, patch)
         #     patch.write(os.path.join(output_directory, f"{out_base}{patch.patch_file_ending}"))
+
+    def interpret_slot_data(self, slot_data: dict[str, any]) -> dict[str, any]:
+        """Parse slot data for Universal Tracker to properly validate logic and track progression."""
+        relevant_data = {}
+        
+        # Parse moon count requirements for each kingdom
+        relevant_data["MoonCounts"] = slot_data["counts"]
+        
+        # Parse game options
+        relevant_data["Goal"] = slot_data["goal"]
+        relevant_data["Colors"] = slot_data["colors"]
+        relevant_data["CaptureSanity"] = slot_data["capture_sanity"]
+        
+        # Parse shine data structures (for hint system)
+        relevant_data["ShineItems"] = slot_data["shine_items"]
+        relevant_data["ShineReplaceData"] = slot_data["shine_replace_data"]
+        relevant_data["ShineColors"] = slot_data["shine_colors"]
+        
+        # Parse shop data structures
+        relevant_data["ShopGames"] = slot_data["shop_games"]
+        relevant_data["ShopPlayers"] = slot_data["shop_players"]
+        relevant_data["ShopAPItems"] = slot_data["shop_ap_items"]
+        relevant_data["ShopReplaceData"] = slot_data["shop_replace_data"]
+        
+        # Parse coin values
+        relevant_data["CoinValues"] = slot_data["coin_values"]
+        
+        return relevant_data
+
 
